@@ -6,8 +6,8 @@ jobs, engineers report what happened on site, and customers watch their own inst
 progress — each seeing only what their role allows.
 
 > **Status: technical specification ready.** The idea brief and product plan are done, and
-> [`_TECH.md`](_TECH.md) now specifies the implementation. There is no application code yet;
-> `src/` is built from the tech spec.
+> [`_TECH.md`](_TECH.md) specifies the implementation. [`src/`](src/) now contains the
+> browser-only **JMS Demo Lite**: a static, drag-and-drop Netlify edition of the app.
 
 ---
 
@@ -61,7 +61,7 @@ spec can be read, searched and shared without an editor.
 - Stage 1 — done: [`_IDEA.md`](_IDEA.md).
 - Stage 2 — done: [`_PLAN.md`](_PLAN.md) plus its rendered [`_PLAN.html`](_PLAN.html).
 - Stage 3 — done: [`_TECH.md`](_TECH.md) plus its rendered [`_TECH.html`](_TECH.html).
-- Stage 4 — **next**: build `src/` from `_TECH.md`.
+- Stage 4 — done: [`src/`](src/) — JMS Demo Lite, the static browser edition (seed data, role matrix, jobs, invoices, insights, admin and appearance). See [`src/README.md`](src/README.md).
 
 ---
 
@@ -78,7 +78,7 @@ spec can be read, searched and shared without an editor.
 | `docs.toml` | Build config — per-document page titles, eyebrow, subtitle and footer. |
 | `jms_theme.toml` | Theme tokens for the rendered pages (25px page text, sidebar 20% larger). |
 | `skills/make-jms-html/` | The skill that builds these pages: generator, theme, batch builder, conventions. |
-| `src/` | **Not started** (stage 4) — the application itself, written only from `_TECH.md`. |
+| `src/` | **JMS Demo Lite** — a static HTML/CSS/JS edition built from `_TECH.md`, deployable to Netlify by drag and drop. See [`src/README.md`](src/README.md). |
 
 The plan is written deliberately **without code**: it states what the business needs, who
 may do it, what each screen does, and how we will know a stage is finished. Every
