@@ -70,13 +70,39 @@ on first sign-in.
 | Engineer | `engineer1@example.com` … `engineer8@example.com` |
 | Customer | `customer1@example.com` … `customer10@example.com` |
 
+## Google sign-in
+
+The sign-in page includes a **Use Google** option. To enable it:
+
+1. Create an **OAuth 2.0 Client ID** of type **Web application** in
+   [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+2. Add this authorised redirect URI (replace the host for production):
+   `http://localhost:3000/auth/google/callback`
+3. Put the credentials in `.env`:
+
+```bash
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+GOOGLE_ADMIN_EMAILS=iwswordpress@gmail.com
+```
+
+On first Google sign-in, an email listed in `GOOGLE_ADMIN_EMAILS` is created as an
+active **ADMIN** account. Existing users sign in with their existing role, provided their
+Google email matches their JMS email. Other unknown Google accounts are denied.
+
+Google OAuth uses the authorisation-code flow with a short-lived, HttpOnly `state`
+cookie. It does not require any extra npm package.
+
 The sample data matches the reference seed in `_TECH.md` §15:
 
 - 2 admins, 2 field-capable managers, 8 engineers and 10 customer portal logins;
 - 10 customers with 26 jobs in the reference distribution `[3,4,2,1,3,4,3,2,2,2]`;
 - all eight job statuses represented;
 - active assignments on every job, timeline events and sequential invoices;
-- 7 seeded invoices across `INVOICED` and `PAID` states.
+- 7 seeded invoices across `INVOICED` and `PAID` states;
+- 12 upcoming `SCHEDULED` jobs, two per week for the next six weeks, so the
+  **Insights → Timeline** screen always has future work to display.
 
 ## What works
 
@@ -126,6 +152,10 @@ development.
 | `SESSION_IDLE_MINUTES` | `60` | Idle expiry |
 | `COOKIE_SECURE` | `false` | Must be `true` in production |
 | `DEFAULT_PASSWORD` | `JMS123` | Temporary password for seed/invites |
+| `GOOGLE_CLIENT_ID` | empty | Google OAuth web client ID; enables **Use Google** |
+| `GOOGLE_CLIENT_SECRET` | empty | Google OAuth client secret |
+| `GOOGLE_REDIRECT_URI` | `APP_URL/auth/google/callback` | OAuth callback URL |
+| `GOOGLE_ADMIN_EMAILS` | empty | Comma-separated emails allowed to bootstrap as ADMIN |
 | `COMPANY_TIMEZONE` | `Europe/London` | Display timezone; dates stored UTC |
 | `VAT_RATE_BP` | `2000` | Default VAT in basis points |
 | `SEED` | `20260316` | Deterministic seed value |
@@ -147,8 +177,9 @@ src/
     schema.js               SQLite schema
     seed.js                 deterministic sample data and acceptance checks
     index.js                connection, helpers, transactions, audit
+    upcoming.js             two scheduled demo jobs per week for six weeks
   domain/                   permissions, status machine, money, dates
-  auth/                     passwords, sessions, rate limiting
+  auth/                     passwords, sessions, rate limiting, Google OAuth
   middleware/               auth, CSRF, permissions, errors, request IDs
   routes/                   auth, dashboards, jobs, customers, invoices, portal,
                             insights, admin, search

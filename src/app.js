@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import path from "node:path";
 import express from "express";
 import helmet from "helmet";
@@ -25,12 +26,18 @@ export function createApp() {
 
   app.use(requestId);
   app.use(httpLogger);
+  // The site theme is injected as a nonce-tagged <style> so the CSP can stay
+  // strict while colour and font settings are still applied server-side.
+  app.use((req, res, next) => {
+    res.locals.cspNonce = crypto.randomBytes(16).toString("base64");
+    next();
+  });
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'"],
+        scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
+        styleSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
         imgSrc: ["'self'", "data:"],
         fontSrc: ["'self'"],
         connectSrc: ["'self'"],

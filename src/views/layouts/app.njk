@@ -1,15 +1,13 @@
 <!doctype html>
-{% set scale = theme.text_scale or 1 %}
-{% set textSize = 'large' if scale > 1.075 else ('small' if scale < 0.975 else 'normal') %}
-{% set leading = 'airy' if (theme.line_height or 1.55) > 1.65 else ('tight' if (theme.line_height or 1.55) < 1.48 else 'normal') %}
-<html lang="en-GB" data-theme="{{ theme.mode or 'system' }}" data-text="{{ textSize }}" data-leading="{{ leading }}">
+<html lang="en-GB" data-theme="{{ theme.mode or 'system' }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title or 'JMS' }} · JMS</title>
   <link rel="stylesheet" href="/assets/css/tokens.css">
   <link rel="stylesheet" href="/assets/css/app.css">
-  <script>document.documentElement.classList.add("js");</script>
+  <style nonce="{{ cspNonce }}">{{ themeCss | safe }}</style>
+  <script nonce="{{ cspNonce }}">document.documentElement.classList.add("js");</script>
 </head>
 <body id="top">
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -30,6 +28,10 @@
   </form>
   {% if user %}
   <div class="user-menu">
+    <a class="button button-quiet site-settings-link" href="/account/appearance" title="Site settings">
+      <span class="site-settings-glyph" aria-hidden="true">Aa</span>
+      <span>Site settings</span>
+    </a>
     <span class="avatar" aria-hidden="true">{{ user.display_name|initials }}</span>
     <span class="user-meta"><strong>{{ user.display_name }}</strong><small>{{ user.role_key|roleLabel }}</small></span>
     <form method="post" action="/signout">
@@ -76,6 +78,7 @@
 
 <footer class="footer">
   <span>JMS v1 · SQLite database · display timezone {{ company.timezone or 'Europe/London' }}</span>
+  <span class="mono" title="OpenRouter API key in use">OpenRouter key {{ openRouterKeyMasked }}</span>
   {% if requestId %}<span class="mono">Request {{ requestId }}</span>{% endif %}
 </footer>
 <a class="back-to-top" href="#top" aria-label="Back to top">
@@ -83,5 +86,6 @@
   <span class="sr-only">Back to top</span>
 </a>
 <script src="/assets/js/app.js" defer></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

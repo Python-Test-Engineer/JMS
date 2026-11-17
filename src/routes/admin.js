@@ -11,6 +11,10 @@ import {
 import { requirePermission } from "../middleware/permissions.js";
 import { notFound } from "../middleware/errors.js";
 import { renderPage } from "../render.js";
+import {
+  COLOR_KEYS, FONT_FIELDS, LAYOUT_FIELDS, PRESETS, TYPE_FIELDS,
+  fontOptions, mergeTheme, presetTheme, resolveTheme, themeFromForm, themeToToml,
+} from "../domain/theme.js";
 
 export const adminRouter = express.Router();
 
@@ -227,11 +231,52 @@ adminRouter.get("/admin/settings", requirePermission("admin.settings.manage"), (
   const settings = Object.fromEntries(all("SELECT key,value_json FROM settings").map((row) => {
     try { return [row.key, JSON.parse(row.value_json)]; } catch { return [row.key, row.value_json]; }
   }));
-  let theme = { mode: "system" };
-  try { theme = JSON.parse(company.default_theme_json); } catch { /* ignore */ }
+  const theme = resolveTheme(currentCompanyTheme());
   renderPage(req, res, "pages/admin/settings.njk", {
-    title: "Company settings", company, settings, themeMode: theme.mode || "system", errors: {},
+    title: "Company settings", company, settings, themeMode: theme.mode, errors: {},
   });
+});
+
+function currentCompanyTheme() {
+  const company = one("SELECT default_theme_json FROM companies LIMIT 1");
+  try { return JSON.parse(company.default_theme_json || "{}"); } catch { return {}; }
+}
+
+adminRouter.get("/admin/theme", requirePermission("admin.settings.manage"), (req, res) => {
+  let theme = resolveTheme(currentCompanyTheme());
+  const preset = typeof req.query.preset === "string" ? req.query.preset : "";
+  if (preset) theme = presetTheme(theme, preset);
+  renderPage(req, res, "pages/admin/theme.njk", {
+    title: "Site theme",
+    theme,
+    presets: PRESETS,
+    selectedPreset: preset,
+    typeFields: TYPE_FIELDS,
+    layoutFields: LAYOUT_FIELDS,
+    fontFields: FONT_FIELDS.map((field) => ({ ...field, options: fontOptions(field.key, theme.fonts[field.key]) })),
+    colorKeys: COLOR_KEYS,
+    toml: themeToToml(theme),
+  });
+});
+
+adminRouter.post("/admin/theme", requirePermission("admin.settings.manage"), (req, res) => {
+  const before = resolveTheme(currentCompanyTheme());
+  const theme = themeFromForm(req.body, before);
+  const now = nowIso();
+  transaction(() => {
+    run("UPDATE companies SET default_theme_json=? WHERE id=?", JSON.stringify(theme), one("SELECT id FROM companies LIMIT 1").id);
+    run(
+      `INSERT INTO settings (key,value_json,updated_at,updated_by) VALUES (?,?,?,?)
+       ON CONFLICT(key) DO UPDATE SET value_json=excluded.value_json, updated_at=excluded.updated_at, updated_by=excluded.updated_by`,
+      "company.default_theme", JSON.stringify(theme), now, req.user.id,
+    );
+    audit({
+      actorId: req.user.id, action: "theme.default.update", entityType: "SETTING",
+      entityId: "company.default_theme", before: { mode: before.mode, type: before.type }, after: { mode: theme.mode, type: theme.type }, req,
+    });
+  });
+  req.session.flash_json = JSON.stringify({ type: "success", message: "Site theme saved. Every page now uses it." });
+  res.redirect("/admin/theme");
 });
 
 adminRouter.post("/admin/settings", requirePermission("admin.settings.manage"), (req, res) => {
@@ -241,10 +286,12 @@ adminRouter.post("/admin/settings", requirePermission("admin.settings.manage"), 
   const pdfFooter = String(req.body.pdf_footer || "").trim();
   const passwordMinLength = Math.max(8, Math.min(72, Number.parseInt(req.body.password_min_length, 10) || 10));
   const sessionIdle = Math.max(5, Math.min(1440, Number.parseInt(req.body.session_idle_minutes, 10) || 60));
+  const existingTheme = currentCompanyTheme();
+  const theme = mergeTheme(resolveTheme(existingTheme), { mode });
   const values = {
     "company.vat_rate_bp": vatRateBp,
     "company.invoice_due_days": dueDays,
-    "company.default_theme": { mode },
+    "company.default_theme": theme,
     "company.pdf_footer": pdfFooter,
     "security.password_min_length": passwordMinLength,
     "security.session_idle_minutes": sessionIdle,
@@ -259,7 +306,7 @@ adminRouter.post("/admin/settings", requirePermission("admin.settings.manage"), 
       );
     }
     run("UPDATE companies SET invoice_due_days=?, default_theme_json=?, pdf_footer=? WHERE id=?",
-      dueDays, JSON.stringify({ mode }), pdfFooter, one("SELECT id FROM companies LIMIT 1").id);
+      dueDays, JSON.stringify(theme), pdfFooter, one("SELECT id FROM companies LIMIT 1").id);
     audit({ actorId: req.user.id, action: "settings.update", entityType: "SETTING", after: values, req });
     if (mode) audit({ actorId: req.user.id, action: "theme.default.update", entityType: "SETTING", after: { mode }, req });
   });

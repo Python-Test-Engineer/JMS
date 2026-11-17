@@ -1,6 +1,10 @@
 {% extends "layouts/auth.njk" %}
 {% block content %}
 {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+<a class="button button-google button-block google-signin" href="/auth/google">
+  <span class="google-mark" aria-hidden="true">G</span>
+  Use Google
+</a>
 <form method="post" action="/signin" class="stack">
   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
   <input type="hidden" name="next" value="{{ next }}">

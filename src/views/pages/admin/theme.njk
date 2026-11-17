@@ -1,0 +1,70 @@
+{% extends "layouts/app.njk" %}
+{% import "partials/theme-fields.njk" as themeFields %}
+{% block content %}
+<form method="post" action="/admin/theme" class="stack" data-theme-form>
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+  <div class="panel stack">
+    <h2>Colour scheme</h2>
+    <fieldset class="fieldset">
+      <legend class="sr-only">Colour scheme</legend>
+      <div class="choice-row">
+        {% for option in ['system','light','dark'] %}
+        <label class="choice"><input type="radio" name="mode" value="{{ option }}" {% if theme.mode == option %}checked{% endif %}> {{ option|capitalize }}</label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <p class="hint">System follows each visitor's operating system. The palette below is used for both schemes; edit the dark table to change dark mode.</p>
+    <div class="choice-row">
+      <span class="muted small">Presets:</span>
+      {% for preset in presets %}
+      <a class="button button-secondary" href="/admin/theme?preset={{ preset.key }}">{{ preset.label }}</a>
+      {% endfor %}
+    </div>
+    {% if selectedPreset %}<p class="hint">Previewing the {{ selectedPreset }} preset. Save to apply it to everyone.</p>{% endif %}
+  </div>
+
+  <div class="panel stack">
+    <h2>Type</h2>
+    <p class="hint">25px reading text with 20.4px chrome is the documentation house style. The theme keys are shared with <code>jms_theme.toml</code>.</p>
+    {{ themeFields.numberGrid(typeFields, theme.type, 'type_') }}
+  </div>
+
+  <div class="panel stack">
+    <h2>Layout</h2>
+    {{ themeFields.numberGrid(layoutFields, theme.layout, 'layout_') }}
+  </div>
+
+  <div class="panel stack">
+    <h2>Fonts</h2>
+    <p class="hint">Curated system stacks only; picking one adds no network request. A saved stack that is not listed shows as Custom.</p>
+    {{ themeFields.fontGrid(fontFields, theme.fonts) }}
+  </div>
+
+  <details class="panel" open>
+    <summary><strong>Light colours</strong></summary>
+    <p class="hint">Page background, cards, text, accent and the shared palette. Labels match <code>references/theme-keys.md</code>.</p>
+    {{ themeFields.colorGrid(colorKeys, theme.colors, 'colors_', 'light') }}
+  </details>
+
+  <details class="panel">
+    <summary><strong>Dark colours</strong></summary>
+    <p class="hint">Same keys as the light table. Used for the Dark scheme, and for System when the visitor's device is dark.</p>
+    {{ themeFields.colorGrid(colorKeys, theme.dark, 'dark_', 'dark') }}
+  </details>
+
+  <details class="panel">
+    <summary><strong>Copy TOML</strong></summary>
+    <p class="hint">The same key names as <code>skills/make-jms-html/assets/jms_theme.toml</code>, valid input for <code>--theme</code>.</p>
+    <label class="field"><span>Theme as TOML</span>
+      <textarea name="theme_toml" rows="18" readonly class="mono">{{ toml }}</textarea>
+    </label>
+  </details>
+
+  <div class="button-row">
+    <button class="button button-primary" type="submit">Save site theme</button>
+    <a class="button button-secondary" href="/admin/theme">Discard changes</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="/assets/js/theme-preview.js" defer></script>{% endblock %}

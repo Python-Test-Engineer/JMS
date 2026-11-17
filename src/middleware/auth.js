@@ -5,6 +5,7 @@ import { COOKIE_NAME, clearCookieOptions, getSessionByToken, sessionExpired, tak
 import { formatDate, formatDateTime, formatTime, todayRange } from "../domain/dates.js";
 import { formatMoney } from "../domain/money.js";
 import { navGroups } from "../domain/permissions.js";
+import { resolveTheme, themeCss } from "../domain/theme.js";
 
 export function loadSession(req, res, next) {
   const cookies = parse(req.headers.cookie || "");
@@ -52,6 +53,7 @@ export function loadUser(req, res, next) {
   res.locals.company = company;
   res.locals.can = (key) => Boolean(req.user?.permissions?.has(key));
   res.locals.csrfToken = req.session?.csrf_token ?? "";
+  res.locals.openRouterKeyMasked = config.openRouterKeyMasked;
   res.locals.currentPath = req.path;
   res.locals.navGroups = navGroups(req.user);
   res.locals.flash = req.session ? takeFlash(req.session) : null;
@@ -64,12 +66,14 @@ export function loadUser(req, res, next) {
   res.locals.isHtmx = req.get("HX-Request") === "true";
   res.locals.query = req.query;
 
-  let theme = { mode: "system" };
-  if (company?.default_theme) theme = company.default_theme;
+  let prefs = null;
   if (req.user?.theme_prefs_json) {
-    try { theme = { ...theme, ...JSON.parse(req.user.theme_prefs_json) }; } catch { /* ignore */ }
+    try { prefs = JSON.parse(req.user.theme_prefs_json); } catch { prefs = null; }
   }
+  const theme = resolveTheme(company?.default_theme, prefs);
   res.locals.theme = theme;
+  res.locals.themeMode = theme.mode;
+  res.locals.themeCss = themeCss(theme);
   res.locals.themeJson = JSON.stringify(theme).replace(/</g, "\\u003c");
 
   next();

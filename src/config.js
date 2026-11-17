@@ -34,6 +34,11 @@ const schema = z.object({
   COOKIE_SECURE: bool(false),
   TRUST_PROXY: bool(false),
   DEFAULT_PASSWORD: z.string().default("JMS123"),
+  GOOGLE_CLIENT_ID: z.string().optional().default(""),
+  GOOGLE_CLIENT_SECRET: z.string().optional().default(""),
+  GOOGLE_REDIRECT_URI: z.string().optional().default(""),
+  GOOGLE_ADMIN_EMAILS: z.string().optional().default(""),
+  OPENROUTER_API_KEY: z.string().optional().default(""),
   COMPANY_TIMEZONE: z.string().default("Europe/London"),
   CURRENCY: z.string().default("GBP"),
   VAT_RATE_BP: z.coerce.number().int().min(0).max(10000).default(2000),
@@ -47,12 +52,30 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+const googleAdminEmails = parsed.data.GOOGLE_ADMIN_EMAILS
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
+
+// Show only the provider prefix and the final four characters: sk-or-v1-****76b9
+function maskApiKey(key) {
+  if (!key) return "not configured";
+  const tail = key.slice(-4);
+  const prefix = key.startsWith("sk-or-v1-") ? "sk-or-v1-" : key.startsWith("sk-") ? "sk-" : "";
+  return `${prefix}****${tail}`;
+}
+
 export const config = Object.freeze({
   ...parsed.data,
+  openRouterKeyMasked: maskApiKey(parsed.data.OPENROUTER_API_KEY),
   isProduction: parsed.data.NODE_ENV === "production",
   root: process.cwd(),
   databaseFile: path.resolve(process.cwd(), parsed.data.DATABASE_FILE),
   pdfDir: path.resolve(process.cwd(), parsed.data.PDF_DIR),
+  googleEnabled: Boolean(parsed.data.GOOGLE_CLIENT_ID && parsed.data.GOOGLE_CLIENT_SECRET),
+  googleRedirectUri: parsed.data.GOOGLE_REDIRECT_URI
+    || `${parsed.data.APP_URL.replace(/\/$/, "")}/auth/google/callback`,
+  googleAdminEmails,
 });
 
 if (config.isProduction) {

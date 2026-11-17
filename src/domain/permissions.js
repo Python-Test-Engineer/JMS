@@ -110,6 +110,7 @@ export function navGroups(user) {
     { label: "Users", href: "/admin/users", actionKey: "user.view" },
     { label: "Roles & permissions", href: "/admin/roles", actionKey: "admin.roles.manage" },
     { label: "Settings", href: "/admin/settings", actionKey: "admin.settings.manage" },
+    { label: "Site theme", href: "/admin/theme", actionKey: "admin.settings.manage" },
     { label: "Audit log", href: "/admin/audit", actionKey: "admin.audit.view" },
     { label: "Archive", href: "/admin/archive", actionKey: "job.archive" },
   ]);

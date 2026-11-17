@@ -25,11 +25,13 @@ if (fs.existsSync(config.pdfDir)) {
 }
 
 const { seedDatabase } = await import("../src/db/seed.js");
+const { addUpcomingJobs } = await import("../src/db/upcoming.js");
 const { DatabaseSync } = await import("node:sqlite");
 const { SCHEMA_SQL } = await import("../src/db/schema.js");
 
 const db = new DatabaseSync(config.databaseFile);
 db.exec(SCHEMA_SQL);
 const result = seedDatabase(db, { seed: config.SEED, force: true });
-console.log(`Created ${config.databaseFile} with ${result.jobs} jobs and ${result.invoices} invoices.`);
+const upcoming = addUpcomingJobs(db);
+console.log(`Created ${config.databaseFile} with ${result.jobs} jobs, ${result.invoices} invoices and ${upcoming.added} upcoming jobs.`);
 db.close();

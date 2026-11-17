@@ -1,0 +1,42 @@
+{# Shared fields for the site theme (admin) and appearance (account) forms. #}
+
+{% macro numberGrid(fields, values, namePrefix) %}
+<div class="form-grid">
+  {% for field in fields %}
+  <label class="field">
+    <span>{{ field.label }}{% if field.unit %} ({{ field.unit }}){% endif %}</span>
+    <input type="number" name="{{ namePrefix }}{{ field.key }}" value="{{ values[field.key] }}"
+           min="{{ field.min }}" max="{{ field.max }}" step="{{ field.step }}"
+           data-preview-var="{{ field.cssVar }}" data-unit="{% if field.unit == 'px' %}px{% endif %}">
+  </label>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro fontGrid(fields, fonts) %}
+<div class="form-grid">
+  {% for field in fields %}
+  <label class="field">
+    <span>{{ field.label }}</span>
+    <select name="fonts_{{ field.key }}" data-preview-var="{{ field.cssVar }}">
+      {% for option in field.options %}
+      <option value="{{ option.value }}" {% if option.value == fonts[field.key] %}selected{% endif %}>{{ option.label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro colorGrid(colorKeys, colors, prefix, scope) %}
+<div class="color-grid">
+  {% for key, label in colorKeys %}
+  <label class="color-field">
+    <input type="color" name="{{ prefix }}{{ key }}" value="{{ colors[key] }}"
+           aria-label="{{ label }}"
+           data-theme-key="--theme-{{ key | replace('_', '-') }}" data-theme-scope="{{ scope }}">
+    <span>{{ label }}</span>
+  </label>
+  {% endfor %}
+</div>
+{% endmacro %}

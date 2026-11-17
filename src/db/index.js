@@ -5,6 +5,7 @@ import { config } from "../config.js";
 import { logger } from "../logger.js";
 import { SCHEMA_SQL, SCHEMA_VERSION } from "./schema.js";
 import { isSeeded, seedDatabase } from "./seed.js";
+import { addUpcomingJobs } from "./upcoming.js";
 
 fs.mkdirSync(path.dirname(config.databaseFile), { recursive: true });
 fs.mkdirSync(config.pdfDir, { recursive: true });
@@ -18,7 +19,8 @@ db.prepare("INSERT OR REPLACE INTO meta (key,value) VALUES ('database_file', ?)"
 if (!isSeeded(db)) {
   const started = Date.now();
   const result = seedDatabase(db, { seed: config.SEED });
-  logger.info({ ...result, ms: Date.now() - started }, "database seeded with sample data");
+  const upcoming = addUpcomingJobs(db);
+  logger.info({ ...result, upcoming: upcoming.added, ms: Date.now() - started }, "database seeded with sample data");
 }
 
 export function all(sql, ...params) {
