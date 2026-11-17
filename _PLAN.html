@@ -1,0 +1,2870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JMS · Product Plan</title>
+<meta name="description" content="What we are building, for whom, and how we will know it is done.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ---- colours (light): [colors] in book_theme.toml ---- */
+  --paper: #f0eee6;
+  --surface: #fbfaf7;
+  --ivory: #fffdfa;
+  --ink: #1f1e1d;
+  --muted: #55524c;
+  --stone: #8c877c;
+  --line: #e2ddd2;
+  --line-soft: #ece8df;
+  --terra: #d97757;
+  --terra-dark: #c9633f;
+  --accent-strong: #a14e2f;
+  --hover-bg: #f4f1e9;
+  --active-bg: #f6ede6;
+  --active-fg: #8f3f27;
+  --focus-ring: #e3a98f;
+  --code-bg: #23211e;
+  --code-fg: #f3eee5;
+  --inline-code-bg: #eae7de;
+  --inline-code-fg: #6f3b26;
+  --quote-bg: #f8eee8;
+  --quote-border: #e7cec2;
+  --quote-fg: #3d3d3a;
+  --row-hover: #f7f4ee;
+  --open-bg: #fdf9f5;
+  --scroll-thumb: #4a463f;
+  --copy-bg: #2c2a26;
+  --copy-fg: #d8d2c6;
+  --copy-border: #4a463f;
+  --copy-hover: #3a3732;
+
+  /* ---- fonts: [fonts] ---- */
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+
+  /* ---- type: the two bases every other size is derived from ---- */
+  --fs-ui: 17px;            /* sidebar + chrome */
+  --fs-content: 34px;      /* the book itself */
+  --lh-ui: 1.62;
+  --lh-content: 1.62;
+
+  /* ---- sizes derived from --fs-content ---- */
+  --fs-h2: calc(var(--fs-content) * 1.765);
+  --fs-h3: calc(var(--fs-content) * 1.118);
+  --fs-h4: calc(var(--fs-content) * 0.882);
+  --fs-table: calc(var(--fs-content) * 0.824);
+  --fs-pre: calc(var(--fs-content) * 0.588);
+  --fs-details: calc(var(--fs-content) * 0.882);
+  --fs-chnav: calc(var(--fs-content) * 0.794);
+  --fs-mobile: calc(var(--fs-content) * 0.765);
+
+  /* ---- sizes derived from --fs-ui ---- */
+  --fs-eyebrow: calc(var(--fs-ui) * 0.824);
+  --fs-brand-h1: calc(var(--fs-ui) * 1.618);
+  --fs-brand-p: calc(var(--fs-ui) * 0.912);
+  --fs-filter: calc(var(--fs-ui) * 0.941);
+  --fs-section: calc(var(--fs-ui) * 0.912);
+  --fs-foot: calc(var(--fs-ui) * 0.853);
+  --fs-copy: calc(var(--fs-ui) * 0.647);
+  --fs-menu: calc(var(--fs-ui) * 0.765);
+
+  /* ---- layout: [layout] ---- */
+  --sidebar: 400px;
+  --measure: 80%;
+}
+
+/* ---- colours (dark): [dark] ---- */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --paper: #1b1a18;
+  --surface: #201f1c;
+  --ivory: #262420;
+  --ink: #f2ece1;
+  --muted: #c3bcae;
+  --stone: #9a9384;
+  --line: #34312b;
+  --line-soft: #2b2823;
+  --terra: #d97757;
+  --terra-dark: #d97757;
+  --accent-strong: #f0b49a;
+  --hover-bg: #262420;
+  --active-bg: #33261f;
+  --active-fg: #f0b49a;
+  --focus-ring: #8a5540;
+  --code-bg: #141312;
+  --code-fg: #f3eee5;
+  --inline-code-bg: #322e28;
+  --inline-code-fg: #f0b49a;
+  --quote-bg: #2a211d;
+  --quote-border: #4a332b;
+  --quote-fg: #e6ded2;
+  --row-hover: #262420;
+  --open-bg: #262420;
+  --scroll-thumb: #4a463f;
+  --copy-bg: #2c2a26;
+  --copy-fg: #d8d2c6;
+  --copy-border: #4a463f;
+  --copy-hover: #3a3732;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #1b1a18;
+  --surface: #201f1c;
+  --ivory: #262420;
+  --ink: #f2ece1;
+  --muted: #c3bcae;
+  --stone: #9a9384;
+  --line: #34312b;
+  --line-soft: #2b2823;
+  --terra: #d97757;
+  --terra-dark: #d97757;
+  --accent-strong: #f0b49a;
+  --hover-bg: #262420;
+  --active-bg: #33261f;
+  --active-fg: #f0b49a;
+  --focus-ring: #8a5540;
+  --code-bg: #141312;
+  --code-fg: #f3eee5;
+  --inline-code-bg: #322e28;
+  --inline-code-fg: #f0b49a;
+  --quote-bg: #2a211d;
+  --quote-border: #4a332b;
+  --quote-fg: #e6ded2;
+  --row-hover: #262420;
+  --open-bg: #262420;
+  --scroll-thumb: #4a463f;
+  --copy-bg: #2c2a26;
+  --copy-fg: #d8d2c6;
+  --copy-border: #4a463f;
+  --copy-hover: #3a3732;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: grid;
+  grid-template-columns: var(--sidebar) minmax(0, 1fr);
+  height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font: var(--fs-ui)/var(--lh-ui) var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- left pane ---------- */
+
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  padding: 27px 27px 20px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.brand .eyebrow {
+  margin: 0 0 6px;
+  color: var(--accent-strong);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.brand h1 {
+  margin: 0;
+  font: 500 var(--fs-brand-h1)/1.2 var(--serif);
+  letter-spacing: -.01em;
+}
+
+.brand p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: var(--fs-brand-p);
+}
+
+.filter {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.filter input {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--ivory);
+  color: var(--ink);
+  font: var(--fs-filter) var(--sans);
+}
+
+.filter input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+#toc {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 10px 48px;
+  scrollbar-width: thin;
+}
+
+#toc ol, #toc ul { margin: 0; padding: 0; list-style: none; }
+
+#toc .chapter > a {
+  display: block;
+  padding: 10px 12px 5px;
+  color: var(--ink);
+  font: 600 var(--fs-ui)/1.35 var(--sans);
+  text-decoration: none;
+  border-radius: 7px;
+}
+
+#toc .chapter > a:hover { background: var(--hover-bg); }
+
+#toc .chapter > a .num {
+  display: inline-block;
+  min-width: 27px;
+  color: var(--terra-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+#toc .sections { margin: 0 0 6px; padding: 0 0 0 6px; list-style: none; }
+
+#toc .frontmatter > a {
+  color: var(--muted);
+  font: 500 var(--fs-section)/1.35 var(--sans);
+  letter-spacing: .01em;
+}
+
+#toc .sections a {
+  display: block;
+  padding: 4px 12px 4px 30px;
+  color: var(--muted);
+  font-size: var(--fs-section);
+  line-height: 1.35;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+
+#toc .sections a:hover { color: var(--ink); background: var(--hover-bg); }
+
+#toc a.active {
+  color: var(--ink);
+  background: var(--active-bg);
+  border-left-color: var(--terra);
+}
+
+#toc .sections a.active { color: var(--active-fg); font-weight: 600; }
+
+#toc .hidden { display: none; }
+
+.sidebar-foot {
+  padding: 12px 20px 18px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--stone);
+  font-size: var(--fs-foot);
+}
+
+.sidebar-foot a { color: var(--terra-dark); text-decoration: none; }
+
+/* ---------- right pane ---------- */
+
+#pane {
+  position: relative;
+  min-width: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+#progress {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: 3px;
+  background: transparent;
+}
+
+#progress > span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--terra);
+  transition: width .12s linear;
+}
+
+#content {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 68px 54px 170px;
+  font-size: var(--fs-content);
+  line-height: var(--lh-content);
+}
+
+#content > h1:first-child { display: none; }  /* the title lives in the sidebar */
+
+#content a[id] { display: block; scroll-margin-top: 24px; }
+
+h2, h3 { scroll-margin-top: 24px; }
+
+h1, h2, h3, h4 {
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+h2 {
+  margin: 4.5rem 0 1rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+  font: 500 var(--fs-h2)/1.14 var(--serif);
+  letter-spacing: -.015em;
+  scroll-margin-top: 24px;
+}
+
+#content > h2:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+
+h3 {
+  margin: 2.4rem 0 .7rem;
+  font: 600 var(--fs-h3)/1.25 var(--sans);
+  letter-spacing: -.01em;
+  scroll-margin-top: 24px;
+}
+
+h4 { margin: 1.8rem 0 .5rem; font: 600 var(--fs-h4)/1.3 var(--sans); }
+
+p { margin: 0 0 1.05rem; }
+
+a { color: var(--terra-dark); text-underline-offset: 2px; }
+
+strong { font-weight: 650; }
+
+hr {
+  height: 1px;
+  margin: 3rem 0;
+  border: 0;
+  background: var(--line);
+}
+
+ul, ol { margin: 0 0 1.1rem; padding-left: 1.4rem; }
+
+li { margin: .3rem 0; }
+
+li > p { margin: .3rem 0; }
+
+/* the "You are here" block quotes */
+blockquote {
+  margin: 1.4rem 0;
+  padding: 14px 18px;
+  border: 1px solid var(--quote-border);
+  border-left: 5px solid var(--terra);
+  border-radius: 12px;
+  background: var(--quote-bg);
+  color: var(--quote-fg);
+}
+
+blockquote p { margin: 0; }
+blockquote p + p { margin-top: .5rem; }
+
+/* tables */
+table {
+  width: 100%;
+  margin: 1.3rem 0 1.6rem;
+  border-collapse: collapse;
+  font-size: var(--fs-table);
+}
+
+th {
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--line);
+  color: var(--muted);
+  font-weight: 650;
+  text-align: left;
+  vertical-align: bottom;
+}
+
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+
+tr:hover td { background: var(--row-hover); }
+
+/* code */
+code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--inline-code-bg);
+  color: var(--inline-code-fg);
+  font: .875em/1.4 var(--mono);
+}
+
+pre {
+  position: relative;
+  margin: 1.2rem 0 1.5rem;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  overflow-x: auto;
+  font: var(--fs-pre)/1.55 var(--mono);
+  white-space: pre;                 /* ASCII diagrams must not be re-flowed */
+  tab-size: 4;
+}
+
+pre code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+pre::-webkit-scrollbar { height: 10px; }
+pre::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
+
+.copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 9px;
+  border: 1px solid var(--copy-border);
+  border-radius: 6px;
+  background: var(--copy-bg);
+  color: var(--copy-fg);
+  font: var(--fs-copy) var(--sans);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s, background .15s;
+}
+
+pre:hover .copy, .copy:focus-visible { opacity: 1; }
+.copy:hover { background: var(--copy-hover); }
+
+/* collapsible checkpoint answers */
+details {
+  margin: .8rem 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--ivory);
+}
+
+details[open] { border-color: var(--quote-border); background: var(--open-bg); }
+
+summary {
+  color: var(--terra-dark);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+summary::-webkit-details-marker { display: none; }
+
+summary::before {
+  display: inline-block;
+  width: 1em;
+  color: var(--terra);
+  content: "\25B8";
+  transition: transform .15s;
+}
+
+details[open] summary::before { transform: rotate(90deg); }
+
+details p { margin: .7rem 0 0; color: var(--muted); font-size: var(--fs-details); }
+
+details code { font-size: .85em; }
+
+/* chapter navigation appended by this script */
+.chnav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 3rem 0 0;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-chnav);
+}
+
+.chnav a {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--ivory);
+  text-decoration: none;
+}
+
+.chnav a:hover { border-color: var(--quote-border); background: var(--open-bg); }
+
+.chnav .grow { flex: 1; }
+
+/* mobile: the sidebar becomes a drawer */
+#menu {
+  display: none;
+  position: fixed;
+  z-index: 20;
+  top: 12px;
+  left: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink);
+  font: var(--fs-menu) var(--sans);
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  body { grid-template-columns: 1fr; }
+
+  #sidebar {
+    position: fixed;
+    z-index: 15;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(86vw, 425px);
+    transform: translateX(-102%);
+    transition: transform .2s ease;
+    box-shadow: 0 0 40px rgba(31, 30, 29, .18);
+  }
+
+  body.nav-open #sidebar { transform: translateX(0); }
+
+  #menu { display: block; }
+
+  #sidebar .brand { padding-top: 58px; }   /* clear the floating button */
+
+  #content { padding: 72px 24px 110px; font-size: var(--fs-mobile); }
+}
+
+/* ---------- appearance panel ---------- */
+
+#stylebtn {
+  position: fixed;
+  z-index: 30;
+  right: 18px;
+  bottom: 18px;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 6px 22px rgba(31, 30, 29, .16);
+  font: 500 var(--fs-brand-h1)/1 var(--serif);
+  cursor: pointer;
+}
+
+#stylebtn:hover { border-color: var(--quote-border); color: var(--terra-dark); }
+#stylebtn[aria-expanded="true"] { border-color: var(--terra); color: var(--terra-dark); }
+
+#stylepanel {
+  position: fixed;
+  z-index: 31;
+  right: 18px;
+  bottom: 76px;
+  display: flex;
+  flex-direction: column;
+  width: 372px;
+  max-height: min(78vh, 760px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 18px 50px rgba(31, 30, 29, .24);
+  font: var(--fs-section)/1.45 var(--sans);
+}
+
+#stylepanel[hidden] { display: none; }
+
+.sp-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.sp-head h2 {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: 600 var(--fs-ui)/1.2 var(--sans);
+  letter-spacing: 0;
+}
+
+.sp-head select,
+.sp-foot button {
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--ivory);
+  color: var(--ink);
+  font: 400 var(--fs-section)/1.3 var(--sans);
+  cursor: pointer;
+}
+
+.sp-head select:focus-visible,
+.sp-foot button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+
+.sp-body { padding: 4px 13px 14px; overflow-x: hidden; overflow-y: auto; }
+
+.sp-group { padding: 11px 0; border-bottom: 1px solid var(--line-soft); }
+
+.sp-group:last-child { border-bottom: 0; }
+
+.sp-group h3 {
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--stone);
+  font: 700 var(--fs-eyebrow)/1.2 var(--sans);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.sp-group h3 .tag {
+  margin-left: 6px;
+  color: var(--terra-dark);
+  letter-spacing: .04em;
+  text-transform: none;
+}
+
+.sp-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  align-items: baseline;
+  margin: 9px 0;
+}
+
+.sp-row label { color: var(--muted); }
+
+.sp-row > * { min-width: 0; }
+
+.sp-row output {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-row input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 2px 0 0;
+  accent-color: var(--terra);
+}
+
+.sp-row input[type="text"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 3px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--ivory);
+  color: var(--ink);
+  font: 400 var(--fs-copy)/1.4 var(--mono);
+}
+
+.sp-colors { display: block; }
+
+.sp-colors label {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 0;
+}
+
+.sp-colors .swatch-label {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sp-colors label > * { min-width: 0; }
+
+.sp-colors input[type="color"] {
+  width: 26px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.sp-colors .hex {
+  color: var(--stone);
+  font: 400 var(--fs-section)/1 var(--mono);
+}
+
+.sp-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.sp-foot .spacer { flex: 1; }
+
+@media (max-width: 520px) {
+  #stylepanel { right: 8px; left: 8px; width: auto; bottom: 72px; }
+}
+
+@page {
+  size: A4; margin: 17mm 15mm 18mm 15mm;
+  /* folio: the page number build_pdf.py reads back to fill in the Contents table */
+  @bottom-center { content: counter(page); font: 8.5pt var(--sans); color: #6b675f; }
+}
+@page:first { @bottom-center { content: none; } }   /* no folio on the title page */
+@page:blank { @bottom-center { content: none; } }
+
+@media print {
+  /* Print is always light, whatever mode the reader had: paper-white page, near
+     black ink, and a pale code block instead of the screen's dark one. These are
+     !important because the "Aa" panel writes the same properties as inline styles
+     on <html>, and inline styles outrank any non-important author rule. */
+  :root {
+    color-scheme: light;
+    --paper: #ffffff !important; --surface: #ffffff !important; --ivory: #ffffff !important;
+    --ink: #1f1e1d !important; --muted: #44423d !important; --stone: #6b675f !important;
+    --line: #d8d3c8 !important; --line-soft: #e8e4da !important;
+    --terra: #c9633f !important; --terra-dark: #a14e2f !important;
+    --accent-strong: #8f3f27 !important;
+    --code-bg: #f6f4ef !important; --code-fg: #26241f !important;
+    --inline-code-bg: #f0ede5 !important; --inline-code-fg: #6f3b26 !important;
+    --quote-bg: #faf5f1 !important; --quote-border: #e7cec2 !important;
+    --quote-fg: #3d3d3a !important;
+    --open-bg: #fdfbf8 !important; --row-hover: #f7f4ee !important;
+  }
+  html, body { background: #fff !important; display: block; height: auto; }
+  #sidebar, #menu, #progress, .copy, .chnav, #stylebtn, #stylepanel { display: none !important; }
+  #pane { overflow: visible; display: block; }
+  /* the on-screen column is 2x; print gets back to a sane page scale */
+  #content { max-width: none; padding: 0; font-size: 10.5pt; line-height: 1.5; }
+  /* the title is hidden on screen (the sidebar carries it); on paper it heads the book */
+  #content > h1:first-child {
+    display: block; font: 500 26pt/1.15 var(--serif);
+    margin: 0 0 .5em; break-after: avoid;
+  }
+  h2 { font-size: 19pt; margin: 0 0 .6em; }
+  /* Only chapters start a new page, not every section. The break sits on the
+     chapter's anchor, not on its h2: Chrome makes the Contents links point at the
+     anchor, and an anchor left at the bottom of the previous page makes every
+     "go to chapter" link land one page early. As a zero-height block the anchor
+     sits at the top of the new page, which is also where the h2 starts. */
+  a[id^="ch"] { display: block; height: 0; margin: 0; break-before: page; }
+  a[id^="ch"] + h2 { break-before: auto; }
+  h2[data-appendix] { break-before: page; }   /* appendices start fresh too */
+  h3 { font-size: 12.5pt; }
+  h4 { font-size: 10.5pt; }
+  h2, h3, h4 { break-after: avoid; break-inside: avoid; }
+  table { font-size: 8.5pt; break-inside: avoid; }
+  details p { font-size: 10pt; }
+  details { break-inside: avoid; }
+  pre {
+    white-space: pre-wrap; word-break: break-word;
+    break-inside: avoid; font-size: 7.2pt; line-height: 1.35;
+    border: 1px solid var(--line-soft) !important;
+  }
+  blockquote, table, figure { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<button id="menu" type="button" aria-label="Toggle contents">☰ Contents</button>
+
+<nav id="sidebar" aria-label="Table of contents">
+  <div class="brand">
+    <p class="eyebrow">Acme Windows · Job Management System</p>
+    <h1>JMS · Product Plan</h1>
+    <p>What we are building, for whom, and how we will know it is done.</p></div>
+  <div class="filter">
+    <input id="filter" type="search" placeholder="Filter chapters and sections…" aria-label="Filter table of contents">
+  </div>
+  <div id="toc"><ol>
+<li class="chapter"><a href="#ch01"><span class="num">01</span>Product frame</a>
+<ul class="sections">
+<li><a href="#11-problem">1.1 Problem</a></li>
+<li><a href="#12-product-in-one-sentence">1.2 Product in one sentence</a></li>
+<li><a href="#13-goals-v1">1.3 Goals (v1)</a></li>
+<li><a href="#14-non-goals-for-v1-explicitly-deferred">1.4 Non-goals for v1 (explicitly deferred)</a></li>
+<li><a href="#15-guiding-principles">1.5 Guiding principles</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch02"><span class="num">02</span>Actors, roles and permissions</a>
+<ul class="sections">
+<li><a href="#21-roles">2.1 Roles</a></li>
+<li><a href="#22-permission-model-must-be-data-driven">2.2 Permission model (must be data-driven)</a></li>
+<li><a href="#23-default-capability-matrix">2.3 Default capability matrix</a></li>
+<li><a href="#24-object-level-scoping-rules-hard-rules-not-toggles">2.4 Object-level scoping rules (hard rules, not toggles)</a></li>
+<li><a href="#25-safeguards-the-matrix-may-not-remove">2.5 Safeguards the matrix may not remove</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch03"><span class="num">03</span>Domain model (conceptual)</a>
+<ul class="sections">
+<li><a href="#31-entities">3.1 Entities</a></li>
+<li><a href="#32-relationships-at-a-glance">3.2 Relationships at a glance</a></li>
+<li><a href="#33-job-status-machine">3.3 Job status machine</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch04"><span class="num">04</span>Workflows</a>
+<ul class="sections">
+<li><a href="#w1-add-a-customer-and-give-them-a-login">W1 — Add a customer and give them a login</a></li>
+<li><a href="#w2-create-a-job">W2 — Create a job</a></li>
+<li><a href="#w3-assign-engineers-and-plan-dates">W3 — Assign engineers and plan dates</a></li>
+<li><a href="#w4-engineer-updates-a-job-on-site">W4 — Engineer updates a job on site</a></li>
+<li><a href="#w5-manager-closes-out-and-invoices">W5 — Manager closes out and invoices</a></li>
+<li><a href="#w6-customer-checks-progress">W6 — Customer checks progress</a></li>
+<li><a href="#w7-generate-the-job-sheet-and-invoice-pdfs">W7 — Generate the job sheet and invoice PDFs</a></li>
+<li><a href="#w8-admin-adjusts-what-a-role-can-do">W8 — Admin adjusts what a role can do</a></li>
+<li><a href="#w9-a-user-changes-how-the-app-looks">W9 — A user changes how the app looks</a></li>
+<li><a href="#w10-find-things-and-see-the-plan">W10 — Find things and see the plan</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch05"><span class="num">05</span>Screens and navigation</a>
+<ul class="sections">
+<li><a href="#51-app-shell">5.1 App shell</a></li>
+<li><a href="#52-screen-inventory">5.2 Screen inventory</a></li>
+<li><a href="#53-empty-error-and-edge-states-must-be-designed-not-left-blank">5.3 Empty, error and edge states (must be designed, not left blank)</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch06"><span class="num">06</span>UX and accessibility requirements</a>
+</li>
+<li class="chapter"><a href="#ch07"><span class="num">07</span>Visual design, theming and the guide system</a>
+<ul class="sections">
+<li><a href="#71-house-style">7.1 House style</a></li>
+<li><a href="#72-appearance-aa-panel-parity-with-the-guides">7.2 Appearance (&quot;Aa&quot;) panel — parity with the guides</a></li>
+<li><a href="#73-company-default-theme">7.3 Company default theme</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch08"><span class="num">08</span>Documents (PDF) requirements</a>
+</li>
+<li class="chapter"><a href="#ch09"><span class="num">09</span>Security, audit and data protection</a>
+</li>
+<li class="chapter"><a href="#ch10"><span class="num">10</span>Non-functional requirements</a>
+</li>
+<li class="chapter"><a href="#ch11"><span class="num">11</span>Delivery milestones</a>
+<ul class="sections">
+<li><a href="#111-sequence-and-dependencies">11.1 Sequence and dependencies</a></li>
+<li><a href="#112-documentation-deliverables-same-system-as-the-book">11.2 Documentation deliverables (same system as the book)</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch12"><span class="num">12</span>Definition of done (v1 acceptance checklist)</a>
+</li>
+<li class="chapter"><a href="#ch13"><span class="num">13</span>Decisions needed before _TECH.md</a>
+</li>
+<li class="chapter"><a href="#ch14"><span class="num">14</span>Traceability — idea to plan</a>
+</li>
+<li class="chapter"><a href="#ch15"><span class="num">15</span>Glossary</a>
+</li>
+</ol></div>
+  <div class="sidebar-foot">
+    Plan v0.0.1 · <a href="_TECH.md">next: _TECH.md</a>
+  </div>
+</nav>
+
+<main id="pane">
+  <div id="progress" aria-hidden="true"><span></span></div>
+  <article id="content">
+<h1 id="job-management-system-product-plan">Job Management System — Product Plan</h1>
+<blockquote>
+<p><strong>What this is.</strong> A product and business plan for <strong>JMS</strong>, a CMS + job tracker for
+<em>Acme Windows</em> (a fictional window-installation company). It is deliberately
+written <strong>without code</strong>: it says <em>what</em> the business needs, <em>who</em> may do it,
+<em>what</em> the screens do, and <em>how</em> we will know each stage is finished.</p>
+<p><strong>What happens next.</strong> <code>_TECH.md</code> turns this into a technical specification —
+browser app, HTMX UI, Node service, SQLite first and Postgres later. Every
+requirement here is written so <code>_TECH.md</code> can answer it with a schema, a route,
+a template, or a test.</p>
+<p><strong>What "done" mimics.</strong> The web edition of this plan, and the app's own
+documentation pages, reuse the house explainer system already used by the
+mini-js-coder site and book: one self-contained HTML file, two-pane sticky
+contents with filter and scroll-spy, terracotta/serif house style, and the
+floating <strong>Aa</strong> appearance panel.</p>
+</blockquote>
+<hr />
+<a id="ch01"></a>
+<h2 id="1-product-frame">1. Product frame</h2>
+<h3 id="11-problem">1.1 Problem</h3>
+<p>Acme Windows runs on paper, spreadsheets and phone calls. Managers juggle a
+whiteboard of installations, engineers ring the office to say a job slipped, and
+customers ring the office to ask when someone is coming. Nobody can answer
+"what is happening next week, and with whom?" without three conversations.</p>
+<h3 id="12-product-in-one-sentence">1.2 Product in one sentence</h3>
+<p>JMS is one place where managers create customers and jobs, assign engineers and
+dates, engineers report what happened on site, and customers watch their own
+installation progress — with each person seeing only the parts of the app their
+role allows.</p>
+<h3 id="13-goals-v1">1.3 Goals (v1)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Goal</th>
+<th>Success looks like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1</td>
+<td>Single source of truth for jobs</td>
+<td>Every scheduled job exists in JMS with dates, status and engineers</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>Engineers self-serve their day</td>
+<td>An engineer opens JMS on a phone or laptop and sees only their jobs, with one obvious "update status" button</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>Customers stop ringing the office</td>
+<td>A customer can log in and see status, dates and their documents for their own jobs</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>Managers see the plan</td>
+<td>A week-forward timeline and workload view answers "who is where, when"</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>Paperwork is generated, not typed</td>
+<td>Job sheet and invoice PDFs are produced from the same data</td>
+</tr>
+<tr>
+<td>G6</td>
+<td>Admins change access without a developer</td>
+<td>Role → action permissions are editable in the app and take effect immediately</td>
+</tr>
+<tr>
+<td>G7</td>
+<td>The app is comfortable to use</td>
+<td>Large type, large buttons, few steps, readable by office and field staff alike</td>
+</tr>
+</tbody>
+</table>
+<h3 id="14-non-goals-for-v1-explicitly-deferred">1.4 Non-goals for v1 (explicitly deferred)</h3>
+<ul>
+<li>Email or SMS delivery of PDFs (download only in v1; the data model must not block it).</li>
+<li>Online payments, card processing, accounting-system sync.</li>
+<li>Stock/materials inventory, van tracking, route optimisation.</li>
+<li>Multi-company tenancy (but every core table carries a <code>company_id</code> so it can be added).</li>
+<li>Native mobile apps (responsive web only).</li>
+<li>Customer self-registration (invite-only, created by staff).</li>
+</ul>
+<h3 id="15-guiding-principles">1.5 Guiding principles</h3>
+<ol>
+<li><strong>One obvious next action per screen.</strong> Large primary button, plain verb.</li>
+<li><strong>Visibility is not security.</strong> Hiding a pill is a convenience; every rule is
+   enforced on the server on every request.</li>
+<li><strong>The job is the centre of the universe.</strong> Customers, engineers, invoices,
+   documents and events all hang off a job.</li>
+<li><strong>Nothing is deleted, everything is archived and audited.</strong> History answers
+   "who changed this and when".</li>
+<li><strong>Data-driven permissions.</strong> Roles are rows, not <code>if</code> statements.</li>
+<li><strong>Same design system as our published guides.</strong> No second visual language.</li>
+</ol>
+<hr />
+<div class="chnav"><span class="grow"></span><a class="grow" href="#ch02">2. Actors, roles and permissions &rarr;</a></div><a id="ch02"></a>
+<h2 id="2-actors-roles-and-permissions">2. Actors, roles and permissions</h2>
+<h3 id="21-roles">2.1 Roles</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Who they are</th>
+<th>What they care about</th>
+<th>Default land-on screen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ADMIN</strong></td>
+<td>The system owner / office IT</td>
+<td>Access, correctness, configuration</td>
+<td>Admin dashboard</td>
+</tr>
+<tr>
+<td><strong>MANAGER</strong></td>
+<td>Office staff who sell and schedule</td>
+<td>Pipeline, dates, engineers, money</td>
+<td>Operations dashboard</td>
+</tr>
+<tr>
+<td><strong>ENGINEER</strong></td>
+<td>Field installers</td>
+<td>Today's jobs, status, notes</td>
+<td>My jobs</td>
+</tr>
+<tr>
+<td><strong>CUSTOMER</strong></td>
+<td>Acme's clients</td>
+<td>When is my installation, what's happening</td>
+<td>My jobs (portal)</td>
+</tr>
+</tbody>
+</table>
+<p>Each user has exactly <strong>one</strong> role in v1 (role assignment is per user, not per
+job). A job may have <strong>many</strong> engineers.</p>
+<h3 id="22-permission-model-must-be-data-driven">2.2 Permission model (must be data-driven)</h3>
+<ul>
+<li>Permissions are named <strong>action keys</strong> in the form <code>&lt;area&gt;.&lt;verb&gt;[.&lt;scope&gt;]</code>,
+  e.g. <code>job.create</code>, <code>job.view.assigned</code>, <code>invoice.view.own</code>.</li>
+<li>A <strong>role → action key → allowed</strong> matrix is stored in the database and seeded
+  with the defaults below.</li>
+<li>An <strong>Admin</strong> can toggle any cell except the safeguards listed in §2.5, and the
+  change applies to the next request (no redeploy, no logout).</li>
+<li>The UI renders navigation pills and buttons from the same matrix, so an action
+  the user cannot perform is never shown.</li>
+<li>Server-side authorisation is mandatory for every route and every HTMX partial;
+  a hidden button is never the only defence.</li>
+<li>Every matrix change is written to the audit log with before/after values.</li>
+</ul>
+<h3 id="23-default-capability-matrix">2.3 Default capability matrix</h3>
+<p><code>✅</code> allowed, <code>—</code> denied by default. The <strong>Action key</strong> column is the literal
+string used in the database and in <code>_TECH.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Action key</th>
+<th style="text-align: center;">ADMIN</th>
+<th style="text-align: center;">MANAGER</th>
+<th style="text-align: center;">ENGINEER</th>
+<th style="text-align: center;">CUSTOMER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Customers</td>
+<td><code>customer.view.all</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.view.own</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.create</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.edit</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.invite</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.archive</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.view.all</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.view.assigned</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.view.own</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.create</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.edit</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.assign</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.schedule</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.status.advance</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.status.override</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.note.add</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.cancel</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.archive</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.view</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.create</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.edit.role</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.reset.password</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.deactivate</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.view.all</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.view.own</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.create</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.issue</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.mark.paid</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Documents</td>
+<td><code>document.job.pdf</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Documents</td>
+<td><code>document.invoice.pdf</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>insight.operational</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>insight.financial</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>insight.workload</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>insight.timeline</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.roles.manage</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.permissions.edit</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.settings.manage</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.audit.view</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.theme.default</code></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="24-object-level-scoping-rules-hard-rules-not-toggles">2.4 Object-level scoping rules (hard rules, not toggles)</h3>
+<p>These are business invariants. Changing them would be a code change, not a
+permission cell:</p>
+<ol>
+<li>A <strong>Customer</strong> user resolves to exactly one <code>customer_id</code>; every query they
+   make is filtered by it. They can never address another customer's job by ID.</li>
+<li>An <strong>Engineer</strong> sees only jobs where they have an active assignment, plus
+   jobs they completed in the last 90 days (for "what did I do" questions).</li>
+<li>A <strong>Customer</strong> never sees: other customers, cost/price breakdowns of any job,
+   company financial dashboards, engineer phone numbers or internal notes marked
+   internal.</li>
+<li>An <strong>Engineer</strong> never sees: customer pricing, invoices, other engineers'
+   schedules beyond their own jobs, admin screens.</li>
+<li>An <strong>Engineer</strong> may only advance status <strong>forward</strong> on their own assigned
+   jobs. Overriding, reverting, cancelling or reopening is a Manager/Admin act.</li>
+<li><strong>Managers and Admins</strong> see everything except the permission matrix and user
+   administration, which are Admin-only by default.</li>
+</ol>
+<h3 id="25-safeguards-the-matrix-may-not-remove">2.5 Safeguards the matrix may not remove</h3>
+<ul>
+<li>At least one active <strong>ADMIN</strong> must always exist.</li>
+<li>An Admin cannot remove their own <code>admin.permissions.edit</code> if they are the last Admin.</li>
+<li><code>admin.audit.view</code> cannot be granted to CUSTOMER or ENGINEER.</li>
+<li>Every matrix edit is audited and cannot be silently reverted without a new audit row.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch01">&larr; 1. Product frame</a><a class="grow" href="#ch03">3. Domain model (conceptual) &rarr;</a></div><a id="ch03"></a>
+<h2 id="3-domain-model-conceptual">3. Domain model (conceptual)</h2>
+<p><code>_TECH.md</code> will translate these into tables, keys and constraints. The model is
+stated in business language first, with the attributes v1 needs.</p>
+<h3 id="31-entities">3.1 Entities</h3>
+<p><strong>Company</strong> — <code>id</code>, <code>name</code> ("Acme Windows"), <code>trading_name</code>, <code>email</code>, <code>phone</code>,
+<code>address</code>, <code>vat_number</code>, <code>logo_path</code>, <code>currency</code> (GBP), <code>timezone</code>
+(Europe/London), <code>default_theme</code>.</p>
+<p><strong>User</strong> — <code>id</code>, <code>company_id</code>, <code>email</code> (unique, login name), <code>password_hash</code>,
+<code>display_name</code>, <code>role_id</code>, <code>customer_id</code> (nullable; set only for CUSTOMER),
+<code>phone</code>, <code>status</code> (INVITED / ACTIVE / SUSPENDED / ARCHIVED),
+<code>must_change_password</code>, <code>theme_prefs</code> (JSON: mode, type, fonts, colours),
+<code>last_login_at</code>, <code>created_at</code>.</p>
+<p><strong>Role</strong> — <code>id</code>, <code>key</code> (ADMIN, MANAGER, ENGINEER, CUSTOMER), <code>label</code>,
+<code>description</code>, <code>is_system</code> (system roles cannot be deleted, only re-permissioned).</p>
+<p><strong>Permission</strong> — <code>role_id</code>, <code>action_key</code>, <code>allowed</code>. Composite primary key.</p>
+<p><strong>Customer</strong> — <code>id</code>, <code>company_id</code>, <code>name</code>, <code>contact_name</code>, <code>email</code> (unique per
+company), <code>phone</code>, <code>address_line1/2</code>, <code>town</code>, <code>postcode</code>, <code>notes</code>,
+<code>status</code> (ACTIVE / ARCHIVED), <code>created_at</code>, <code>created_by</code>.
+A Customer is both a <em>record</em> and, optionally, a <em>login</em> (one User with the
+CUSTOMER role pointing at it).</p>
+<p><strong>Job</strong> — <code>id</code>, <code>company_id</code>, <code>reference</code> (human-readable, e.g. <code>JOB-2026-0042</code>,
+unique), <code>customer_id</code>, <code>title</code>, <code>description</code>, <code>work_type</code>
+(e.g. WINDOW_INSTALL, REPAIR, SURVEY), <code>status</code> (see §3.3),
+<code>priority</code> (NORMAL / URGENT), <code>site_address</code> (defaults to the customer's),
+<code>planned_start</code>, <code>planned_end</code>, <code>actual_start</code>, <code>actual_end</code>,
+<code>price_net</code>, <code>vat_rate</code>, <code>price_gross</code> (Manager-only; hidden from Engineer and
+Customer), <code>internal_notes</code>, <code>customer_notes</code>, <code>created_by</code>, <code>created_at</code>,
+<code>updated_at</code>, <code>archived_at</code>.</p>
+<p><strong>JobAssignment</strong> — <code>job_id</code>, <code>user_id</code> (must hold ENGINEER role), <code>is_lead</code>,
+<code>assigned_at</code>, <code>assigned_by</code>, <code>removed_at</code> (soft removal keeps history).</p>
+<p><strong>JobEvent</strong> — <code>id</code>, <code>job_id</code>, <code>actor_user_id</code>, <code>type</code>
+(STATUS_CHANGE / ASSIGNMENT / SCHEDULE_CHANGE / NOTE / DOCUMENT / PRICE_CHANGE),
+<code>from_value</code>, <code>to_value</code>, <code>message</code>, <code>visibility</code> (INTERNAL / CUSTOMER), <code>at</code>.
+This single log powers the job timeline, the customer-visible history and the
+audit trail.</p>
+<p><strong>Invoice</strong> — <code>id</code>, <code>company_id</code>, <code>number</code> (<code>INV-2026-0007</code>, gapless per year),
+<code>job_id</code>, <code>status</code> (DRAFT / ISSUED / PAID / VOID), <code>issued_at</code>, <code>due_at</code>,
+<code>paid_at</code>, <code>net</code>, <code>vat_rate</code>, <code>vat</code>, <code>gross</code>, <code>notes</code>, <code>created_by</code>.
+One job has at most one live invoice in v1 (re-issue = void + new).</p>
+<p><strong>Document</strong> — <code>id</code>, <code>type</code> (JOB_SHEET / INVOICE), <code>entity_type</code>, <code>entity_id</code>,
+<code>version</code>, <code>generated_at</code>, <code>generated_by</code>, <code>file_path</code>, <code>checksum</code>.
+Documents are regenerable; the row records that a PDF was produced and from
+which version of the data.</p>
+<p><strong>Setting</strong> — <code>key</code>, <code>value</code> (company defaults: VAT rate, invoice due days,
+default password policy flags, theme defaults, PDF footer text).</p>
+<p><strong>Session / AuthToken</strong> — server-side session record (<code>_TECH.md</code> decides cookie
+vs token), with expiry, user agent, and revocation for password resets.</p>
+<h3 id="32-relationships-at-a-glance">3.2 Relationships at a glance</h3>
+<pre><code>Company 1─n User          Company 1─n Customer 1─n Job n─n User (assignments)
+Company 1─n Job           Job 1─n JobEvent        Job 1─0..1 Invoice
+Role    1─n User          Role 1─n Permission     Job 1─n Document
+Customer 1─0..1 User (the customer's login)
+</code></pre>
+<h3 id="33-job-status-machine">3.3 Job status machine</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+<th>Entered by</th>
+<th>Allowed next</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DRAFT</code></td>
+<td>Being prepared, not committed</td>
+<td>Manager, Admin</td>
+<td>SCHEDULED, CANCELLED</td>
+</tr>
+<tr>
+<td><code>SCHEDULED</code></td>
+<td>Dates and at least one engineer set</td>
+<td>Manager, Admin</td>
+<td>IN_PROGRESS, ON_HOLD, CANCELLED, SCHEDULED (reschedule)</td>
+</tr>
+<tr>
+<td><code>IN_PROGRESS</code></td>
+<td>Engineer on site / work started</td>
+<td>Engineer (own job), Manager, Admin</td>
+<td>COMPLETED, ON_HOLD</td>
+</tr>
+<tr>
+<td><code>ON_HOLD</code></td>
+<td>Blocked (parts, weather, access)</td>
+<td>Engineer (own job), Manager, Admin</td>
+<td>IN_PROGRESS, CANCELLED</td>
+</tr>
+<tr>
+<td><code>COMPLETED</code></td>
+<td>Work finished</td>
+<td>Engineer (own job), Manager, Admin</td>
+<td>INVOICED, IN_PROGRESS (reopen: Manager/Admin only)</td>
+</tr>
+<tr>
+<td><code>INVOICED</code></td>
+<td>Invoice issued</td>
+<td>Manager, Admin</td>
+<td>PAID, COMPLETED (void invoice: Manager/Admin)</td>
+</tr>
+<tr>
+<td><code>PAID</code></td>
+<td>Invoice settled</td>
+<td>Manager, Admin</td>
+<td>— (terminal)</td>
+</tr>
+<tr>
+<td><code>CANCELLED</code></td>
+<td>Job abandoned</td>
+<td>Manager, Admin</td>
+<td>— (terminal)</td>
+</tr>
+</tbody>
+</table>
+<p>Rules attached to the machine:</p>
+<ul>
+<li>Leaving <code>DRAFT</code> requires <code>planned_start</code>, <code>planned_end</code> and ≥ 1 engineer.</li>
+<li>Entering <code>IN_PROGRESS</code> stamps <code>actual_start</code> if empty; entering <code>COMPLETED</code>
+  stamps <code>actual_end</code>. Manager/Admin may correct actual dates afterwards
+  (<code>job.status.override</code>).</li>
+<li>Every transition writes a <code>JobEvent</code> with actor, from, to and optional note.</li>
+<li>A status a user may not set is not rendered for that user.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch02">&larr; 2. Actors, roles and permissions</a><a class="grow" href="#ch04">4. Workflows &rarr;</a></div><a id="ch04"></a>
+<h2 id="4-workflows">4. Workflows</h2>
+<p>Each workflow is written as a numbered path with a clear end state and the
+screens involved. <code>_TECH.md</code> should be able to derive routes, forms, validation
+and tests from these.</p>
+<h3 id="w1-add-a-customer-and-give-them-a-login">W1 — Add a customer and give them a login</h3>
+<ol>
+<li>Manager opens <strong>Customers → New customer</strong>.</li>
+<li>Fills name, contact, email, phone, address (single column, large fields).</li>
+<li>Chooses <em>Create customer login</em> (on by default). Email becomes the login name;
+   the default password <code>JMS123</code> is set and flagged <code>must_change_password</code>.</li>
+<li>Saves → customer record created, User (CUSTOMER role) created, status <code>INVITED</code>,
+   audit event recorded, confirmation shows the login email and the fact that
+   the password must be changed at first sign-in.</li>
+<li>If the email already exists, the form explains which record uses it and how to
+   open that customer instead (no duplicate customers, no silent merge).</li>
+</ol>
+<p><strong>End state:</strong> customer exists, can sign in, sees an empty "My jobs" page and a
+prompt to change their password.</p>
+<h3 id="w2-create-a-job">W2 — Create a job</h3>
+<ol>
+<li>Manager opens <strong>Jobs → New job</strong> (or <strong>New job</strong> from a customer page, which
+   pre-fills the customer).</li>
+<li>Enters title, work type, description, priority, site address, price
+   (Manager/Admin only), customer notes.</li>
+<li>Saves as <code>DRAFT</code> → job reference is allocated and shown immediately.</li>
+<li>The job page offers the next steps as large pills: <em>Assign engineers</em>,
+   <em>Set dates</em>, <em>Publish schedule</em>.</li>
+</ol>
+<p><strong>End state:</strong> a <code>DRAFT</code> job with a reference that anyone can search for.</p>
+<h3 id="w3-assign-engineers-and-plan-dates">W3 — Assign engineers and plan dates</h3>
+<ol>
+<li>On the job page, Manager opens <strong>Assign engineers</strong> (multi-select of active
+   ENGINEERs, one marked lead).</li>
+<li>Sets <code>planned_start</code> / <code>planned_end</code> (date + time block: morning/afternoon/all day).</li>
+<li>Saves → status may move to <code>SCHEDULED</code> (system asks once, defaulting to yes).</li>
+<li>Booking conflict check: warn if an engineer already has an overlapping job;
+   warning is advisory in v1, not a hard block.</li>
+<li>Engineers see the job under <strong>My jobs</strong> immediately, with a "dates set"
+   notification marker in the app (no email in v1).</li>
+</ol>
+<p><strong>End state:</strong> job is <code>SCHEDULED</code>, appears on the timeline and in each
+engineer's list.</p>
+<h3 id="w4-engineer-updates-a-job-on-site">W4 — Engineer updates a job on site</h3>
+<ol>
+<li>Engineer signs in on a phone → lands on <strong>My jobs</strong>, today first.</li>
+<li>Opens a job → big status control showing only the transitions they may take
+   (<em>Start job</em>, <em>Hold</em>, <em>Complete</em>).</li>
+<li>Optionally adds a note and a customer-visible message.</li>
+<li>Tapping <em>Start job</em> sets <code>IN_PROGRESS</code> and stamps the actual start; <em>Complete</em>
+   asks for a short completion note, then stamps the actual end.</li>
+<li>The job's timeline shows the change, and the customer sees the new status
+   (and the customer-visible note) on their next visit.</li>
+</ol>
+<p><strong>End state:</strong> status, actual times and notes are recorded by the person who did
+the work, from the place where it happened.</p>
+<h3 id="w5-manager-closes-out-and-invoices">W5 — Manager closes out and invoices</h3>
+<ol>
+<li>Manager sees <code>COMPLETED</code> jobs needing invoices under <strong>Insights → Needs invoicing</strong>.</li>
+<li>Opens the job → <strong>Create invoice</strong>. Net/VAT/gross default from the job price
+   and company VAT setting; invoice number is allocated.</li>
+<li>Saves as <code>DRAFT</code>, reviews the PDF preview, then <strong>Issue</strong> → status <code>INVOICED</code>,
+   job moves to <code>INVOICED</code>, invoice PDF becomes downloadable to the customer.</li>
+<li>When payment lands, Manager marks <strong>Paid</strong> → job <code>PAID</code>.</li>
+</ol>
+<p><strong>End state:</strong> one invoice, one PDF, one audit trail, and a customer who can
+download the invoice without asking.</p>
+<h3 id="w6-customer-checks-progress">W6 — Customer checks progress</h3>
+<ol>
+<li>Customer signs in (email + <code>JMS123</code>, forced to change on first login).</li>
+<li>Lands on <strong>My jobs</strong>: cards with reference, title, status pill, planned dates,
+   assigned lead engineer's first name, and a link to details.</li>
+<li>Job detail shows a plain-language status, planned and actual dates, the
+   customer-visible timeline, and a <strong>Documents</strong> list (job sheet, invoice).</li>
+<li>No prices beyond their own invoice, no other customers, no company dashboards.</li>
+</ol>
+<p><strong>End state:</strong> the customer's question is answered without a phone call.</p>
+<h3 id="w7-generate-the-job-sheet-and-invoice-pdfs">W7 — Generate the job sheet and invoice PDFs</h3>
+<ol>
+<li>Any user with <code>document.job.pdf</code> opens a job → <strong>Job sheet (PDF)</strong>.</li>
+<li>The PDF is generated from live data on demand, branded with company name,
+   address and logo, and stamped with the generation time.</li>
+<li>Invoice PDFs are downloadable once the invoice is <code>ISSUED</code> (or to
+   Manager/Admin while <code>DRAFT</code>).</li>
+<li>If the job changes after generation, the next download reflects the new data;
+   the <code>Document</code> row records version and time (no stale cached PDFs in v1).</li>
+</ol>
+<p><strong>End state:</strong> printable artefacts with zero retyping. Emailing them is a later
+milestone that only needs a delivery service, not a data change.</p>
+<h3 id="w8-admin-adjusts-what-a-role-can-do">W8 — Admin adjusts what a role can do</h3>
+<ol>
+<li>Admin opens <strong>Admin → Roles &amp; permissions</strong>.</li>
+<li>Sees the role × action matrix from §2.3 with the current state, grouped by area.</li>
+<li>Toggles a cell, sees a one-line explanation of the effect and its blast radius
+   ("Engineers will be able to cancel their own jobs"), saves.</li>
+<li>Change takes effect on the next request; affected nav pills appear/disappear;
+   an audit row records actor, role, action key, before, after, timestamp.</li>
+<li>Admin cannot break the safeguards in §2.5; those cells are disabled with a reason.</li>
+</ol>
+<p><strong>End state:</strong> access policy is an office decision, not a release.</p>
+<h3 id="w9-a-user-changes-how-the-app-looks">W9 — A user changes how the app looks</h3>
+<ol>
+<li>Any signed-in user clicks the <strong>Aa</strong> button (same control as our published guides).</li>
+<li>Panel offers <strong>System / Light / Dark</strong>, type size, line height, layout width,
+   font stacks and colour tokens; changes preview live.</li>
+<li>Saving stores the preferences on the user record, so the look follows them to
+   any device.</li>
+<li>Admin sets the company default theme (used for users who never customise).</li>
+<li>Only design tokens change; layout, permissions and content never do.</li>
+</ol>
+<p><strong>End state:</strong> comfortable reading for a 55-year-old installer in sunlight and an
+office manager in a dark room, without a second stylesheet.</p>
+<h3 id="w10-find-things-and-see-the-plan">W10 — Find things and see the plan</h3>
+<ol>
+<li>Global search box in the header: type a job reference, customer name,
+   postcode, engineer name, or invoice number → grouped results, each opening the
+   right record.</li>
+<li><strong>Insights → Timeline</strong> shows a horizontal week/month view of jobs by planned
+   dates, filtered by engineer and status.</li>
+<li><strong>Insights → Workload</strong> shows jobs per engineer for a chosen week.</li>
+<li><strong>Insights → Financials</strong> (Manager/Admin) shows quoted vs invoiced vs paid,
+   with a date range.</li>
+</ol>
+<p><strong>End state:</strong> "what is happening next week and with whom" answered in one screen.</p>
+<hr />
+<div class="chnav"><a class="grow" href="#ch03">&larr; 3. Domain model (conceptual)</a><a class="grow" href="#ch05">5. Screens and navigation &rarr;</a></div><a id="ch05"></a>
+<h2 id="5-screens-and-navigation">5. Screens and navigation</h2>
+<h3 id="51-app-shell">5.1 App shell</h3>
+<ul>
+<li><strong>Top bar (few horizontal items only):</strong> brand, global search, <code>Dashboard</code>,
+  <code>Jobs</code>, <code>Customers</code>, <code>Insights</code>, <code>Admin</code> (only if the user has any admin
+  permission), user menu (name, appearance, change password, sign out).</li>
+<li><strong>Left table of contents:</strong> grouped sections, each action as a <strong>pill</strong>. Pills
+  are filtered by permission — a Customer sees three or four pills in total.</li>
+<li><strong>Content pane:</strong> one primary action per screen, large controls, generous
+  whitespace; a breadcrumb for context.</li>
+<li><strong>Mobile:</strong> top bar collapses to brand + search + menu; the left TOC becomes a
+  slide-over; tables become stacked cards; the status control is a full-width
+  button row (thumb-reachable).</li>
+</ul>
+<h3 id="52-screen-inventory">5.2 Screen inventory</h3>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Route intent</th>
+<th>Primary action</th>
+<th>Visible to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sign in</td>
+<td>email + password</td>
+<td>Sign in</td>
+<td>all</td>
+</tr>
+<tr>
+<td>First sign-in / change password</td>
+<td>forced password change</td>
+<td>Save new password</td>
+<td>all</td>
+</tr>
+<tr>
+<td>Operations dashboard</td>
+<td>today, this week, exceptions</td>
+<td>Open today's jobs</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Engineer dashboard</td>
+<td>today's jobs, next 7 days</td>
+<td>Update status</td>
+<td>ENGINEER</td>
+</tr>
+<tr>
+<td>Customer dashboard ("My jobs")</td>
+<td>own jobs by status</td>
+<td>Open job</td>
+<td>CUSTOMER</td>
+</tr>
+<tr>
+<td>Jobs list</td>
+<td>filter by status, engineer, date, customer</td>
+<td>New job</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>My jobs</td>
+<td>assigned jobs, today first</td>
+<td>Update status</td>
+<td>ENGINEER</td>
+</tr>
+<tr>
+<td>Job detail</td>
+<td>everything about one job + timeline</td>
+<td>context-dependent (next status / edit / invoice)</td>
+<td>all, scoped</td>
+</tr>
+<tr>
+<td>Job create / edit</td>
+<td>single-column form</td>
+<td>Save job</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Job assign</td>
+<td>engineers + lead</td>
+<td>Save assignments</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Job schedule</td>
+<td>planned dates + slot</td>
+<td>Save schedule</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Customer list</td>
+<td>search + status filter</td>
+<td>New customer</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Customer detail</td>
+<td>contact, jobs, logins</td>
+<td>New job for this customer</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Customer create / edit</td>
+<td>single-column form + "create login"</td>
+<td>Save customer</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Invoice list</td>
+<td>status filter, totals</td>
+<td>New invoice</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Invoice detail</td>
+<td>line summary, PDF, actions</td>
+<td>Issue / Mark paid</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Invoice detail (customer)</td>
+<td>own invoice, PDF</td>
+<td>Download PDF</td>
+<td>CUSTOMER</td>
+</tr>
+<tr>
+<td>Documents</td>
+<td>generated PDFs for a job</td>
+<td>Download</td>
+<td>scoped</td>
+</tr>
+<tr>
+<td>Insights: timeline</td>
+<td>week/month Gantt-like list</td>
+<td>Filter</td>
+<td>ADMIN, MANAGER, ENGINEER (own)</td>
+</tr>
+<tr>
+<td>Insights: workload</td>
+<td>jobs per engineer</td>
+<td>Change week</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Insights: financials</td>
+<td>quoted/invoiced/paid</td>
+<td>Change range</td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Search results</td>
+<td>grouped jobs/customers/invoices</td>
+<td>Open record</td>
+<td>all, scoped</td>
+</tr>
+<tr>
+<td>Users</td>
+<td>all users, role, status</td>
+<td>New user</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>User detail</td>
+<td>role, status, reset password, theme reset</td>
+<td>Save</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Roles &amp; permissions</td>
+<td>the §2.3 matrix</td>
+<td>Save changes</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Company settings</td>
+<td>name, VAT, invoice terms, default theme, PDF footer</td>
+<td>Save</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Appearance (Aa panel)</td>
+<td>type, layout, fonts, colours</td>
+<td>Save / Copy theme</td>
+<td>all</td>
+</tr>
+<tr>
+<td>Audit log</td>
+<td>filterable event list</td>
+<td>Filter by job/user</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Archived customers/jobs</td>
+<td>restore</td>
+<td>Restore</td>
+<td>ADMIN</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-empty-error-and-edge-states-must-be-designed-not-left-blank">5.3 Empty, error and edge states (must be designed, not left blank)</h3>
+<ul>
+<li><strong>Empty list:</strong> one sentence explaining what would appear, plus the primary
+  create action (only if the user may create).</li>
+<li><strong>Permission denied:</strong> a plain explanation and a "back to my work" link — never
+  a raw 403 page.</li>
+<li><strong>Not found / archived:</strong> say it exists but is archived, with the reference.</li>
+<li><strong>Save success:</strong> inline confirmation near the action, plus the changed value
+  visible; no silent saves.</li>
+<li><strong>Validation failure:</strong> field-level message in plain language, existing input
+  preserved, focus moved to the first problem.</li>
+<li><strong>Session expiry:</strong> return to sign-in with an explanation; the form is not lost
+  where avoidable (draft job data in the browser for create forms only).</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch04">&larr; 4. Workflows</a><a class="grow" href="#ch06">6. UX and accessibility requirements &rarr;</a></div><a id="ch06"></a>
+<h2 id="6-ux-and-accessibility-requirements">6. UX and accessibility requirements</h2>
+<p>These are testable requirements, not aspirations.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U1</td>
+<td>Body text is <strong>18–20px</strong> at default zoom; never below 16px for any interface text.</td>
+</tr>
+<tr>
+<td>U2</td>
+<td>Primary buttons are at least <strong>48px</strong> tall, with a minimum 44×44px hit area everywhere.</td>
+</tr>
+<tr>
+<td>U3</td>
+<td>Forms are <strong>single column</strong>, labels above fields, no placeholder-only labels.</td>
+</tr>
+<tr>
+<td>U4</td>
+<td>One <strong>primary</strong> action per screen; secondary actions are visually quieter pills.</td>
+</tr>
+<tr>
+<td>U5</td>
+<td>Common tasks fit a <strong>three-step</strong> budget: from sign-in to updating a status is ≤ 3 taps/links.</td>
+</tr>
+<tr>
+<td>U6</td>
+<td>Status is always shown as <strong>word + colour pill</strong> (not colour alone).</td>
+</tr>
+<tr>
+<td>U7</td>
+<td>Contrast meets <strong>WCAG 2.2 AA</strong> (4.5:1 body, 3:1 large text) in both light and dark modes.</td>
+</tr>
+<tr>
+<td>U8</td>
+<td>Every interactive element is reachable by keyboard with a visible focus ring; the Aa panel closes on <code>Escape</code>.</td>
+</tr>
+<tr>
+<td>U9</td>
+<td>Works from <strong>360px</strong> wide upwards; no horizontal page scroll; tables scroll inside their own container.</td>
+</tr>
+<tr>
+<td>U10</td>
+<td>Dates are unambiguous (<code>Tue 17 Mar 2026, 09:00</code>) and honour the company timezone.</td>
+</tr>
+<tr>
+<td>U11</td>
+<td>Language is plain and active ("Complete job", not "Submit"); no jargon on customer screens.</td>
+</tr>
+<tr>
+<td>U12</td>
+<td>Destructive or irreversible actions (cancel job, void invoice, archive) ask for confirmation that names the record.</td>
+</tr>
+<tr>
+<td>U13</td>
+<td>Loading states are visible within 300ms for any action that takes longer; no double-submits.</td>
+</tr>
+<tr>
+<td>U14</td>
+<td>Respects <code>prefers-reduced-motion</code>; no animation is required to understand a state change.</td>
+</tr>
+<tr>
+<td>U15</td>
+<td>Print stylesheets hide navigation, filters and the Aa panel; job sheet and invoice print on A4 with page numbers.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<div class="chnav"><a class="grow" href="#ch05">&larr; 5. Screens and navigation</a><a class="grow" href="#ch07">7. Visual design, theming and the guide system &rarr;</a></div><a id="ch07"></a>
+<h2 id="7-visual-design-theming-and-the-guide-system">7. Visual design, theming and the guide system</h2>
+<h3 id="71-house-style">7.1 House style</h3>
+<p>The app, this plan and the generated PDFs share the design system already used by
+the mini-js-coder explainers and book — warm paper, terracotta accent, serif
+headings, sans interface text, mono for references and code.</p>
+<ul>
+<li>Palette sources: <code>skills/anthropic-html-style/references/anthropic-ui.css</code>
+  (tokens, components) and <code>skills/make-book/assets/book_theme.toml</code> (book/guide
+  theme keys, light and dark).</li>
+<li>Typography: serif display for page and section titles; system sans for
+  controls and prose; mono for job references, invoice numbers and dates in
+  tables.</li>
+<li>Surfaces: ivory cards on paper, 1px <code>--line</code> borders, 12–16px radii, soft
+  shadows; no gradients, no heavy borders, no competing accent colours.</li>
+<li>Do not fork the palette per screen. One set of CSS custom properties, scoped
+  page overrides only.</li>
+</ul>
+<h3 id="72-appearance-aa-panel-parity-with-the-guides">7.2 Appearance ("Aa") panel — parity with the guides</h3>
+<p>The in-app appearance panel must behave like the one shipped in our generated
+book pages:</p>
+<ul>
+<li>Round <strong>Aa</strong> button fixed top-right; panel opens directly below it.</li>
+<li>Exactly three colour modes: <strong>System</strong>, <strong>Light</strong>, <strong>Dark</strong>; System resolves
+  through <code>prefers-color-scheme</code> and writes the resolved mode to
+  <code>html[data-theme]</code> so sidebar and content switch together.</li>
+<li>Controls for <strong>Type</strong> (<code>--fs-content</code>, <code>--lh-content</code>, <code>--fs-ui</code>), <strong>Layout</strong>
+  (<code>--sidebar</code>, <code>--measure</code>), <strong>Fonts</strong> (curated dropdowns for serif, sans,
+  mono) and every colour token, grouped by Light/Dark.</li>
+<li>Font choices are <code>&lt;select&gt;</code> dropdowns, never free text; an unknown saved stack
+  survives as a <code>Custom</code> option.</li>
+<li><strong>Reset</strong> restores company defaults; <strong>Copy theme</strong> exports the current values
+  as TOML in the same key names as <code>book_theme.toml</code>, so a user’s favourite look
+  can be pasted into the company theme file.</li>
+<li>State persists on the <strong>user record</strong> (not only in the browser) and re-applies
+  before first paint to avoid a flash of the wrong theme.</li>
+<li>Panel is hidden in print and on small screens; it never affects permissions,
+  layout structure or content.</li>
+</ul>
+<h3 id="73-company-default-theme">7.3 Company default theme</h3>
+<p>An Admin can set the default mode, type scale and palette in <strong>Company settings</strong>.
+Resolution order: user preference → company default → built-in house theme.</p>
+<hr />
+<div class="chnav"><a class="grow" href="#ch06">&larr; 6. UX and accessibility requirements</a><a class="grow" href="#ch08">8. Documents (PDF) requirements &rarr;</a></div><a id="ch08"></a>
+<h2 id="8-documents-pdf-requirements">8. Documents (PDF) requirements</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Contents</th>
+<th>Rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Job sheet</strong></td>
+<td>Company header/logo, job reference, customer and site address, work description, assigned engineers, planned dates, status, customer-visible notes, generation timestamp</td>
+<td>A4, printable in monochrome, no internal notes, no prices for customers</td>
+</tr>
+<tr>
+<td><strong>Invoice</strong></td>
+<td>Company header/logo and VAT number, invoice number, issue and due dates, customer and site address, job reference, line items (description, qty, unit, amount), net/VAT/gross, payment terms and footer text</td>
+<td>A4, gapless numbering, <code>VOID</code> watermark when voided, downloadable by the customer once issued</td>
+</tr>
+</tbody>
+</table>
+<p>Design rules: reuse the print styles from the guide system; page numbers in the
+footer; a printed contents page is not needed (both documents are short); PDF
+generation is server-side and recorded in <code>Document</code>.</p>
+<hr />
+<div class="chnav"><a class="grow" href="#ch07">&larr; 7. Visual design, theming and the guide system</a><a class="grow" href="#ch09">9. Security, audit and data protection &rarr;</a></div><a id="ch09"></a>
+<h2 id="9-security-audit-and-data-protection">9. Security, audit and data protection</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td>Passwords hashed with a modern adaptive algorithm; default <code>JMS123</code> is only a starting value and must be changed at first sign-in.</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>Sessions expire after inactivity (default 60 minutes) and are revoked on password change, role change or deactivation.</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>Authorisation is checked server-side on every request and every partial; object scoping per §2.4 is tested, not assumed.</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>CSRF protection on all state-changing requests; the app never trusts hidden form fields for role or ownership.</td>
+</tr>
+<tr>
+<td>S5</td>
+<td>Login rate-limited; repeated failures logged with IP and user agent.</td>
+</tr>
+<tr>
+<td>S6</td>
+<td>Every job status change, assignment change, price change, permission change, invoice action and user change writes an audit record (actor, when, before, after).</td>
+</tr>
+<tr>
+<td>S7</td>
+<td>Customer-visible notes and internal notes are different fields with different visibility; the UI states which is which.</td>
+</tr>
+<tr>
+<td>S8</td>
+<td>Backups: daily database backup with a documented restore drill; restore is verified before go-live.</td>
+</tr>
+<tr>
+<td>S9</td>
+<td>Archiving replaces deletion for jobs and customers; invoices are never deleted, only voided.</td>
+</tr>
+<tr>
+<td>S10</td>
+<td>Personal data is limited to what the job needs; a customer can view their own contact details and ask the office to correct them (v1: no self-service edit).</td>
+</tr>
+<tr>
+<td>S11</td>
+<td>No secrets in the repository; configuration comes from environment variables (<code>.env</code> locally, host config in production).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<div class="chnav"><a class="grow" href="#ch08">&larr; 8. Documents (PDF) requirements</a><a class="grow" href="#ch10">10. Non-functional requirements &rarr;</a></div><a id="ch10"></a>
+<h2 id="10-non-functional-requirements">10. Non-functional requirements</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Area</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>N1</td>
+<td>Performance</td>
+<td>Server-rendered pages respond in &lt; 300ms at p95 with the seeded dataset (see N6); lists paginate at 25 rows.</td>
+</tr>
+<tr>
+<td>N2</td>
+<td>Availability</td>
+<td>Single-host deployment is acceptable for v1; a restart must not lose committed data.</td>
+</tr>
+<tr>
+<td>N3</td>
+<td>Portability</td>
+<td>SQLite in development, Postgres in production, <strong>one schema, no SQLite-only SQL</strong>; migrations are versioned and reversible.</td>
+</tr>
+<tr>
+<td>N4</td>
+<td>Accessibility</td>
+<td>WCAG 2.2 AA target verified with keyboard-only walkthroughs and automated checks.</td>
+</tr>
+<tr>
+<td>N5</td>
+<td>Browser support</td>
+<td>Current Chrome, Edge, Firefox, Safari; iOS Safari and Android Chrome for field use.</td>
+</tr>
+<tr>
+<td>N6</td>
+<td>Seed data</td>
+<td>A reproducible demo dataset: Acme Windows, 1 admin, 2 managers, 5 engineers, 20 customers, 60 jobs spanning past/present/future, 15 invoices.</td>
+</tr>
+<tr>
+<td>N7</td>
+<td>Testability</td>
+<td>Every workflow in §4 has an automated test at the HTTP level, including negative permission tests.</td>
+</tr>
+<tr>
+<td>N8</td>
+<td>Observability</td>
+<td>Structured request logs, an error log, and an audit view in-app; no personal data or secrets in logs.</td>
+</tr>
+<tr>
+<td>N9</td>
+<td>Maintainability</td>
+<td>One styling system, no per-page CSS forks; components documented in <code>_TECH.md</code>.</td>
+</tr>
+<tr>
+<td>N10</td>
+<td>Time</td>
+<td>All timestamps stored in UTC, rendered in the company timezone.</td>
+</tr>
+<tr>
+<td>N11</td>
+<td>Money</td>
+<td>Stored as integer minor units or fixed-precision decimals — never floats; VAT rate configurable.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<div class="chnav"><a class="grow" href="#ch09">&larr; 9. Security, audit and data protection</a><a class="grow" href="#ch11">11. Delivery milestones &rarr;</a></div><a id="ch11"></a>
+<h2 id="11-delivery-milestones">11. Delivery milestones</h2>
+<p>Each milestone is a vertical slice that can be demonstrated. <code>_TECH.md</code> should
+turn these into a task list with schema, routes, templates and tests.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Milestone</th>
+<th>Includes</th>
+<th>Acceptance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M0</strong></td>
+<td>Contract</td>
+<td>This plan signed off; <code>_TECH.md</code> written; decisions in §13 answered</td>
+<td>Tech spec covers every action key, entity, workflow and acceptance row</td>
+</tr>
+<tr>
+<td><strong>M1</strong></td>
+<td>Foundations</td>
+<td>Project scaffold, config, app shell (top bar + left TOC pills), auth, sessions, role seed, permission matrix, audit skeleton, theme tokens, Aa panel</td>
+<td>Four seeded users of each role can sign in and see role-appropriate pills; denied routes return a friendly page; a matrix change hides/shows a pill without restart</td>
+</tr>
+<tr>
+<td><strong>M2</strong></td>
+<td>People</td>
+<td>Customers CRUD + invite-login, Users admin, password reset, first-sign-in change flow, company settings</td>
+<td>W1 works end to end; default password forces change; audit rows written</td>
+</tr>
+<tr>
+<td><strong>M3</strong></td>
+<td>Jobs</td>
+<td>Job create/edit, references, job detail, assignments, schedule, conflict warning, jobs list with filters</td>
+<td>W2 + W3 work; <code>DRAFT → SCHEDULED</code> blocked without dates and an engineer</td>
+</tr>
+<tr>
+<td><strong>M4</strong></td>
+<td>Field</td>
+<td>My jobs, status control with allowed transitions only, actual timestamps, notes (internal vs customer), job timeline</td>
+<td>W4 works on a phone; engineer cannot take a disallowed transition; timeline renders events</td>
+</tr>
+<tr>
+<td><strong>M5</strong></td>
+<td>Customer portal</td>
+<td>My jobs, job detail, documents list, scoped queries</td>
+<td>W6 works; a customer cannot reach another customer's job even by guessing the URL</td>
+</tr>
+<tr>
+<td><strong>M6</strong></td>
+<td>Money &amp; paper</td>
+<td>Invoices, numbering, issue/void/paid, job sheet + invoice PDFs, print styles</td>
+<td>W5 + W7 work; PDFs match the spec in §8; numbers are gapless</td>
+</tr>
+<tr>
+<td><strong>M7</strong></td>
+<td>Insight</td>
+<td>Global search, operations/engineer dashboards, timeline, workload, financials</td>
+<td>W10 works; every dashboard respects role scoping and date ranges</td>
+</tr>
+<tr>
+<td><strong>M8</strong></td>
+<td>Hardening</td>
+<td>Full audit view, backups and restore drill, accessibility pass, performance pass, seed dataset, documentation pages built from Markdown</td>
+<td>§12 checklist passes; restore drill recorded; a11y walkthrough clean</td>
+</tr>
+</tbody>
+</table>
+<h3 id="111-sequence-and-dependencies">11.1 Sequence and dependencies</h3>
+<pre><code>M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7 → M8
+              └────────┴──── M5 depends on M3, M4 (status + timeline)
+                        └──── M6 depends on M3 (job price) and M5 (customer downloads)
+</code></pre>
+<h3 id="112-documentation-deliverables-same-system-as-the-book">11.2 Documentation deliverables (same system as the book)</h3>
+<ul>
+<li><code>_PLAN.md</code> → plan page (this document) rendered as a two-pane guide.</li>
+<li><code>_TECH.md</code> → technical spec page, same shell and Aa panel.</li>
+<li>App help pages (per role) authored in Markdown, built into the same guide
+  shell so a Customer, Engineer and Manager each get a short "how to use JMS"
+  page with the same typography.</li>
+<li>Optional PDF export of <code>_PLAN.md</code> / <code>_TECH.md</code> through the print stylesheet.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch10">&larr; 10. Non-functional requirements</a><a class="grow" href="#ch12">12. Definition of done (v1 acceptance checklist) &rarr;</a></div><a id="ch12"></a>
+<h2 id="12-definition-of-done-v1-acceptance-checklist">12. Definition of done (v1 acceptance checklist)</h2>
+<ul>
+<li>☐ All four roles can sign in, change password, and see only their permitted navigation.</li>
+<li>☐ Permission matrix is editable in-app, enforced server-side, and every change is audited.</li>
+<li>☐ A manager can add a customer, create a job, assign engineers, set dates and schedule it (W1–W3).</li>
+<li>☐ An engineer can see only assigned jobs and advance allowed statuses from a phone (W4).</li>
+<li>☐ A customer sees only their own jobs, statuses, dates and documents (W6).</li>
+<li>☐ Job sheet and invoice PDFs generate from live data and print cleanly on A4 (§8).</li>
+<li>☐ Invoice numbering is gapless and voiding works without deleting records.</li>
+<li>☐ Search, timeline, workload and financial dashboards work within role scope (W10).</li>
+<li>☐ Audit log answers "who changed this job and when" for status, assignment, price and permissions.</li>
+<li>☐ Light, dark and system modes work; user preferences persist and follow the user; admin default applies.</li>
+<li>☐ All §6 UX rules verified: type sizes, hit areas, contrast, keyboard, 360px layout.</li>
+<li>☐ All §9 security rules tested, including cross-customer and cross-engineer access attempts.</li>
+<li>☐ Seed dataset loads from scratch; SQLite and Postgres both pass the same test suite.</li>
+<li>☐ Backup taken and restored successfully on a clean machine.</li>
+<li>☐ Plan, tech spec and help pages published in the house guide style.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch11">&larr; 11. Delivery milestones</a><a class="grow" href="#ch13">13. Decisions needed before _TECH.md &rarr;</a></div><a id="ch13"></a>
+<h2 id="13-decisions-needed-before-_techmd">13. Decisions needed before <code>_TECH.md</code></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Recommendation</th>
+<th>Impact if unanswered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Invite-only customers, or self-registration?</td>
+<td>Invite-only (staff create the login)</td>
+<td>Auth and onboarding flows</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Can an engineer see the customer's phone number?</td>
+<td>Yes (needed on site), but not in exports</td>
+<td>Field usability</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Can an engineer see job price?</td>
+<td>No</td>
+<td>Job detail template, queries</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>VAT: include in v1?</td>
+<td>Yes, single configurable rate (default 20%)</td>
+<td>Invoice schema, PDF</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Currency and locale</td>
+<td>GBP, <code>en-GB</code>, Europe/London</td>
+<td>Formatting, tests</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>Job reference format</td>
+<td><code>JOB-YYYY-NNNN</code>, per-year sequence</td>
+<td>Numbering service</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>Email delivery of PDFs</td>
+<td>Deferred to v1.1; keep a delivery table stub</td>
+<td>Scope, data model</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>Photo attachments from site</td>
+<td>Deferred; storage approach chosen now to avoid schema churn</td>
+<td>Future migration</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>Permission granularity beyond §2.3</td>
+<td>Start with §2.3 exactly; add keys only when a real need appears</td>
+<td>Matrix size, UI</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>HTMX partial vs full-page rendering strategy</td>
+<td>Progressive enhancement: full-page forms, HTMX for filters, lists, status control</td>
+<td>Templating split</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>Session strategy (cookie + server session vs signed token)</td>
+<td>Server-side session with an HTTP-only cookie</td>
+<td>Auth implementation</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>Audit retention</td>
+<td>Keep indefinitely in v1; revisit at scale</td>
+<td>Storage, export</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<div class="chnav"><a class="grow" href="#ch12">&larr; 12. Definition of done (v1 acceptance checklist)</a><a class="grow" href="#ch14">14. Traceability — idea to plan &rarr;</a></div><a id="ch14"></a>
+<h2 id="14-traceability-idea-to-plan">14. Traceability — idea to plan</h2>
+<table>
+<thead>
+<tr>
+<th><code>_IDEA.md</code> requirement</th>
+<th>Where it is handled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CMS + job tracker</td>
+<td>§1.2, §3, §5</td>
+</tr>
+<tr>
+<td>Company, engineers, managers, admins</td>
+<td>§2.1</td>
+</tr>
+<tr>
+<td>Customers added, users added, permissions changed</td>
+<td>W1, W8, §2.2</td>
+</tr>
+<tr>
+<td>Customers get a login (email + default <code>JMS123</code>)</td>
+<td>W1, §9 S1</td>
+</tr>
+<tr>
+<td>All users log in with restricted access and component visibility</td>
+<td>§2.3–2.5, §5.1</td>
+</tr>
+<tr>
+<td>Workflows: add customer, job ticket, assign engineers, work date, status, customer view</td>
+<td>W1–W6</td>
+</tr>
+<tr>
+<td>PDF job and invoice download before email</td>
+<td>W7, §8, D7</td>
+</tr>
+<tr>
+<td>Dashboards by user rights</td>
+<td>§5.2, W10, M7</td>
+</tr>
+<tr>
+<td>Search customers, jobs, by job, by engineer</td>
+<td>W10, N1</td>
+</tr>
+<tr>
+<td>Timeline dashboard for start/end dates</td>
+<td>W10, §5.2</td>
+</tr>
+<tr>
+<td>Job fields: details, customer, engineers, status, planned and actual dates</td>
+<td>§3.1 Job, §3.3</td>
+</tr>
+<tr>
+<td>Permissions: ADMIN, MANAGER, ENGINEER, CUSTOMER</td>
+<td>§2.1–2.3</td>
+</tr>
+<tr>
+<td>Anthropic styling + user-changeable appearance</td>
+<td>§7</td>
+</tr>
+<tr>
+<td>Few horizontal nav items + left TOC pills by user level</td>
+<td>§5.1</td>
+</tr>
+<tr>
+<td>Editable table of access level → action visibility</td>
+<td>§2.2–2.3, W8</td>
+</tr>
+<tr>
+<td>Simple UX, larger fonts and buttons, easy steps</td>
+<td>§6</td>
+</tr>
+<tr>
+<td>Browser app, HTMX, Node, SQLite then Postgres</td>
+<td>§10 N3, D10, D11</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<div class="chnav"><a class="grow" href="#ch13">&larr; 13. Decisions needed before _TECH.md</a><a class="grow" href="#ch15">15. Glossary &rarr;</a></div><a id="ch15"></a>
+<h2 id="15-glossary">15. Glossary</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Job</strong></td>
+<td>One piece of work for one customer at one site, from draft to paid.</td>
+</tr>
+<tr>
+<td><strong>Assignment</strong></td>
+<td>The link between a job and an engineer, with a lead flag.</td>
+</tr>
+<tr>
+<td><strong>Pill</strong></td>
+<td>A rounded navigation/action control in the left table of contents.</td>
+</tr>
+<tr>
+<td><strong>Action key</strong></td>
+<td>A stable permission string such as <code>job.assign</code>.</td>
+</tr>
+<tr>
+<td><strong>Scoping</strong></td>
+<td>Filtering rows by the signed-in user's customer or assignment, not by the URL.</td>
+</tr>
+<tr>
+<td><strong>Actual vs planned</strong></td>
+<td>Planned dates are promised; actual dates are what happened.</td>
+</tr>
+<tr>
+<td><strong>Gapless numbering</strong></td>
+<td>Invoice numbers have no missing values; voids stay in the sequence.</td>
+</tr>
+<tr>
+<td><strong>Aa panel</strong></td>
+<td>The floating appearance customiser shared with our published guides.</td>
+</tr>
+<tr>
+<td><strong>House style</strong></td>
+<td>Warm paper, terracotta accent, serif headings — the guide design system.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<blockquote>
+<p><strong>Reminder of scope.</strong> JMS v1 is a small-business job tracker. It is not a
+production-grade platform for thousands of users, and it makes no claims about
+compliance beyond the practices listed in §9. Anything not in §1.3 is out of
+scope until a later plan says otherwise.</p>
+</blockquote><div class="chnav"><a class="grow" href="#ch14">&larr; 14. Traceability — idea to plan</a><span class="grow"></span></div>
+  </article>
+</main>
+
+<button id="stylebtn" type="button" aria-expanded="false" aria-controls="stylepanel"
+        aria-label="Appearance settings" title="Appearance">Aa</button>
+
+<aside id="stylepanel" hidden aria-label="Appearance settings">
+  <div class="sp-head">
+    <h2>Appearance</h2>
+    <select id="sp-mode" aria-label="Colour scheme">
+      <option value="auto">Auto</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+    <button id="sp-close" type="button" aria-label="Close appearance panel">✕</button>
+  </div>
+  <div class="sp-body" id="sp-body"></div>
+  <div class="sp-foot">
+    <button id="sp-reset" type="button">Reset</button>
+    <span class="spacer"></span>
+    <button id="sp-copy" type="button">Copy TOML</button>
+  </div>
+</aside>
+
+<script>
+(() => {
+  const pane = document.getElementById('pane');
+  const toc = document.getElementById('toc');
+  const links = [...toc.querySelectorAll('a[href^="#"]')];
+  const bar = document.querySelector('#progress > span');
+  const body = document.body;
+
+  // ---- scroll-spy: the last heading whose top has passed the reading line ----
+  // (a scroll handler beats IntersectionObserver here: headings are tall and
+  // several can be visible at once, which made the observer pick the wrong one)
+  const targets = links
+    .map(a => ({ id: a.getAttribute('href').slice(1), el: document.getElementById(a.getAttribute('href').slice(1)) }))
+    .filter(t => t.el);
+
+  const setActive = (id) => {
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+    // keep the highlighted entry visible in the (independently scrolling) sidebar
+    const active = links.find(a => a.getAttribute('href') === '#' + id);
+    if (active) {
+      const box = active.getBoundingClientRect();
+      const paneBox = toc.getBoundingClientRect();
+      if (box.top < paneBox.top || box.bottom > paneBox.bottom) {
+        active.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  };
+
+  const sync = () => {
+    const max = pane.scrollHeight - pane.clientHeight;
+    if (bar) bar.style.width = (max > 0 ? (pane.scrollTop / max) * 100 : 0).toFixed(2) + '%';
+
+    const line = 96;                       // px below the top of the pane
+    let current = targets.length ? targets[0].id : null;
+    for (const t of targets) {
+      if (t.el.getBoundingClientRect().top - pane.getBoundingClientRect().top <= line) current = t.id;
+    }
+    if (current) setActive(current);
+  };
+
+  pane.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync);
+  sync();
+
+  // ---- TOC filter ----
+  const filter = document.getElementById('filter');
+  if (filter) {
+    filter.addEventListener('input', () => {
+      const q = filter.value.trim().toLowerCase();
+      toc.querySelectorAll('.chapter').forEach(ch => {
+        let any = false;
+        const head = ch.querySelector(':scope > a');
+        const headHit = head.textContent.toLowerCase().includes(q);
+        ch.querySelectorAll('.sections a').forEach(a => {
+          const hit = !q || a.textContent.toLowerCase().includes(q) || headHit;
+          a.parentElement.classList.toggle('hidden', !hit);
+          any = any || hit;
+        });
+        if (!q) ch.querySelectorAll('.sections li').forEach(li => li.classList.remove('hidden'));
+        ch.classList.toggle('hidden', q && !any && !headHit);
+      });
+    });
+  }
+
+  // ---- copy buttons on code blocks ----
+  document.querySelectorAll('#content pre').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.className = 'copy';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pre.innerText.replace(/^Copy\n?/, ''));
+        btn.textContent = 'Copied';
+      } catch {
+        btn.textContent = 'Ctrl+C';
+      }
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1400);
+    });
+    pre.appendChild(btn);
+  });
+
+  // ---- mobile drawer ----
+  const menu = document.getElementById('menu');
+  if (menu) {
+    menu.addEventListener('click', () => body.classList.toggle('nav-open'));
+    toc.addEventListener('click', (e) => {
+      if (e.target.closest('a')) body.classList.remove('nav-open');
+    });
+    pane.addEventListener('click', () => body.classList.remove('nav-open'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') body.classList.remove('nav-open');
+    });
+  }
+
+  // ---- open the first collapsed answer when printing ----
+  window.addEventListener('beforeprint', () => {
+    document.querySelectorAll('details').forEach(d => d.open = true);
+  });
+
+  // ============================================================
+  // appearance panel: edits the CSS custom properties in :root
+  // ============================================================
+  const SPEC = [{"table": "type", "title": "Type", "items": [{"key": "fs_content", "cssVar": "--fs-content", "kind": "size", "unit": "px", "min": 18, "max": 64, "step": 0.5, "label": "Book text"}, {"key": "lh_content", "cssVar": "--lh-content", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Book line height"}, {"key": "fs_ui", "cssVar": "--fs-ui", "kind": "size", "unit": "px", "min": 11, "max": 30, "step": 0.5, "label": "Sidebar and chrome text"}, {"key": "lh_ui", "cssVar": "--lh-ui", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Chrome line height"}]}, {"table": "layout", "title": "Layout", "items": [{"key": "sidebar", "cssVar": "--sidebar", "kind": "size", "unit": "px", "min": 240, "max": 560, "step": 5, "label": "Sidebar width"}, {"key": "measure", "cssVar": "--measure", "kind": "size", "unit": "%", "min": 40, "max": 100, "step": 1, "label": "Reading column width"}]}, {"table": "fonts", "title": "Fonts", "items": [{"key": "serif", "cssVar": "--serif", "kind": "font", "label": "Headings (serif stack)"}, {"key": "sans", "cssVar": "--sans", "kind": "font", "label": "Body (sans stack)"}, {"key": "mono", "cssVar": "--mono", "kind": "font", "label": "Code (mono stack)"}]}, {"table": "colors", "title": "Colours", "colors": true, "items": [{"key": "paper", "cssVar": "--paper", "kind": "color", "label": "Page background"}, {"key": "surface", "cssVar": "--surface", "kind": "color", "label": "Sidebar background"}, {"key": "ivory", "cssVar": "--ivory", "kind": "color", "label": "Cards and inputs"}, {"key": "ink", "cssVar": "--ink", "kind": "color", "label": "Body text"}, {"key": "muted", "cssVar": "--muted", "kind": "color", "label": "Secondary text"}, {"key": "stone", "cssVar": "--stone", "kind": "color", "label": "Faint labels"}, {"key": "line", "cssVar": "--line", "kind": "color", "label": "Borders"}, {"key": "line_soft", "cssVar": "--line-soft", "kind": "color", "label": "Hairline borders"}, {"key": "terra", "cssVar": "--terra", "kind": "color", "label": "Accent"}, {"key": "terra_dark", "cssVar": "--terra-dark", "kind": "color", "label": "Links and accent text"}, {"key": "accent_strong", "cssVar": "--accent-strong", "kind": "color", "label": "Eyebrow / active label"}, {"key": "hover_bg", "cssVar": "--hover-bg", "kind": "color", "label": "Hover background"}, {"key": "active_bg", "cssVar": "--active-bg", "kind": "color", "label": "Active nav background"}, {"key": "active_fg", "cssVar": "--active-fg", "kind": "color", "label": "Active nav text"}, {"key": "focus_ring", "cssVar": "--focus-ring", "kind": "color", "label": "Focus ring"}, {"key": "code_bg", "cssVar": "--code-bg", "kind": "color", "label": "Code block background"}, {"key": "code_fg", "cssVar": "--code-fg", "kind": "color", "label": "Code block text"}, {"key": "inline_code_bg", "cssVar": "--inline-code-bg", "kind": "color", "label": "Inline code background"}, {"key": "inline_code_fg", "cssVar": "--inline-code-fg", "kind": "color", "label": "Inline code text"}, {"key": "quote_bg", "cssVar": "--quote-bg", "kind": "color", "label": "Callout background"}, {"key": "quote_border", "cssVar": "--quote-border", "kind": "color", "label": "Callout border"}, {"key": "quote_fg", "cssVar": "--quote-fg", "kind": "color", "label": "Callout text"}, {"key": "row_hover", "cssVar": "--row-hover", "kind": "color", "label": "Table row hover"}, {"key": "open_bg", "cssVar": "--open-bg", "kind": "color", "label": "Open answer background"}, {"key": "scroll_thumb", "cssVar": "--scroll-thumb", "kind": "color", "label": "Code scrollbar"}, {"key": "copy_bg", "cssVar": "--copy-bg", "kind": "color", "label": "Copy button background"}, {"key": "copy_fg", "cssVar": "--copy-fg", "kind": "color", "label": "Copy button text"}, {"key": "copy_border", "cssVar": "--copy-border", "kind": "color", "label": "Copy button border"}, {"key": "copy_hover", "cssVar": "--copy-hover", "kind": "color", "label": "Copy button hover"}]}];
+  const DEFAULTS = {"base": {"fs_ui": 17, "fs_content": 34, "lh_ui": 1.62, "lh_content": 1.62, "serif": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif", "sans": "-apple-system, \"Segoe UI\", Inter, Helvetica, Arial, sans-serif", "mono": "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, ui-monospace, monospace", "sidebar": 400, "measure": 80}, "colors": {"light": {"paper": "#f0eee6", "surface": "#fbfaf7", "ivory": "#fffdfa", "ink": "#1f1e1d", "muted": "#55524c", "stone": "#8c877c", "line": "#e2ddd2", "line_soft": "#ece8df", "terra": "#d97757", "terra_dark": "#c9633f", "accent_strong": "#a14e2f", "hover_bg": "#f4f1e9", "active_bg": "#f6ede6", "active_fg": "#8f3f27", "focus_ring": "#e3a98f", "code_bg": "#23211e", "code_fg": "#f3eee5", "inline_code_bg": "#eae7de", "inline_code_fg": "#6f3b26", "quote_bg": "#f8eee8", "quote_border": "#e7cec2", "quote_fg": "#3d3d3a", "row_hover": "#f7f4ee", "open_bg": "#fdf9f5", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}, "dark": {"paper": "#1b1a18", "surface": "#201f1c", "ivory": "#262420", "ink": "#f2ece1", "muted": "#c3bcae", "stone": "#9a9384", "line": "#34312b", "line_soft": "#2b2823", "terra": "#d97757", "terra_dark": "#d97757", "accent_strong": "#f0b49a", "hover_bg": "#262420", "active_bg": "#33261f", "active_fg": "#f0b49a", "focus_ring": "#8a5540", "code_bg": "#141312", "code_fg": "#f3eee5", "inline_code_bg": "#322e28", "inline_code_fg": "#f0b49a", "quote_bg": "#2a211d", "quote_border": "#4a332b", "quote_fg": "#e6ded2", "row_hover": "#262420", "open_bg": "#262420", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}}};
+  const INIT_MODE = "auto";
+  // the store key is tied to the built theme, so rebuilding with a changed
+  // book_theme.toml discards stale panel tweaks instead of shadowing them
+  const STORE = 'book-theme:' + "bfe5baec4d";
+  const root = document.documentElement;
+  const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const copy = (target, source) => {
+    Object.keys(target).forEach(k => { delete target[k]; });
+    Object.entries(clone(source)).forEach(([k, v]) => { target[k] = v; });
+  };
+
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORE)) || {}; } catch { saved = {}; }
+
+  const state = {
+    mode: ['auto', 'light', 'dark'].includes(saved.mode) ? saved.mode : INIT_MODE,
+    base: Object.assign(clone(DEFAULTS.base), saved.base || {}),
+    colors: {
+      light: Object.assign(clone(DEFAULTS.colors.light), (saved.colors || {}).light || {}),
+      dark: Object.assign(clone(DEFAULTS.colors.dark), (saved.colors || {}).dark || {}),
+    },
+  };
+
+  const resolved = () => state.mode === 'auto'
+    ? (darkQuery.matches ? 'dark' : 'light')
+    : state.mode;
+
+  const cssVal = (item, value) => item.unit === 'px' ? value + 'px'
+    : item.unit === '%' ? value + '%'
+    : String(value);
+
+  const apply = () => {
+    if (state.mode === 'auto') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', state.mode);
+
+    const mode = resolved();
+    SPEC.forEach(group => group.items.forEach(item => {
+      const value = item.kind === 'color' ? state.colors[mode][item.key] : state.base[item.key];
+      if (value === undefined || value === null || value === '') root.style.removeProperty(item.cssVar);
+      else if (item.kind === 'size' || item.kind === 'number') root.style.setProperty(item.cssVar, cssVal(item, value));
+      else root.style.setProperty(item.cssVar, String(value));
+    }));
+  };
+
+  const persist = () => {
+    try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* private mode */ }
+  };
+
+  // ---- build the panel ----
+  const panel = document.getElementById('stylepanel');
+  const button = document.getElementById('stylebtn');
+  const panelBody = document.getElementById('sp-body');
+  const modeSelect = document.getElementById('sp-mode');
+  const refs = {};
+
+  const hex6 = (value) => {
+    let v = String(value || '').trim().replace('#', '');
+    if (v.length === 3) v = v.split('').map(c => c + c).join('');
+    return '#' + v.slice(0, 6).padStart(6, '0');
+  };
+
+  const addGroup = (group) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'sp-group';
+
+    const title = document.createElement('h3');
+    title.textContent = group.title;
+    if (group.colors) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.id = 'sp-modetag';
+      title.appendChild(tag);
+    }
+    wrap.appendChild(title);
+
+    if (group.colors) {
+      const grid = document.createElement('div');
+      grid.className = 'sp-colors';
+      group.items.forEach(item => {
+        const label = document.createElement('label');
+        const swatch = document.createElement('input');
+        swatch.type = 'color';
+        swatch.title = item.label + '  (' + item.cssVar + ')';
+        swatch.setAttribute('aria-label', item.label);
+        const name = document.createElement('span');
+        name.className = 'swatch-label';
+        name.textContent = item.label;
+        const hex = document.createElement('span');
+        hex.className = 'hex';
+        label.append(swatch, name, hex);
+        grid.appendChild(label);
+
+        swatch.addEventListener('input', () => {
+          state.colors[resolved()][item.key] = swatch.value;
+          hex.textContent = swatch.value;
+          apply();
+          persist();
+        });
+        refs[item.key] = { swatch: swatch, hex: hex };
+      });
+      wrap.appendChild(grid);
+      panelBody.appendChild(wrap);
+      return;
+    }
+
+    group.items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'sp-row';
+      const label = document.createElement('label');
+      label.textContent = item.label;
+      row.appendChild(label);
+
+      if (item.kind === 'font') {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.spellcheck = false;
+        label.appendChild(input);
+        input.addEventListener('change', () => {
+          const value = input.value.trim();
+          if (value) {
+            state.base[item.key] = value;
+            apply();
+            persist();
+          }
+        });
+        refs[item.key] = { input: input };
+      } else {
+        const out = document.createElement('output');
+        row.appendChild(out);
+        const input = document.createElement('input');
+        input.type = 'range';
+        input.min = item.min;
+        input.max = item.max;
+        input.step = item.step;
+        input.setAttribute('aria-label', item.label);
+        row.appendChild(input);
+        input.addEventListener('input', () => {
+          state.base[item.key] = Number(input.value);
+          out.textContent = input.value + (item.unit || '');
+          apply();
+          persist();
+        });
+        refs[item.key] = { input: input, out: out };
+      }
+      wrap.appendChild(row);
+    });
+
+    panelBody.appendChild(wrap);
+  };
+
+  SPEC.forEach(addGroup);
+
+  const refresh = () => {
+    if (modeSelect.value !== state.mode) modeSelect.value = state.mode;
+    const mode = resolved();
+    const modeTag = document.getElementById('sp-modetag');
+    if (modeTag) modeTag.textContent = mode;
+    if (button) button.title = 'Appearance - editing ' + mode + ' colours';
+
+    SPEC.forEach(group => group.items.forEach(item => {
+      const ref = refs[item.key];
+      if (!ref) return;
+      if (item.kind === 'color') {
+        const value = state.colors[mode][item.key] || '#000000';
+        ref.swatch.value = hex6(value);
+        ref.hex.textContent = String(value);
+      } else if (item.kind === 'font') {
+        ref.input.value = state.base[item.key] || '';
+      } else {
+        const value = state.base[item.key];
+        ref.input.value = value;
+        ref.out.textContent = value + (item.unit || '');
+      }
+    }));
+  };
+
+  const reopen = () => { apply(); refresh(); };
+
+  modeSelect.value = state.mode;
+  modeSelect.addEventListener('change', () => {
+    state.mode = modeSelect.value;
+    reopen();
+    persist();
+  });
+
+  if (darkQuery.addEventListener) {
+    darkQuery.addEventListener('change', () => { if (state.mode === 'auto') reopen(); });
+  }
+
+  document.getElementById('sp-reset').addEventListener('click', () => {
+    copy(state.base, DEFAULTS.base);
+    copy(state.colors.light, DEFAULTS.colors.light);
+    copy(state.colors.dark, DEFAULTS.colors.dark);
+    state.mode = INIT_MODE;
+    try { localStorage.removeItem(STORE); } catch (e) { /* ignore */ }
+    reopen();
+  });
+
+  const colorItems = SPEC.filter(g => g.colors)[0].items;
+
+  const toToml = () => {
+    const lines = [
+      '# generated by the appearance panel in book.html',
+      '# save as book_theme.toml next to build_book.py, then: uv run python build_book.py',
+      '',
+      'mode = "' + state.mode + '"',
+      '',
+    ];
+
+    SPEC.forEach(group => {
+      if (group.colors) return;
+      lines.push('[' + group.table + ']');
+      group.items.forEach(item => {
+        const value = state.base[item.key];
+        lines.push(item.key + ' = ' + (item.kind === 'font' ? JSON.stringify(value) : value));
+      });
+      lines.push('');
+    });
+
+    lines.push('[colors]');
+    colorItems.forEach(item => lines.push(item.key + ' = "' + state.colors.light[item.key] + '"'));
+    lines.push('');
+    lines.push('[dark]');
+    colorItems.forEach(item => lines.push(item.key + ' = "' + state.colors.dark[item.key] + '"'));
+    lines.push('');
+    return lines.join('\n');
+  };
+
+  const copyText = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      // file:// has no async clipboard in some browsers; fall back to a textarea
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      area.remove();
+      return ok;
+    }
+  };
+
+  const copyBtn = document.getElementById('sp-copy');
+  copyBtn.addEventListener('click', async () => {
+    const ok = await copyText(toToml());
+    copyBtn.textContent = ok ? 'Copied' : 'Copy failed';
+    setTimeout(() => { copyBtn.textContent = 'Copy TOML'; }, 1600);
+  });
+
+  const toggle = (open) => {
+    panel.hidden = !open;
+    button.setAttribute('aria-expanded', String(open));
+  };
+
+  button.addEventListener('click', () => toggle(panel.hidden));
+  document.getElementById('sp-close').addEventListener('click', () => toggle(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !panel.hidden) toggle(false);
+  });
+
+  apply();
+  refresh();
+})();
+</script>
+</body>
+</html>
