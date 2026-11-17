@@ -6,8 +6,63 @@ jobs, engineers report what happened on site, and customers watch their own inst
 progress — each seeing only what their role allows.
 
 > **Status: planning.** There is no application code yet. This repository currently holds
-> the product plan and its rendered HTML guides. `_TECH.md` will turn the plan into a
-> technical specification, and implementation follows that.
+> the idea brief, the product plan and their rendered HTML guides. `_TECH.md` turns the
+> plan into a technical specification, and only then does the app get written in `src/`.
+
+---
+
+## How this repo is built (the process)
+
+The repository is a chain of four artefacts. Each one is the **only** input to the next,
+and each one is finished and reviewed before the next begins. Nothing downstream is
+started early — in particular, no application code is written until `_TECH.md` exists.
+
+```
+_IDEA.md  ──►  _PLAN.md  ──►  _TECH.md  ──►  src/
+ (ideas)      (product)      (technical)     (app)
+```
+
+`_PLAN.html` and `_TECH.html` are not a fifth stage — they are the same two documents
+rendered as single-file, house-styled pages by the `make-jms-html` skill, so the plan and
+spec can be read, searched and shared without an editor.
+
+| # | Stage | Source | Produces | Rule |
+|---|---|---|---|---|
+| 1 | **Ideas** | human | [`_IDEA.md`](_IDEA.md) | Loose brief. Rough notes, wishes, constraints. **No** structure required. |
+| 2 | **Plan** | `_IDEA.md` | [`_PLAN.md`](_PLAN.md) → [`_PLAN.html`](_PLAN.html) | Product/business view. **No code.** Goals, roles, permissions, domain model, workflows, screens, UX rules, milestones, acceptance criteria, open decisions. Traceable back to every idea. |
+| 3 | **Tech spec** | `_PLAN.md` only | `_TECH.md` → `_TECH.html` | Technical view: schema, migrations, routes, templates, auth, components, tests, task list. Every plan requirement must map to a schema/route/template/test. Decisions in `_PLAN.md` §13 are resolved here. |
+| 4 | **Application** | `_TECH.md` only | `src/` (+ tests, `package.json`) | Implementation. Built milestone by milestone in the order `_PLAN.md` §11 sets. No feature that is not in `_TECH.md`. |
+
+### Stage rules
+
+1. **One direction only.** `_IDEA.md` → `_PLAN.md` → `_TECH.md` → `src/`. If a later stage
+   needs something the earlier one does not have, the earlier document is amended first
+   (and re-rendered), never patched around in code.
+2. **`_PLAN.md` says what and why.** It must not contain code, schema or framework
+   choices beyond the agreed stack note (browser app, HTMX, Node, SQLite → Postgres).
+   It **may** say "the tech spec must decide X" — those are the §13 decisions.
+3. **`_TECH.md` says how.** It owns file layout, schema, route table, permission
+   enforcement points, template inventory, test plan and the ordered task list. If a plan
+   requirement is missing from it, `_TECH.md` is incomplete.
+4. **`src/` says nothing new.** Code implements the tech spec; a deviation is a spec
+   change first, then a code change.
+5. **The prose is rendered.** `_PLAN.md` and `_TECH.md` are also published as single-file
+   HTML guides (same shell, theme and Aa panel) so they can be read, searched and handed
+   to someone who does not use an editor. The authoring format stays Markdown; the HTML
+   is generated, never hand-edited.
+6. **Each document is versioned in git** with the stage it belongs to
+   (`v0.0.1-idea-to-plan`, `v0.0.1-plan`, `v0.0.1-tech`, then `v0.1.0-m1` … for
+   milestones), so the chain of thought is auditable.
+7. **Cost is logged per stage** in [`COSTS.md`](COSTS.md): what prompt produced what
+   artefact and what it cost.
+
+### Where we are now
+
+- Stage 1 — done: [`_IDEA.md`](_IDEA.md).
+- Stage 2 — done: [`_PLAN.md`](_PLAN.md) plus its rendered [`_PLAN.html`](_PLAN.html).
+- Stage 3 — **next**: `_TECH.md`. The twelve questions in `_PLAN.md` §13 are the first
+  thing to answer.
+- Stage 4 — not started: `src/` stays empty until stage 3 is signed off.
 
 ---
 
@@ -18,10 +73,12 @@ progress — each seeing only what their role allows.
 | [`_IDEA.md`](_IDEA.md) | The original brief and ideas that seeded the plan. |
 | [`_PLAN.md`](_PLAN.md) | **The product plan** — goals, roles, permissions, domain model, workflows, screens, UX rules, milestones and acceptance criteria. |
 | [`_PLAN.html`](_PLAN.html) | The plan rendered as a self-contained two-pane guide (house style, filterable contents, Aa appearance panel). |
+| [`COSTS.md`](COSTS.md) | Running log of the prompt used and the cost incurred at each stage. |
 | `docs.toml` | Build config — per-document page titles, eyebrow, subtitle and footer. |
 | `jms_theme.toml` | Theme tokens for the rendered pages (25px page text, sidebar 20% larger). |
 | `skills/make-jms-html/` | The skill that builds these pages: generator, theme, batch builder, conventions. |
-| `_TECH.md` | **Next deliverable** — schema, routes, templates, tests and implementation tasks derived from the plan. |
+| `_TECH.md` | **Next deliverable** (stage 3) — schema, routes, templates, tests and implementation tasks derived from the plan. |
+| `src/` | **Not started** (stage 4) — the application itself, written only after `_TECH.md` is signed off. |
 
 The plan is written deliberately **without code**: it states what the business needs, who
 may do it, what each screen does, and how we will know a stage is finished. Every
@@ -132,12 +189,12 @@ The pages are generated by the [`make-jms-html`](skills/make-jms-html/SKILL.md) 
 `docs.toml` and `jms_theme.toml`:
 
 ```bash
-python skills/make-jms-html/scripts/build_jms_docs.py --pdf     # all pages + PDFs
-python skills/make-jms-html/scripts/build_jms_docs.py --no-pdf  # fast HTML iteration
+python skills/make-jms-html/scripts/build_jms_docs.py             # all pages
+python skills/make-jms-html/scripts/build_jms_docs.py --only _PLAN.md  # one page
 ```
 
 Type defaults are **25px** page text and **20.4px** sidebar/chrome (20% larger than the
-make-book base). Edit `jms_theme.toml` to restyle these pages, or use the Aa panel and
+upstream guide base). Edit `jms_theme.toml` to restyle these pages, or use the Aa panel and
 **Copy TOML** to paste a look back into the theme. Never hand-edit generated HTML — change
 the Markdown or the theme and rebuild.
 
@@ -145,3 +202,7 @@ Documentation is delivered as HTML only: Markdown is converted to HTML (or the H
 authored directly), with no PDF build step for the plan, tech spec or help pages. The
 application itself still generates job-sheet and invoice PDFs as a product feature (see
 `_PLAN.md` §8).
+
+When stage 3 begins, add a `[docs."_TECH.md"]` block to `docs.toml` (there is a
+commented stub) and rerun the builder — the spec then gets the same page shell, theme and
+Aa panel as this plan, with no extra tooling.
