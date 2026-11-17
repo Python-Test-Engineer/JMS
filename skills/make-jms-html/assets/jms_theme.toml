@@ -28,7 +28,7 @@ mode = "auto"
 [type]
 # JMS defaults. fs_content is the reading column; fs_ui is the sidebar, filter,
 # pills and panel labels. 20.4 = upstream 17 * 1.2, i.e. the TOC and all chrome
-# are 20% larger than the make-book default while the reading column is 25px.
+# are 20% larger than the upstream guide default while the reading column is 25px.
 fs_content = 25          # page text, px          (16-90, panel 18-64)
 lh_content = 1.62        # page line height       (1.0-2.6)
 fs_ui = 20.4             # sidebar / chrome text, px (10-30)
@@ -66,7 +66,10 @@ measure = 80             # reading column, % of the pane (40-100)
 
 
 # --------------------------------------------------------------------------
-# fonts - any CSS font stack; the first installed family wins
+# fonts - full CSS font stacks; the first installed family wins
+# The Aa panel offers these kinds as curated dropdowns (FONT_CHOICES in
+# scripts/build_jms_html.py). Any stack written here still works: if it is not
+# one of the curated choices the panel shows it as a "Custom" option.
 # --------------------------------------------------------------------------
 [fonts]
 serif = '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif'

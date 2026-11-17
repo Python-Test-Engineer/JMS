@@ -73,12 +73,24 @@ reads correctly offline and cross-platform.
 
 | key | default | variable | panel label |
 |---|---|---|---|
-| `serif` | `"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif` | `--serif` | Headings (serif stack) |
-| `sans` | `-apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif` | `--sans` | Body (sans stack) |
-| `mono` | `"JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace` | `--mono` | Code (mono stack) |
+| `serif` | `"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif` | `--serif` | Headings (serif) |
+| `sans` | `-apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif` | `--sans` | Body (sans) |
+| `mono` | `"JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace` | `--mono` | Code (mono) |
 
 Quote stacks with single quotes in TOML so the inner double quotes stay literal.
-Panel edits are free text (blank is ignored) and export back verbatim.
+
+The panel shows a **curated dropdown** per kind, never a free-text box: the
+reader picks a name, and the full stack is what is applied and exported. The
+choices live in `FONT_CHOICES` in `scripts/build_jms_html.py`; each is a stack of
+system-installed families ending in a generic one, so picking say *Georgia* adds
+no network request. The first entry of each list is the house default and must
+match `DEFAULT_FONTS`.
+
+A theme file may still name any stack. If `[fonts].<key>` holds a stack that is
+not in the list, the panel keeps it as an extra **Custom (theme stack)** option,
+so the value the theme set is never silently replaced and Copy TOML exports it
+verbatim. Add a `(label, stack)` pair to `FONT_CHOICES` to promote a stack to a
+named choice.
 
 ## `[colors]` and `[dark]`
 
@@ -125,7 +137,9 @@ and the panel work without re-tinting individual rules.
 ## Panel internals worth knowing
 
 - Panel spec is `{table, title, items[{key, cssVar, kind, min, max, step, label}]}`
-  serialised to JSON; kinds are `size`, `number`, `font`, `color`.
+  serialised to JSON; kinds are `size`, `number`, `font`, `color`. `font` items
+  also carry `options[{label, value}]` and render as a `<select>`; the others
+  are sliders, and `color` items become swatches.
 - Applied as inline custom properties on `document.documentElement`; the print
   block therefore overrides them with `!important`.
 - `localStorage` key is `book-theme:<sha256(theme)[:10]>` - a theme edit resets

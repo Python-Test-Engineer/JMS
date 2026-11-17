@@ -5,9 +5,9 @@ paper, spreadsheets and phone calls with one place where managers create custome
 jobs, engineers report what happened on site, and customers watch their own installation
 progress — each seeing only what their role allows.
 
-> **Status: planning.** There is no application code yet. This repository currently holds
-> the idea brief, the product plan and their rendered HTML guides. `_TECH.md` turns the
-> plan into a technical specification, and only then does the app get written in `src/`.
+> **Status: technical specification ready.** The idea brief and product plan are done, and
+> [`_TECH.md`](_TECH.md) now specifies the implementation. There is no application code yet;
+> `src/` is built from the tech spec.
 
 ---
 
@@ -60,9 +60,8 @@ spec can be read, searched and shared without an editor.
 
 - Stage 1 — done: [`_IDEA.md`](_IDEA.md).
 - Stage 2 — done: [`_PLAN.md`](_PLAN.md) plus its rendered [`_PLAN.html`](_PLAN.html).
-- Stage 3 — **next**: `_TECH.md`. The twelve questions in `_PLAN.md` §13 are the first
-  thing to answer.
-- Stage 4 — not started: `src/` stays empty until stage 3 is signed off.
+- Stage 3 — done: [`_TECH.md`](_TECH.md) plus its rendered [`_TECH.html`](_TECH.html).
+- Stage 4 — **next**: build `src/` from `_TECH.md`.
 
 ---
 
@@ -73,12 +72,13 @@ spec can be read, searched and shared without an editor.
 | [`_IDEA.md`](_IDEA.md) | The original brief and ideas that seeded the plan. |
 | [`_PLAN.md`](_PLAN.md) | **The product plan** — goals, roles, permissions, domain model, workflows, screens, UX rules, milestones and acceptance criteria. |
 | [`_PLAN.html`](_PLAN.html) | The plan rendered as a self-contained two-pane guide (house style, filterable contents, Aa appearance panel). |
+| [`_TECH.md`](_TECH.md) | **The technical specification** — stack, JSON store, schemas, routes, auth, templates, PDFs, seed data, tests and implementation order. |
+| [`_TECH.html`](_TECH.html) | The tech spec rendered in the same house-styled guide shell. |
 | [`COSTS.md`](COSTS.md) | Running log of the prompt used and the cost incurred at each stage. |
 | `docs.toml` | Build config — per-document page titles, eyebrow, subtitle and footer. |
 | `jms_theme.toml` | Theme tokens for the rendered pages (25px page text, sidebar 20% larger). |
 | `skills/make-jms-html/` | The skill that builds these pages: generator, theme, batch builder, conventions. |
-| `_TECH.md` | **Next deliverable** (stage 3) — schema, routes, templates, tests and implementation tasks derived from the plan. |
-| `src/` | **Not started** (stage 4) — the application itself, written only after `_TECH.md` is signed off. |
+| `src/` | **Not started** (stage 4) — the application itself, written only from `_TECH.md`. |
 
 The plan is written deliberately **without code**: it states what the business needs, who
 may do it, what each screen does, and how we will know a stage is finished. Every
@@ -116,6 +116,20 @@ or a test.
 Permissions are stored as a role × action-key matrix in the database and enforced
 server-side on every request. Admins can change what a role may do without a redeploy;
 those cells that cannot be removed (for example, the last admin) are safeguarded.
+
+### Technical shape (v1)
+
+- **Runtime:** Node 22 + Express, Nunjucks server-rendered templates and HTMX, no SPA and
+  no CDN at runtime.
+- **Data:** a JSON document store with table-like collections (users, customers, jobs,
+  assignments, events, invoices, documents, permissions, audit), behind repositories so a
+  SQLite/Postgres adapter can replace it later.
+- **Seed:** 2 admins, 2 field-capable managers, 8 engineers, 10 customers with portal
+  logins, and 1–4 randomly assigned jobs per customer (26 jobs for the reference seed).
+- **PDFs:** job sheets and invoices are generated server-side with PDFKit; documentation
+  pages are HTML-only.
+- **Security:** server-side sessions, CSRF, bcrypt passwords, role/action guards on every
+  route and partial, object scoping by customer and assignment, append-only audit.
 
 ---
 
@@ -203,6 +217,6 @@ authored directly), with no PDF build step for the plan, tech spec or help pages
 application itself still generates job-sheet and invoice PDFs as a product feature (see
 `_PLAN.md` §8).
 
-When stage 3 begins, add a `[docs."_TECH.md"]` block to `docs.toml` (there is a
-commented stub) and rerun the builder — the spec then gets the same page shell, theme and
-Aa panel as this plan, with no extra tooling.
+Both `_PLAN.md` and `_TECH.md` have entries in `docs.toml`, so rerunning the builder
+regenerates both pages with the same shell, theme and Aa panel. To rebuild one page, use
+`--only _TECH.md`.

@@ -6,7 +6,8 @@
 > *what* the screens do, and *how* we will know each stage is finished.
 >
 > **What happens next.** `_TECH.md` turns this into a technical specification —
-> browser app, HTMX UI, Node service, SQLite first and Postgres later. Every
+> browser app, HTMX UI, Node service, a JSON document store first and SQLite/
+> Postgres later. Every
 > requirement here is written so `_TECH.md` can answer it with a schema, a route,
 > a template, or a test.
 >
@@ -81,7 +82,9 @@ role allows.
 | **CUSTOMER** | Acme's clients | When is my installation, what's happening | My jobs (portal) |
 
 Each user has exactly **one** role in v1 (role assignment is per user, not per
-job). A job may have **many** engineers.
+job). A job may have **many** engineers. A **MANAGER** may also carry field
+capability (`can_engineer`), so office staff who still install can be assigned
+to jobs without holding a second role.
 
 ### 2.2 Permission model (must be data-driven)
 
@@ -185,6 +188,7 @@ stated in business language first, with the attributes v1 needs.
 
 **User** — `id`, `company_id`, `email` (unique, login name), `password_hash`,
 `display_name`, `role_id`, `customer_id` (nullable; set only for CUSTOMER),
+`can_engineer` (field capability; true for ENGINEER, optional for MANAGER),
 `phone`, `status` (INVITED / ACTIVE / SUSPENDED / ARCHIVED),
 `must_change_password`, `theme_prefs` (JSON: mode, type, fonts, colours),
 `last_login_at`, `created_at`.
@@ -209,7 +213,8 @@ unique), `customer_id`, `title`, `description`, `work_type`
 Customer), `internal_notes`, `customer_notes`, `created_by`, `created_at`,
 `updated_at`, `archived_at`.
 
-**JobAssignment** — `job_id`, `user_id` (must hold ENGINEER role), `is_lead`,
+**JobAssignment** — `job_id`, `user_id` (field-capable: ENGINEER, or MANAGER
+with `can_engineer`), `is_lead`,
 `assigned_at`, `assigned_by`, `removed_at` (soft removal keeps history).
 
 **JobEvent** — `id`, `job_id`, `actor_user_id`, `type`
@@ -429,7 +434,7 @@ office manager in a dark room, without a second stylesheet.
 | Engineer dashboard | today's jobs, next 7 days | Update status | ENGINEER |
 | Customer dashboard ("My jobs") | own jobs by status | Open job | CUSTOMER |
 | Jobs list | filter by status, engineer, date, customer | New job | ADMIN, MANAGER |
-| My jobs | assigned jobs, today first | Update status | ENGINEER |
+| My jobs | assigned jobs, today first | Update status | ENGINEER, field-capable MANAGER |
 | Job detail | everything about one job + timeline | context-dependent (next status / edit / invoice) | all, scoped |
 | Job create / edit | single-column form | Save job | ADMIN, MANAGER |
 | Job assign | engineers + lead | Save assignments | ADMIN, MANAGER |
@@ -501,9 +506,9 @@ The app, this plan and the generated PDFs share the design system already used b
 the mini-js-coder explainers and book — warm paper, terracotta accent, serif
 headings, sans interface text, mono for references and code.
 
-- Palette sources: `skills/anthropic-html-style/references/anthropic-ui.css`
-  (tokens, components) and `skills/make-book/assets/book_theme.toml` (book/guide
-  theme keys, light and dark).
+- Palette sources: `jms_theme.toml` (the house tokens, light and dark) and the
+  vendored `skills/make-jms-html` generator. The app and the guide pages share
+  these values.
 - Typography: serif display for page and section titles; system sans for
   controls and prose; mono for job references, invoice numbers and dates in
   tables.
@@ -583,10 +588,10 @@ generation is server-side and recorded in `Document`.
 |---|---|---|
 | N1 | Performance | Server-rendered pages respond in < 300ms at p95 with the seeded dataset (see N6); lists paginate at 25 rows. |
 | N2 | Availability | Single-host deployment is acceptable for v1; a restart must not lose committed data. |
-| N3 | Portability | SQLite in development, Postgres in production, **one schema, no SQLite-only SQL**; migrations are versioned and reversible. |
+| N3 | Portability | JSON document store first (table-like collections, single writer), then SQLite/Postgres through the same repository boundary; migrations are versioned and reversible. |
 | N4 | Accessibility | WCAG 2.2 AA target verified with keyboard-only walkthroughs and automated checks. |
 | N5 | Browser support | Current Chrome, Edge, Firefox, Safari; iOS Safari and Android Chrome for field use. |
-| N6 | Seed data | A reproducible demo dataset: Acme Windows, 1 admin, 2 managers, 5 engineers, 20 customers, 60 jobs spanning past/present/future, 15 invoices. |
+| N6 | Seed data | A reproducible demo dataset: Acme Windows, 2 admins, 2 field-capable managers, 8 engineers, 10 customers, 1–4 jobs per customer (26 jobs for the reference seed), with invoices for invoiced/paid jobs. |
 | N7 | Testability | Every workflow in §4 has an automated test at the HTTP level, including negative permission tests. |
 | N8 | Observability | Structured request logs, an error log, and an audit view in-app; no personal data or secrets in logs. |
 | N9 | Maintainability | One styling system, no per-page CSS forks; components documented in `_TECH.md`. |
@@ -652,7 +657,7 @@ that is an application feature, not a documentation pipeline.
 - ☐ Light, dark and system modes work; user preferences persist and follow the user; admin default applies.
 - ☐ All §6 UX rules verified: type sizes, hit areas, contrast, keyboard, 360px layout.
 - ☐ All §9 security rules tested, including cross-customer and cross-engineer access attempts.
-- ☐ Seed dataset loads from scratch; SQLite and Postgres both pass the same test suite.
+- ☐ Seed dataset loads from scratch; the JSON store passes the full test suite, and the repository boundary is ready for a SQL adapter.
 - ☐ Backup taken and restored successfully on a clean machine.
 - ☐ Plan, tech spec and help pages published in the house guide style.
 
@@ -674,6 +679,8 @@ that is an application feature, not a documentation pipeline.
 | D10 | HTMX partial vs full-page rendering strategy | Progressive enhancement: full-page forms, HTMX for filters, lists, status control | Templating split |
 | D11 | Session strategy (cookie + server session vs signed token) | Server-side session with an HTTP-only cookie | Auth implementation |
 | D12 | Audit retention | Keep indefinitely in v1; revisit at scale | Storage, export |
+| D13 | Initial data store | JSON file with table-like collections; repository boundary for SQL later | Data layer |
+| D14 | Managers as field engineers | Allow `can_engineer` on MANAGER accounts | Assignments, My jobs |
 
 ---
 
@@ -697,7 +704,7 @@ that is an application feature, not a documentation pipeline.
 | Few horizontal nav items + left TOC pills by user level | §5.1 |
 | Editable table of access level → action visibility | §2.2–2.3, W8 |
 | Simple UX, larger fonts and buttons, easy steps | §6 |
-| Browser app, HTMX, Node, SQLite then Postgres | §10 N3, D10, D11 |
+| Browser app, HTMX, Node, JSON store then SQL | §10 N3, D10, D11, D13 |
 
 ---
 

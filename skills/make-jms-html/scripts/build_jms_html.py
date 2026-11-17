@@ -1,13 +1,12 @@
 """Build a JMS documentation page from Markdown in the house style.
 
-Vendored from make-book 1.0.0 (`scripts/build_book.py`) so this skill is
-self-contained. Deliberate differences from the upstream generator:
+Vendored from the upstream two-pane guide generator so this skill is
+self-contained. JMS-specific choices:
 
   1. JMS type defaults - content 25px, sidebar/chrome 20.4px (fs_ui 17 x 1.2).
   2. The default theme is this skill's `assets/jms_theme.toml`, resolved
      relative to this file, so the script works from any directory.
-  3. Nothing else. Keep the rendering, panel and print code identical to
-     upstream; port fixes there first and re-copy.
+  3. Documentation builds are HTML-only; no PDF step.
 
 Original docstring follows.
 
@@ -24,8 +23,8 @@ heights, sidebar width, reading-column width). Every one of those values is a
 CSS custom property in the generated file, so the page also ships an "Aa" panel
 that edits them live and can export the current settings back as TOML.
 
-    uv run --with markdown python build_book.py --src EXPLAINER.md --out book.html \\
-        --title "Nanocode, explained" --eyebrow "Build your own coding agent"
+    uv run --with markdown python build_jms_html.py --src _PLAN.md --out _PLAN.html \\
+        --title "JMS · Product Plan" --eyebrow "Acme Windows · Job Management System"
 
     ... --theme other.toml        # try an alternative look
     ... --mode dark               # force a colour scheme for this build
@@ -161,6 +160,42 @@ DEFAULT_FONTS = {
     "serif": '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif',
     "sans": '-apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif',
     "mono": '"JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace',
+}
+
+# Curated stacks offered by the Aa panel's font dropdowns. The panel never
+# accepts free text: the reader picks a name, the full stack is what gets saved
+# and exported. Every stack is system-installed families only, so no extra
+# network request is needed, and each ends in a generic family.
+# The first entry per kind is the house default and must match DEFAULT_FONTS.
+FONT_CHOICES = {
+    "serif": [
+        ("House serif (Iowan / Palatino)", DEFAULT_FONTS["serif"]),
+        ("Georgia", 'Georgia, "Times New Roman", Times, serif'),
+        ("Charter / Sitka", 'Charter, "Bitstream Charter", "Sitka Text", Cambria, serif'),
+        ("Cambria", 'Cambria, "Hoefler Text", Georgia, serif'),
+        ("Constantia", 'Constantia, "Palatino Linotype", Palatino, Georgia, serif'),
+        ("Palatino", '"Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif'),
+        ("Garamond", 'Garamond, "EB Garamond", "Times New Roman", serif'),
+        ("Times", '"Times New Roman", Times, Georgia, serif'),
+    ],
+    "sans": [
+        ("House sans (system UI)", DEFAULT_FONTS["sans"]),
+        ("Segoe UI", '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'),
+        ("Helvetica / Arial", 'Helvetica, Arial, "Segoe UI", sans-serif'),
+        ("Verdana", 'Verdana, Geneva, Tahoma, sans-serif'),
+        ("Tahoma", 'Tahoma, Verdana, Segoe UI, sans-serif'),
+        ("Trebuchet MS", '"Trebuchet MS", "Lucida Grande", Tahoma, sans-serif'),
+        ("Calibri", 'Calibri, "Segoe UI", Candara, Optima, sans-serif'),
+        ("Gill Sans / Optima", '"Gill Sans", "Gill Sans MT", Optima, Candara, sans-serif'),
+    ],
+    "mono": [
+        ("House mono (JetBrains)", DEFAULT_FONTS["mono"]),
+        ("Cascadia Mono", '"Cascadia Mono", "Cascadia Code", Consolas, monospace'),
+        ("Consolas", 'Consolas, "Lucida Console", Menlo, monospace'),
+        ("SF Mono / Menlo", '"SF Mono", Menlo, Monaco, "DejaVu Sans Mono", monospace'),
+        ("Courier New", '"Courier New", Courier, "Nimbus Mono PS", monospace'),
+        ("Lucida Console", '"Lucida Console", Monaco, "DejaVu Sans Mono", monospace'),
+    ],
 }
 
 # sizes in px; line heights unitless
@@ -917,17 +952,22 @@ details code { font-size: .85em; }
   accent-color: var(--terra);
 }
 
-.sp-row input[type="text"] {
+.sp-row select {
   grid-column: 1 / -1;
   width: 100%;
+  max-width: 100%;
   margin-top: 3px;
   padding: 5px 8px;
   border: 1px solid var(--line);
   border-radius: 7px;
   background: var(--ivory);
   color: var(--ink);
-  font: 400 var(--fs-copy)/1.4 var(--mono);
+  font: 400 var(--fs-section)/1.4 var(--sans);
+  cursor: pointer;
+  text-overflow: ellipsis;
 }
+
+.sp-row select:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
 
 .sp-colors { display: block; }
 
@@ -1267,19 +1307,39 @@ JS = """
       row.appendChild(label);
 
       if (item.kind === 'font') {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.spellcheck = false;
-        label.appendChild(input);
-        input.addEventListener('change', () => {
-          const value = input.value.trim();
-          if (value) {
-            state.base[item.key] = value;
-            apply();
-            persist();
+        // curated dropdown: a theme stack that is not in the list survives as
+        // an extra "Custom" option so nothing the theme file set is lost
+        const select = document.createElement('select');
+        select.setAttribute('aria-label', item.label);
+        select.title = item.cssVar + ' - full stack is saved, not the name';
+        row.appendChild(select);
+
+        const fill = (current) => {
+          select.textContent = '';
+          const options = item.options || [];
+          if (current && !options.some(o => o.value === current)) {
+            const custom = document.createElement('option');
+            custom.value = current;
+            custom.textContent = 'Custom (theme stack)';
+            select.appendChild(custom);
           }
+          options.forEach(o => {
+            const opt = document.createElement('option');
+            opt.value = o.value;
+            opt.textContent = o.label;
+            opt.title = o.value;
+            select.appendChild(opt);
+          });
+        };
+
+        fill(state.base[item.key]);
+        select.addEventListener('change', () => {
+          state.base[item.key] = select.value;
+          fill(select.value);
+          apply();
+          persist();
         });
-        refs[item.key] = { input: input };
+        refs[item.key] = { input: select, fill: fill };
       } else {
         const out = document.createElement('output');
         row.appendChild(out);
@@ -1321,7 +1381,9 @@ JS = """
         ref.swatch.value = hex6(value);
         ref.hex.textContent = String(value);
       } else if (item.kind === 'font') {
-        ref.input.value = state.base[item.key] || '';
+        const value = state.base[item.key] || '';
+        ref.fill(value);
+        ref.input.value = value;
       } else {
         const value = state.base[item.key];
         ref.input.value = value;
@@ -1517,9 +1579,13 @@ def panel_spec() -> list[dict]:
             "table": "fonts",
             "title": "Fonts",
             "items": [
-                {"key": "serif", "cssVar": "--serif", "kind": "font", "label": "Headings (serif stack)"},
-                {"key": "sans", "cssVar": "--sans", "kind": "font", "label": "Body (sans stack)"},
-                {"key": "mono", "cssVar": "--mono", "kind": "font", "label": "Code (mono stack)"},
+                {"key": key, "cssVar": f"--{key}", "kind": "font", "label": label,
+                 "options": [{"label": name, "value": stack} for name, stack in FONT_CHOICES[key]]}
+                for key, label in (
+                    ("serif", "Headings (serif)"),
+                    ("sans", "Body (sans)"),
+                    ("mono", "Code (mono)"),
+                )
             ],
         },
         {

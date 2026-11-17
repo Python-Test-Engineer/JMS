@@ -671,17 +671,22 @@ details code { font-size: .85em; }
   accent-color: var(--terra);
 }
 
-.sp-row input[type="text"] {
+.sp-row select {
   grid-column: 1 / -1;
   width: 100%;
+  max-width: 100%;
   margin-top: 3px;
   padding: 5px 8px;
   border: 1px solid var(--line);
   border-radius: 7px;
   background: var(--ivory);
   color: var(--ink);
-  font: 400 var(--fs-copy)/1.4 var(--mono);
+  font: 400 var(--fs-section)/1.4 var(--sans);
+  cursor: pointer;
+  text-overflow: ellipsis;
 }
+
+.sp-row select:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
 
 .sp-colors { display: block; }
 
@@ -900,7 +905,8 @@ details code { font-size: .85em; }
 written <strong>without code</strong>: it says <em>what</em> the business needs, <em>who</em> may do it,
 <em>what</em> the screens do, and <em>how</em> we will know each stage is finished.</p>
 <p><strong>What happens next.</strong> <code>_TECH.md</code> turns this into a technical specification —
-browser app, HTMX UI, Node service, SQLite first and Postgres later. Every
+browser app, HTMX UI, Node service, a JSON document store first and SQLite/
+Postgres later. Every
 requirement here is written so <code>_TECH.md</code> can answer it with a schema, a route,
 a template, or a test.</p>
 <p><strong>What "done" mimics.</strong> The web edition of this plan, and the app's own
@@ -1031,7 +1037,9 @@ role allows.</p>
 </tbody>
 </table>
 <p>Each user has exactly <strong>one</strong> role in v1 (role assignment is per user, not per
-job). A job may have <strong>many</strong> engineers.</p>
+job). A job may have <strong>many</strong> engineers. A <strong>MANAGER</strong> may also carry field
+capability (<code>can_engineer</code>), so office staff who still install can be assigned
+to jobs without holding a second role.</p>
 <h3 id="22-permission-model-must-be-data-driven">2.2 Permission model (must be data-driven)</h3>
 <ul>
 <li>Permissions are named <strong>action keys</strong> in the form <code>&lt;area&gt;.&lt;verb&gt;[.&lt;scope&gt;]</code>,
@@ -1411,6 +1419,7 @@ stated in business language first, with the attributes v1 needs.</p>
 (Europe/London), <code>default_theme</code>.</p>
 <p><strong>User</strong> — <code>id</code>, <code>company_id</code>, <code>email</code> (unique, login name), <code>password_hash</code>,
 <code>display_name</code>, <code>role_id</code>, <code>customer_id</code> (nullable; set only for CUSTOMER),
+<code>can_engineer</code> (field capability; true for ENGINEER, optional for MANAGER),
 <code>phone</code>, <code>status</code> (INVITED / ACTIVE / SUSPENDED / ARCHIVED),
 <code>must_change_password</code>, <code>theme_prefs</code> (JSON: mode, type, fonts, colours),
 <code>last_login_at</code>, <code>created_at</code>.</p>
@@ -1430,7 +1439,8 @@ unique), <code>customer_id</code>, <code>title</code>, <code>description</code>,
 <code>price_net</code>, <code>vat_rate</code>, <code>price_gross</code> (Manager-only; hidden from Engineer and
 Customer), <code>internal_notes</code>, <code>customer_notes</code>, <code>created_by</code>, <code>created_at</code>,
 <code>updated_at</code>, <code>archived_at</code>.</p>
-<p><strong>JobAssignment</strong> — <code>job_id</code>, <code>user_id</code> (must hold ENGINEER role), <code>is_lead</code>,
+<p><strong>JobAssignment</strong> — <code>job_id</code>, <code>user_id</code> (field-capable: ENGINEER, or MANAGER
+with <code>can_engineer</code>), <code>is_lead</code>,
 <code>assigned_at</code>, <code>assigned_by</code>, <code>removed_at</code> (soft removal keeps history).</p>
 <p><strong>JobEvent</strong> — <code>id</code>, <code>job_id</code>, <code>actor_user_id</code>, <code>type</code>
 (STATUS_CHANGE / ASSIGNMENT / SCHEDULE_CHANGE / NOTE / DOCUMENT / PRICE_CHANGE),
@@ -1717,7 +1727,7 @@ office manager in a dark room, without a second stylesheet.</p>
 <td>My jobs</td>
 <td>assigned jobs, today first</td>
 <td>Update status</td>
-<td>ENGINEER</td>
+<td>ENGINEER, field-capable MANAGER</td>
 </tr>
 <tr>
 <td>Job detail</td>
@@ -1949,9 +1959,9 @@ office manager in a dark room, without a second stylesheet.</p>
 the mini-js-coder explainers and book — warm paper, terracotta accent, serif
 headings, sans interface text, mono for references and code.</p>
 <ul>
-<li>Palette sources: <code>skills/anthropic-html-style/references/anthropic-ui.css</code>
-  (tokens, components) and <code>skills/make-book/assets/book_theme.toml</code> (book/guide
-  theme keys, light and dark).</li>
+<li>Palette sources: <code>jms_theme.toml</code> (the house tokens, light and dark) and the
+  vendored <code>skills/make-jms-html</code> generator. The app and the guide pages share
+  these values.</li>
 <li>Typography: serif display for page and section titles; system sans for
   controls and prose; mono for job references, invoice numbers and dates in
   tables.</li>
@@ -2098,7 +2108,7 @@ generation is server-side and recorded in <code>Document</code>.</p>
 <tr>
 <td>N3</td>
 <td>Portability</td>
-<td>SQLite in development, Postgres in production, <strong>one schema, no SQLite-only SQL</strong>; migrations are versioned and reversible.</td>
+<td>JSON document store first (table-like collections, single writer), then SQLite/Postgres through the same repository boundary; migrations are versioned and reversible.</td>
 </tr>
 <tr>
 <td>N4</td>
@@ -2113,7 +2123,7 @@ generation is server-side and recorded in <code>Document</code>.</p>
 <tr>
 <td>N6</td>
 <td>Seed data</td>
-<td>A reproducible demo dataset: Acme Windows, 1 admin, 2 managers, 5 engineers, 20 customers, 60 jobs spanning past/present/future, 15 invoices.</td>
+<td>A reproducible demo dataset: Acme Windows, 2 admins, 2 field-capable managers, 8 engineers, 10 customers, 1–4 jobs per customer (26 jobs for the reference seed), with invoices for invoiced/paid jobs.</td>
 </tr>
 <tr>
 <td>N7</td>
@@ -2249,7 +2259,7 @@ that is an application feature, not a documentation pipeline.</p>
 <li>☐ Light, dark and system modes work; user preferences persist and follow the user; admin default applies.</li>
 <li>☐ All §6 UX rules verified: type sizes, hit areas, contrast, keyboard, 360px layout.</li>
 <li>☐ All §9 security rules tested, including cross-customer and cross-engineer access attempts.</li>
-<li>☐ Seed dataset loads from scratch; SQLite and Postgres both pass the same test suite.</li>
+<li>☐ Seed dataset loads from scratch; the JSON store passes the full test suite, and the repository boundary is ready for a SQL adapter.</li>
 <li>☐ Backup taken and restored successfully on a clean machine.</li>
 <li>☐ Plan, tech spec and help pages published in the house guide style.</li>
 </ul>
@@ -2338,6 +2348,18 @@ that is an application feature, not a documentation pipeline.</p>
 <td>Keep indefinitely in v1; revisit at scale</td>
 <td>Storage, export</td>
 </tr>
+<tr>
+<td>D13</td>
+<td>Initial data store</td>
+<td>JSON file with table-like collections; repository boundary for SQL later</td>
+<td>Data layer</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>Managers as field engineers</td>
+<td>Allow <code>can_engineer</code> on MANAGER accounts</td>
+<td>Assignments, My jobs</td>
+</tr>
 </tbody>
 </table>
 <hr />
@@ -2416,8 +2438,8 @@ that is an application feature, not a documentation pipeline.</p>
 <td>§6</td>
 </tr>
 <tr>
-<td>Browser app, HTMX, Node, SQLite then Postgres</td>
-<td>§10 N3, D10, D11</td>
+<td>Browser app, HTMX, Node, JSON store then SQL</td>
+<td>§10 N3, D10, D11, D13</td>
 </tr>
 </tbody>
 </table>
@@ -2604,7 +2626,7 @@ scope until a later plan says otherwise.</p>
   // ============================================================
   // appearance panel: edits the CSS custom properties in :root
   // ============================================================
-  const SPEC = [{"table": "type", "title": "Type", "items": [{"key": "fs_content", "cssVar": "--fs-content", "kind": "size", "unit": "px", "min": 18, "max": 64, "step": 0.5, "label": "Book text"}, {"key": "lh_content", "cssVar": "--lh-content", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Book line height"}, {"key": "fs_ui", "cssVar": "--fs-ui", "kind": "size", "unit": "px", "min": 11, "max": 30, "step": 0.5, "label": "Sidebar and chrome text"}, {"key": "lh_ui", "cssVar": "--lh-ui", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Chrome line height"}]}, {"table": "layout", "title": "Layout", "items": [{"key": "sidebar", "cssVar": "--sidebar", "kind": "size", "unit": "px", "min": 240, "max": 560, "step": 5, "label": "Sidebar width"}, {"key": "measure", "cssVar": "--measure", "kind": "size", "unit": "%", "min": 40, "max": 100, "step": 1, "label": "Reading column width"}]}, {"table": "fonts", "title": "Fonts", "items": [{"key": "serif", "cssVar": "--serif", "kind": "font", "label": "Headings (serif stack)"}, {"key": "sans", "cssVar": "--sans", "kind": "font", "label": "Body (sans stack)"}, {"key": "mono", "cssVar": "--mono", "kind": "font", "label": "Code (mono stack)"}]}, {"table": "colors", "title": "Colours", "colors": true, "items": [{"key": "paper", "cssVar": "--paper", "kind": "color", "label": "Page background"}, {"key": "surface", "cssVar": "--surface", "kind": "color", "label": "Sidebar background"}, {"key": "ivory", "cssVar": "--ivory", "kind": "color", "label": "Cards and inputs"}, {"key": "ink", "cssVar": "--ink", "kind": "color", "label": "Body text"}, {"key": "muted", "cssVar": "--muted", "kind": "color", "label": "Secondary text"}, {"key": "stone", "cssVar": "--stone", "kind": "color", "label": "Faint labels"}, {"key": "line", "cssVar": "--line", "kind": "color", "label": "Borders"}, {"key": "line_soft", "cssVar": "--line-soft", "kind": "color", "label": "Hairline borders"}, {"key": "terra", "cssVar": "--terra", "kind": "color", "label": "Accent"}, {"key": "terra_dark", "cssVar": "--terra-dark", "kind": "color", "label": "Links and accent text"}, {"key": "accent_strong", "cssVar": "--accent-strong", "kind": "color", "label": "Eyebrow / active label"}, {"key": "hover_bg", "cssVar": "--hover-bg", "kind": "color", "label": "Hover background"}, {"key": "active_bg", "cssVar": "--active-bg", "kind": "color", "label": "Active nav background"}, {"key": "active_fg", "cssVar": "--active-fg", "kind": "color", "label": "Active nav text"}, {"key": "focus_ring", "cssVar": "--focus-ring", "kind": "color", "label": "Focus ring"}, {"key": "code_bg", "cssVar": "--code-bg", "kind": "color", "label": "Code block background"}, {"key": "code_fg", "cssVar": "--code-fg", "kind": "color", "label": "Code block text"}, {"key": "inline_code_bg", "cssVar": "--inline-code-bg", "kind": "color", "label": "Inline code background"}, {"key": "inline_code_fg", "cssVar": "--inline-code-fg", "kind": "color", "label": "Inline code text"}, {"key": "quote_bg", "cssVar": "--quote-bg", "kind": "color", "label": "Callout background"}, {"key": "quote_border", "cssVar": "--quote-border", "kind": "color", "label": "Callout border"}, {"key": "quote_fg", "cssVar": "--quote-fg", "kind": "color", "label": "Callout text"}, {"key": "row_hover", "cssVar": "--row-hover", "kind": "color", "label": "Table row hover"}, {"key": "open_bg", "cssVar": "--open-bg", "kind": "color", "label": "Open answer background"}, {"key": "scroll_thumb", "cssVar": "--scroll-thumb", "kind": "color", "label": "Code scrollbar"}, {"key": "copy_bg", "cssVar": "--copy-bg", "kind": "color", "label": "Copy button background"}, {"key": "copy_fg", "cssVar": "--copy-fg", "kind": "color", "label": "Copy button text"}, {"key": "copy_border", "cssVar": "--copy-border", "kind": "color", "label": "Copy button border"}, {"key": "copy_hover", "cssVar": "--copy-hover", "kind": "color", "label": "Copy button hover"}]}];
+  const SPEC = [{"table": "type", "title": "Type", "items": [{"key": "fs_content", "cssVar": "--fs-content", "kind": "size", "unit": "px", "min": 18, "max": 64, "step": 0.5, "label": "Book text"}, {"key": "lh_content", "cssVar": "--lh-content", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Book line height"}, {"key": "fs_ui", "cssVar": "--fs-ui", "kind": "size", "unit": "px", "min": 11, "max": 30, "step": 0.5, "label": "Sidebar and chrome text"}, {"key": "lh_ui", "cssVar": "--lh-ui", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Chrome line height"}]}, {"table": "layout", "title": "Layout", "items": [{"key": "sidebar", "cssVar": "--sidebar", "kind": "size", "unit": "px", "min": 240, "max": 560, "step": 5, "label": "Sidebar width"}, {"key": "measure", "cssVar": "--measure", "kind": "size", "unit": "%", "min": 40, "max": 100, "step": 1, "label": "Reading column width"}]}, {"table": "fonts", "title": "Fonts", "items": [{"key": "serif", "cssVar": "--serif", "kind": "font", "label": "Headings (serif)", "options": [{"label": "House serif (Iowan / Palatino)", "value": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif"}, {"label": "Georgia", "value": "Georgia, \"Times New Roman\", Times, serif"}, {"label": "Charter / Sitka", "value": "Charter, \"Bitstream Charter\", \"Sitka Text\", Cambria, serif"}, {"label": "Cambria", "value": "Cambria, \"Hoefler Text\", Georgia, serif"}, {"label": "Constantia", "value": "Constantia, \"Palatino Linotype\", Palatino, Georgia, serif"}, {"label": "Palatino", "value": "\"Palatino Linotype\", Palatino, \"Book Antiqua\", Georgia, serif"}, {"label": "Garamond", "value": "Garamond, \"EB Garamond\", \"Times New Roman\", serif"}, {"label": "Times", "value": "\"Times New Roman\", Times, Georgia, serif"}]}, {"key": "sans", "cssVar": "--sans", "kind": "font", "label": "Body (sans)", "options": [{"label": "House sans (system UI)", "value": "-apple-system, \"Segoe UI\", Inter, Helvetica, Arial, sans-serif"}, {"label": "Segoe UI", "value": "\"Segoe UI\", Tahoma, Geneva, Verdana, sans-serif"}, {"label": "Helvetica / Arial", "value": "Helvetica, Arial, \"Segoe UI\", sans-serif"}, {"label": "Verdana", "value": "Verdana, Geneva, Tahoma, sans-serif"}, {"label": "Tahoma", "value": "Tahoma, Verdana, Segoe UI, sans-serif"}, {"label": "Trebuchet MS", "value": "\"Trebuchet MS\", \"Lucida Grande\", Tahoma, sans-serif"}, {"label": "Calibri", "value": "Calibri, \"Segoe UI\", Candara, Optima, sans-serif"}, {"label": "Gill Sans / Optima", "value": "\"Gill Sans\", \"Gill Sans MT\", Optima, Candara, sans-serif"}]}, {"key": "mono", "cssVar": "--mono", "kind": "font", "label": "Code (mono)", "options": [{"label": "House mono (JetBrains)", "value": "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, ui-monospace, monospace"}, {"label": "Cascadia Mono", "value": "\"Cascadia Mono\", \"Cascadia Code\", Consolas, monospace"}, {"label": "Consolas", "value": "Consolas, \"Lucida Console\", Menlo, monospace"}, {"label": "SF Mono / Menlo", "value": "\"SF Mono\", Menlo, Monaco, \"DejaVu Sans Mono\", monospace"}, {"label": "Courier New", "value": "\"Courier New\", Courier, \"Nimbus Mono PS\", monospace"}, {"label": "Lucida Console", "value": "\"Lucida Console\", Monaco, \"DejaVu Sans Mono\", monospace"}]}]}, {"table": "colors", "title": "Colours", "colors": true, "items": [{"key": "paper", "cssVar": "--paper", "kind": "color", "label": "Page background"}, {"key": "surface", "cssVar": "--surface", "kind": "color", "label": "Sidebar background"}, {"key": "ivory", "cssVar": "--ivory", "kind": "color", "label": "Cards and inputs"}, {"key": "ink", "cssVar": "--ink", "kind": "color", "label": "Body text"}, {"key": "muted", "cssVar": "--muted", "kind": "color", "label": "Secondary text"}, {"key": "stone", "cssVar": "--stone", "kind": "color", "label": "Faint labels"}, {"key": "line", "cssVar": "--line", "kind": "color", "label": "Borders"}, {"key": "line_soft", "cssVar": "--line-soft", "kind": "color", "label": "Hairline borders"}, {"key": "terra", "cssVar": "--terra", "kind": "color", "label": "Accent"}, {"key": "terra_dark", "cssVar": "--terra-dark", "kind": "color", "label": "Links and accent text"}, {"key": "accent_strong", "cssVar": "--accent-strong", "kind": "color", "label": "Eyebrow / active label"}, {"key": "hover_bg", "cssVar": "--hover-bg", "kind": "color", "label": "Hover background"}, {"key": "active_bg", "cssVar": "--active-bg", "kind": "color", "label": "Active nav background"}, {"key": "active_fg", "cssVar": "--active-fg", "kind": "color", "label": "Active nav text"}, {"key": "focus_ring", "cssVar": "--focus-ring", "kind": "color", "label": "Focus ring"}, {"key": "code_bg", "cssVar": "--code-bg", "kind": "color", "label": "Code block background"}, {"key": "code_fg", "cssVar": "--code-fg", "kind": "color", "label": "Code block text"}, {"key": "inline_code_bg", "cssVar": "--inline-code-bg", "kind": "color", "label": "Inline code background"}, {"key": "inline_code_fg", "cssVar": "--inline-code-fg", "kind": "color", "label": "Inline code text"}, {"key": "quote_bg", "cssVar": "--quote-bg", "kind": "color", "label": "Callout background"}, {"key": "quote_border", "cssVar": "--quote-border", "kind": "color", "label": "Callout border"}, {"key": "quote_fg", "cssVar": "--quote-fg", "kind": "color", "label": "Callout text"}, {"key": "row_hover", "cssVar": "--row-hover", "kind": "color", "label": "Table row hover"}, {"key": "open_bg", "cssVar": "--open-bg", "kind": "color", "label": "Open answer background"}, {"key": "scroll_thumb", "cssVar": "--scroll-thumb", "kind": "color", "label": "Code scrollbar"}, {"key": "copy_bg", "cssVar": "--copy-bg", "kind": "color", "label": "Copy button background"}, {"key": "copy_fg", "cssVar": "--copy-fg", "kind": "color", "label": "Copy button text"}, {"key": "copy_border", "cssVar": "--copy-border", "kind": "color", "label": "Copy button border"}, {"key": "copy_hover", "cssVar": "--copy-hover", "kind": "color", "label": "Copy button hover"}]}];
   const DEFAULTS = {"base": {"fs_ui": 20.4, "fs_content": 25, "lh_ui": 1.62, "lh_content": 1.62, "serif": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif", "sans": "-apple-system, \"Segoe UI\", Inter, Helvetica, Arial, sans-serif", "mono": "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, ui-monospace, monospace", "sidebar": 400, "measure": 80}, "colors": {"light": {"paper": "#f0eee6", "surface": "#fbfaf7", "ivory": "#fffdfa", "ink": "#1f1e1d", "muted": "#55524c", "stone": "#8c877c", "line": "#e2ddd2", "line_soft": "#ece8df", "terra": "#d97757", "terra_dark": "#c9633f", "accent_strong": "#a14e2f", "hover_bg": "#f4f1e9", "active_bg": "#f6ede6", "active_fg": "#8f3f27", "focus_ring": "#e3a98f", "code_bg": "#23211e", "code_fg": "#f3eee5", "inline_code_bg": "#eae7de", "inline_code_fg": "#6f3b26", "quote_bg": "#f8eee8", "quote_border": "#e7cec2", "quote_fg": "#3d3d3a", "row_hover": "#f7f4ee", "open_bg": "#fdf9f5", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}, "dark": {"paper": "#1b1a18", "surface": "#201f1c", "ivory": "#262420", "ink": "#f2ece1", "muted": "#c3bcae", "stone": "#9a9384", "line": "#34312b", "line_soft": "#2b2823", "terra": "#d97757", "terra_dark": "#d97757", "accent_strong": "#f0b49a", "hover_bg": "#262420", "active_bg": "#33261f", "active_fg": "#f0b49a", "focus_ring": "#8a5540", "code_bg": "#141312", "code_fg": "#f3eee5", "inline_code_bg": "#322e28", "inline_code_fg": "#f0b49a", "quote_bg": "#2a211d", "quote_border": "#4a332b", "quote_fg": "#e6ded2", "row_hover": "#262420", "open_bg": "#262420", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}}};
   const INIT_MODE = "auto";
   // the store key is tied to the built theme, so rebuilding with a changed
@@ -2721,19 +2743,39 @@ scope until a later plan says otherwise.</p>
       row.appendChild(label);
 
       if (item.kind === 'font') {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.spellcheck = false;
-        label.appendChild(input);
-        input.addEventListener('change', () => {
-          const value = input.value.trim();
-          if (value) {
-            state.base[item.key] = value;
-            apply();
-            persist();
+        // curated dropdown: a theme stack that is not in the list survives as
+        // an extra "Custom" option so nothing the theme file set is lost
+        const select = document.createElement('select');
+        select.setAttribute('aria-label', item.label);
+        select.title = item.cssVar + ' - full stack is saved, not the name';
+        row.appendChild(select);
+
+        const fill = (current) => {
+          select.textContent = '';
+          const options = item.options || [];
+          if (current && !options.some(o => o.value === current)) {
+            const custom = document.createElement('option');
+            custom.value = current;
+            custom.textContent = 'Custom (theme stack)';
+            select.appendChild(custom);
           }
+          options.forEach(o => {
+            const opt = document.createElement('option');
+            opt.value = o.value;
+            opt.textContent = o.label;
+            opt.title = o.value;
+            select.appendChild(opt);
+          });
+        };
+
+        fill(state.base[item.key]);
+        select.addEventListener('change', () => {
+          state.base[item.key] = select.value;
+          fill(select.value);
+          apply();
+          persist();
         });
-        refs[item.key] = { input: input };
+        refs[item.key] = { input: select, fill: fill };
       } else {
         const out = document.createElement('output');
         row.appendChild(out);
@@ -2775,7 +2817,9 @@ scope until a later plan says otherwise.</p>
         ref.swatch.value = hex6(value);
         ref.hex.textContent = String(value);
       } else if (item.kind === 'font') {
-        ref.input.value = state.base[item.key] || '';
+        const value = state.base[item.key] || '';
+        ref.fill(value);
+        ref.input.value = value;
       } else {
         const value = state.base[item.key];
         ref.input.value = value;

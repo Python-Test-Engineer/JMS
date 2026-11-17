@@ -40,9 +40,6 @@ SKILL = HERE.parent
 BUILD = HERE / "build_jms_html.py"
 THEME = SKILL / "assets" / "jms_theme.toml"
 
-# Repo-local PDF helper (the skill lives next to this one in the JMS repo).
-PDF_SCRIPT = SKILL.parent / "make-pdf-from-html" / "scripts" / "make_pdf.py"
-
 DEFAULT_CHAPTER_REGEX = r"^(\d+)\."
 
 
@@ -75,17 +72,6 @@ def build_one(root: pathlib.Path, src: pathlib.Path, meta: dict, theme: pathlib.
     return out
 
 
-def build_pdf(html: pathlib.Path) -> None:
-    if not PDF_SCRIPT.exists():
-        print(f"    PDF skipped: {PDF_SCRIPT} not found")
-        return
-    pdf = html.with_suffix(".pdf")
-    print(f"    PDF -> {pdf.name}")
-    result = subprocess.run([sys.executable, str(PDF_SCRIPT), str(html), str(pdf)])
-    if result.returncode != 0:
-        print("    PDF failed (HTML is still built)")
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build JMS Markdown docs into house-styled HTML.")
     parser.add_argument("--root", type=pathlib.Path, default=pathlib.Path("."),
@@ -93,9 +79,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--theme", type=pathlib.Path, help="theme TOML (default: skill jms_theme.toml)")
     parser.add_argument("--only", action="append", default=[],
                         help="build only this file name, repeatable (e.g. --only _PLAN.md)")
-    parser.add_argument("--pdf", dest="pdf", action="store_true", help="also build a PDF (default)")
-    parser.add_argument("--no-pdf", dest="pdf", action="store_false", help="HTML only")
-    parser.set_defaults(pdf=True)
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
@@ -136,15 +119,10 @@ def main(argv: list[str] | None = None) -> int:
         meta = {**defaults, **docs.get(src.name, {})}
         built.append(build_one(root, src, meta, theme))
 
-    if args.pdf:
-        for html in built:
-            build_pdf(html)
-
     print("\nbuilt:")
     for html in built:
-        extra = " + pdf" if args.pdf and html.with_suffix(".pdf").exists() else ""
         size = f"{html.stat().st_size / 1024:.0f} KB"
-        print(f"  {html.name:<16} {size:>8}{extra}")
+        print(f"  {html.name:<16} {size:>8}")
     return 0
 
 

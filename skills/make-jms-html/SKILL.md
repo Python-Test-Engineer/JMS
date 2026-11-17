@@ -6,7 +6,7 @@ author: JMS project
 license: MIT
 metadata:
   tags: [docs, html, markdown, css, theming, jms]
-  related_skills: [make-book, make-html-from-md, anthropic-html-style]
+  related_skills: [make-html-from-md]
 ---
 
 # make-jms-html
@@ -26,9 +26,9 @@ use (the mini-js-coder site and book):
   **20.4px** (20% larger than the upstream 17px UI base);
 - **print styles** — navigation and the Aa panel hide when printing.
 
-This skill is self-contained. It vendors the make-book generator with only the
-three documented differences listed in `scripts/build_jms_html.py`, so it can be
-dropped into any project without the make-book skill present.
+This skill is self-contained: the complete generator lives in
+`scripts/build_jms_html.py`, so it can be dropped into any project without any
+sibling skills. The three JMS-specific differences are documented in that file.
 
 ## Layout
 
@@ -85,7 +85,7 @@ and the titles cannot drift between rebuilds.
 | Chrome line height | `lh_ui` | 1.62 | |
 
 `20.4` is exactly `17 × 1.2` — the sidebar is 20% larger than the upstream
-make-book base while the page text is 25px. Every other size is a multiplier of
+17px UI base while the page text is 25px. Every other size is a multiplier of
 those two bases (`[type.scale]` in the theme), so changing one base rescales a
 whole family consistently. Both values are inside the Aa panel ranges, so a
 reader can still adjust them at runtime; the theme file is only the default.
@@ -123,14 +123,19 @@ House rules for JMS documents:
 - `assets/jms_theme.toml` is the source of truth for colours, fonts and the type
   bases. `references/theme-keys.md` documents every key, its CSS variable and
   its panel range.
+- The **Fonts** group is three curated dropdowns (serif, sans, mono), never free
+  text: the list lives in `FONT_CHOICES` in `scripts/build_jms_html.py`, and each
+  choice is a full system-only stack. A stack in the theme file that is not in
+  the list stays selectable as **Custom (theme stack)** rather than being
+  replaced, and Copy TOML exports whichever stack is selected.
 - The Aa panel writes the same keys at runtime and **Copy TOML** exports them, so
   a look designed in the browser can be pasted straight back into the theme file.
 - Resolution order for a page: theme file → built-in defaults (identical values)
   → the reader's saved panel state in `localStorage`.
 - Keep the house palette. Page-specific colour overrides belong in the theme,
-  not in a second stylesheet. The app's own UI tokens come from
-  `skills/anthropic-html-style/references/anthropic-ui.css`; the guide pages use
-  the theme file. They share the same values on purpose.
+  not in a second stylesheet. The app's own UI tokens are specified in
+  `_TECH.md`; the guide pages use the theme file. They share the same values on
+  purpose.
 - `mode = "auto"` follows the OS. `--mode light|dark` bakes a fixed scheme into
   the build (useful for screenshots and printed handouts).
 
@@ -165,9 +170,12 @@ After any build:
 - **`- [ ]` is not a checkbox** in this renderer. Use `☐`.
 - **Long unnumbered `##` headings** wrap in the sidebar; keep chapter titles
   under ~60 characters where possible.
-- **Do not fork the generator.** `scripts/build_jms_html.py` is vendored from
-  make-book 1.0.0. Fix rendering bugs upstream first, then re-copy and re-apply
-  the three documented deltas (theme path, two type defaults, docstring).
+- **Font dropdowns are the only font control.** Do not reintroduce a free-text
+  font input; to offer a new look, add a `(label, stack)` pair to `FONT_CHOICES`
+  (system families, generic family last) and rebuild.
+- **Keep one generator.** `scripts/build_jms_html.py` is the single vendored
+  implementation for JMS pages. Change it here deliberately; do not add per-page
+  forks or second stylesheets.
 - **Google Fonts is the only network reference.** Set `webfont_url = ""` in the
   theme for a fully offline artefact.
 - **Theme values must stay inside the panel ranges** (`fs_ui` 10–30,

@@ -1,0 +1,5551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JMS · Technical Specification</title>
+<meta name="description" content="Schema, routes, templates, tests and the tasks that build them.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ---- colours (light): [colors] in book_theme.toml ---- */
+  --paper: #f0eee6;
+  --surface: #fbfaf7;
+  --ivory: #fffdfa;
+  --ink: #1f1e1d;
+  --muted: #55524c;
+  --stone: #8c877c;
+  --line: #e2ddd2;
+  --line-soft: #ece8df;
+  --terra: #d97757;
+  --terra-dark: #c9633f;
+  --accent-strong: #a14e2f;
+  --hover-bg: #f4f1e9;
+  --active-bg: #f6ede6;
+  --active-fg: #8f3f27;
+  --focus-ring: #e3a98f;
+  --code-bg: #23211e;
+  --code-fg: #f3eee5;
+  --inline-code-bg: #eae7de;
+  --inline-code-fg: #6f3b26;
+  --quote-bg: #f8eee8;
+  --quote-border: #e7cec2;
+  --quote-fg: #3d3d3a;
+  --row-hover: #f7f4ee;
+  --open-bg: #fdf9f5;
+  --scroll-thumb: #4a463f;
+  --copy-bg: #2c2a26;
+  --copy-fg: #d8d2c6;
+  --copy-border: #4a463f;
+  --copy-hover: #3a3732;
+
+  /* ---- fonts: [fonts] ---- */
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+
+  /* ---- type: the two bases every other size is derived from ---- */
+  --fs-ui: 20.4px;            /* sidebar + chrome */
+  --fs-content: 25px;      /* the book itself */
+  --lh-ui: 1.62;
+  --lh-content: 1.62;
+
+  /* ---- sizes derived from --fs-content ---- */
+  --fs-h2: calc(var(--fs-content) * 1.765);
+  --fs-h3: calc(var(--fs-content) * 1.118);
+  --fs-h4: calc(var(--fs-content) * 0.882);
+  --fs-table: calc(var(--fs-content) * 0.824);
+  --fs-pre: calc(var(--fs-content) * 0.588);
+  --fs-details: calc(var(--fs-content) * 0.882);
+  --fs-chnav: calc(var(--fs-content) * 0.794);
+  --fs-mobile: calc(var(--fs-content) * 0.765);
+
+  /* ---- sizes derived from --fs-ui ---- */
+  --fs-eyebrow: calc(var(--fs-ui) * 0.824);
+  --fs-brand-h1: calc(var(--fs-ui) * 1.618);
+  --fs-brand-p: calc(var(--fs-ui) * 0.912);
+  --fs-filter: calc(var(--fs-ui) * 0.941);
+  --fs-section: calc(var(--fs-ui) * 0.912);
+  --fs-foot: calc(var(--fs-ui) * 0.853);
+  --fs-copy: calc(var(--fs-ui) * 0.647);
+  --fs-menu: calc(var(--fs-ui) * 0.765);
+
+  /* ---- layout: [layout] ---- */
+  --sidebar: 400px;
+  --measure: 80%;
+}
+
+/* ---- colours (dark): [dark] ---- */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --paper: #1b1a18;
+  --surface: #201f1c;
+  --ivory: #262420;
+  --ink: #f2ece1;
+  --muted: #c3bcae;
+  --stone: #9a9384;
+  --line: #34312b;
+  --line-soft: #2b2823;
+  --terra: #d97757;
+  --terra-dark: #d97757;
+  --accent-strong: #f0b49a;
+  --hover-bg: #262420;
+  --active-bg: #33261f;
+  --active-fg: #f0b49a;
+  --focus-ring: #8a5540;
+  --code-bg: #141312;
+  --code-fg: #f3eee5;
+  --inline-code-bg: #322e28;
+  --inline-code-fg: #f0b49a;
+  --quote-bg: #2a211d;
+  --quote-border: #4a332b;
+  --quote-fg: #e6ded2;
+  --row-hover: #262420;
+  --open-bg: #262420;
+  --scroll-thumb: #4a463f;
+  --copy-bg: #2c2a26;
+  --copy-fg: #d8d2c6;
+  --copy-border: #4a463f;
+  --copy-hover: #3a3732;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #1b1a18;
+  --surface: #201f1c;
+  --ivory: #262420;
+  --ink: #f2ece1;
+  --muted: #c3bcae;
+  --stone: #9a9384;
+  --line: #34312b;
+  --line-soft: #2b2823;
+  --terra: #d97757;
+  --terra-dark: #d97757;
+  --accent-strong: #f0b49a;
+  --hover-bg: #262420;
+  --active-bg: #33261f;
+  --active-fg: #f0b49a;
+  --focus-ring: #8a5540;
+  --code-bg: #141312;
+  --code-fg: #f3eee5;
+  --inline-code-bg: #322e28;
+  --inline-code-fg: #f0b49a;
+  --quote-bg: #2a211d;
+  --quote-border: #4a332b;
+  --quote-fg: #e6ded2;
+  --row-hover: #262420;
+  --open-bg: #262420;
+  --scroll-thumb: #4a463f;
+  --copy-bg: #2c2a26;
+  --copy-fg: #d8d2c6;
+  --copy-border: #4a463f;
+  --copy-hover: #3a3732;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: grid;
+  grid-template-columns: var(--sidebar) minmax(0, 1fr);
+  height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font: var(--fs-ui)/var(--lh-ui) var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- left pane ---------- */
+
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  padding: 27px 27px 20px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.brand .eyebrow {
+  margin: 0 0 6px;
+  color: var(--accent-strong);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.brand h1 {
+  margin: 0;
+  font: 500 var(--fs-brand-h1)/1.2 var(--serif);
+  letter-spacing: -.01em;
+}
+
+.brand p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: var(--fs-brand-p);
+}
+
+.filter {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.filter input {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--ivory);
+  color: var(--ink);
+  font: var(--fs-filter) var(--sans);
+}
+
+.filter input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+#toc {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 10px 48px;
+  scrollbar-width: thin;
+}
+
+#toc ol, #toc ul { margin: 0; padding: 0; list-style: none; }
+
+#toc .chapter > a {
+  display: block;
+  padding: 10px 12px 5px;
+  color: var(--ink);
+  font: 600 var(--fs-ui)/1.35 var(--sans);
+  text-decoration: none;
+  border-radius: 7px;
+}
+
+#toc .chapter > a:hover { background: var(--hover-bg); }
+
+#toc .chapter > a .num {
+  display: inline-block;
+  min-width: 27px;
+  color: var(--terra-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+#toc .sections { margin: 0 0 6px; padding: 0 0 0 6px; list-style: none; }
+
+#toc .frontmatter > a {
+  color: var(--muted);
+  font: 500 var(--fs-section)/1.35 var(--sans);
+  letter-spacing: .01em;
+}
+
+#toc .sections a {
+  display: block;
+  padding: 4px 12px 4px 30px;
+  color: var(--muted);
+  font-size: var(--fs-section);
+  line-height: 1.35;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+
+#toc .sections a:hover { color: var(--ink); background: var(--hover-bg); }
+
+#toc a.active {
+  color: var(--ink);
+  background: var(--active-bg);
+  border-left-color: var(--terra);
+}
+
+#toc .sections a.active { color: var(--active-fg); font-weight: 600; }
+
+#toc .hidden { display: none; }
+
+.sidebar-foot {
+  padding: 12px 20px 18px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--stone);
+  font-size: var(--fs-foot);
+}
+
+.sidebar-foot a { color: var(--terra-dark); text-decoration: none; }
+
+/* ---------- right pane ---------- */
+
+#pane {
+  position: relative;
+  min-width: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+#progress {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: 3px;
+  background: transparent;
+}
+
+#progress > span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--terra);
+  transition: width .12s linear;
+}
+
+#content {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 68px 54px 170px;
+  font-size: var(--fs-content);
+  line-height: var(--lh-content);
+}
+
+#content > h1:first-child { display: none; }  /* the title lives in the sidebar */
+
+#content a[id] { display: block; scroll-margin-top: 24px; }
+
+h2, h3 { scroll-margin-top: 24px; }
+
+h1, h2, h3, h4 {
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+h2 {
+  margin: 4.5rem 0 1rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+  font: 500 var(--fs-h2)/1.14 var(--serif);
+  letter-spacing: -.015em;
+  scroll-margin-top: 24px;
+}
+
+#content > h2:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+
+h3 {
+  margin: 2.4rem 0 .7rem;
+  font: 600 var(--fs-h3)/1.25 var(--sans);
+  letter-spacing: -.01em;
+  scroll-margin-top: 24px;
+}
+
+h4 { margin: 1.8rem 0 .5rem; font: 600 var(--fs-h4)/1.3 var(--sans); }
+
+p { margin: 0 0 1.05rem; }
+
+a { color: var(--terra-dark); text-underline-offset: 2px; }
+
+strong { font-weight: 650; }
+
+hr {
+  height: 1px;
+  margin: 3rem 0;
+  border: 0;
+  background: var(--line);
+}
+
+ul, ol { margin: 0 0 1.1rem; padding-left: 1.4rem; }
+
+li { margin: .3rem 0; }
+
+li > p { margin: .3rem 0; }
+
+/* the "You are here" block quotes */
+blockquote {
+  margin: 1.4rem 0;
+  padding: 14px 18px;
+  border: 1px solid var(--quote-border);
+  border-left: 5px solid var(--terra);
+  border-radius: 12px;
+  background: var(--quote-bg);
+  color: var(--quote-fg);
+}
+
+blockquote p { margin: 0; }
+blockquote p + p { margin-top: .5rem; }
+
+/* tables */
+table {
+  width: 100%;
+  margin: 1.3rem 0 1.6rem;
+  border-collapse: collapse;
+  font-size: var(--fs-table);
+}
+
+th {
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--line);
+  color: var(--muted);
+  font-weight: 650;
+  text-align: left;
+  vertical-align: bottom;
+}
+
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+
+tr:hover td { background: var(--row-hover); }
+
+/* code */
+code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--inline-code-bg);
+  color: var(--inline-code-fg);
+  font: .875em/1.4 var(--mono);
+}
+
+pre {
+  position: relative;
+  margin: 1.2rem 0 1.5rem;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  overflow-x: auto;
+  font: var(--fs-pre)/1.55 var(--mono);
+  white-space: pre;                 /* ASCII diagrams must not be re-flowed */
+  tab-size: 4;
+}
+
+pre code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+pre::-webkit-scrollbar { height: 10px; }
+pre::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
+
+.copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 9px;
+  border: 1px solid var(--copy-border);
+  border-radius: 6px;
+  background: var(--copy-bg);
+  color: var(--copy-fg);
+  font: var(--fs-copy) var(--sans);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s, background .15s;
+}
+
+pre:hover .copy, .copy:focus-visible { opacity: 1; }
+.copy:hover { background: var(--copy-hover); }
+
+/* collapsible checkpoint answers */
+details {
+  margin: .8rem 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--ivory);
+}
+
+details[open] { border-color: var(--quote-border); background: var(--open-bg); }
+
+summary {
+  color: var(--terra-dark);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+summary::-webkit-details-marker { display: none; }
+
+summary::before {
+  display: inline-block;
+  width: 1em;
+  color: var(--terra);
+  content: "\25B8";
+  transition: transform .15s;
+}
+
+details[open] summary::before { transform: rotate(90deg); }
+
+details p { margin: .7rem 0 0; color: var(--muted); font-size: var(--fs-details); }
+
+details code { font-size: .85em; }
+
+/* chapter navigation appended by this script */
+.chnav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 3rem 0 0;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-chnav);
+}
+
+.chnav a {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--ivory);
+  text-decoration: none;
+}
+
+.chnav a:hover { border-color: var(--quote-border); background: var(--open-bg); }
+
+.chnav .grow { flex: 1; }
+
+/* mobile: the sidebar becomes a drawer */
+#menu {
+  display: none;
+  position: fixed;
+  z-index: 20;
+  top: 12px;
+  left: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink);
+  font: var(--fs-menu) var(--sans);
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  body { grid-template-columns: 1fr; }
+
+  #sidebar {
+    position: fixed;
+    z-index: 15;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(86vw, 425px);
+    transform: translateX(-102%);
+    transition: transform .2s ease;
+    box-shadow: 0 0 40px rgba(31, 30, 29, .18);
+  }
+
+  body.nav-open #sidebar { transform: translateX(0); }
+
+  #menu { display: block; }
+
+  #sidebar .brand { padding-top: 58px; }   /* clear the floating button */
+
+  #content { padding: 72px 24px 110px; font-size: var(--fs-mobile); }
+}
+
+/* ---------- appearance panel ---------- */
+
+#stylebtn {
+  position: fixed;
+  z-index: 30;
+  right: 18px;
+  bottom: 18px;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 6px 22px rgba(31, 30, 29, .16);
+  font: 500 var(--fs-brand-h1)/1 var(--serif);
+  cursor: pointer;
+}
+
+#stylebtn:hover { border-color: var(--quote-border); color: var(--terra-dark); }
+#stylebtn[aria-expanded="true"] { border-color: var(--terra); color: var(--terra-dark); }
+
+#stylepanel {
+  position: fixed;
+  z-index: 31;
+  right: 18px;
+  bottom: 76px;
+  display: flex;
+  flex-direction: column;
+  width: 372px;
+  max-height: min(78vh, 760px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 18px 50px rgba(31, 30, 29, .24);
+  font: var(--fs-section)/1.45 var(--sans);
+}
+
+#stylepanel[hidden] { display: none; }
+
+.sp-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.sp-head h2 {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: 600 var(--fs-ui)/1.2 var(--sans);
+  letter-spacing: 0;
+}
+
+.sp-head select,
+.sp-foot button {
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--ivory);
+  color: var(--ink);
+  font: 400 var(--fs-section)/1.3 var(--sans);
+  cursor: pointer;
+}
+
+.sp-head select:focus-visible,
+.sp-foot button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+
+.sp-body { padding: 4px 13px 14px; overflow-x: hidden; overflow-y: auto; }
+
+.sp-group { padding: 11px 0; border-bottom: 1px solid var(--line-soft); }
+
+.sp-group:last-child { border-bottom: 0; }
+
+.sp-group h3 {
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--stone);
+  font: 700 var(--fs-eyebrow)/1.2 var(--sans);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.sp-group h3 .tag {
+  margin-left: 6px;
+  color: var(--terra-dark);
+  letter-spacing: .04em;
+  text-transform: none;
+}
+
+.sp-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  align-items: baseline;
+  margin: 9px 0;
+}
+
+.sp-row label { color: var(--muted); }
+
+.sp-row > * { min-width: 0; }
+
+.sp-row output {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-row input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 2px 0 0;
+  accent-color: var(--terra);
+}
+
+.sp-row select {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 3px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--ivory);
+  color: var(--ink);
+  font: 400 var(--fs-section)/1.4 var(--sans);
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+
+.sp-row select:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+
+.sp-colors { display: block; }
+
+.sp-colors label {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 0;
+}
+
+.sp-colors .swatch-label {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sp-colors label > * { min-width: 0; }
+
+.sp-colors input[type="color"] {
+  width: 26px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.sp-colors .hex {
+  color: var(--stone);
+  font: 400 var(--fs-section)/1 var(--mono);
+}
+
+.sp-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.sp-foot .spacer { flex: 1; }
+
+@media (max-width: 520px) {
+  #stylepanel { right: 8px; left: 8px; width: auto; bottom: 72px; }
+}
+
+@page {
+  size: A4; margin: 17mm 15mm 18mm 15mm;
+  /* folio: optional page-number marker for print and future tooling */
+  @bottom-center { content: counter(page); font: 8.5pt var(--sans); color: #6b675f; }
+}
+@page:first { @bottom-center { content: none; } }   /* no folio on the title page */
+@page:blank { @bottom-center { content: none; } }
+
+@media print {
+  /* Print is always light, whatever mode the reader had: paper-white page, near
+     black ink, and a pale code block instead of the screen's dark one. These are
+     !important because the "Aa" panel writes the same properties as inline styles
+     on <html>, and inline styles outrank any non-important author rule. */
+  :root {
+    color-scheme: light;
+    --paper: #ffffff !important; --surface: #ffffff !important; --ivory: #ffffff !important;
+    --ink: #1f1e1d !important; --muted: #44423d !important; --stone: #6b675f !important;
+    --line: #d8d3c8 !important; --line-soft: #e8e4da !important;
+    --terra: #c9633f !important; --terra-dark: #a14e2f !important;
+    --accent-strong: #8f3f27 !important;
+    --code-bg: #f6f4ef !important; --code-fg: #26241f !important;
+    --inline-code-bg: #f0ede5 !important; --inline-code-fg: #6f3b26 !important;
+    --quote-bg: #faf5f1 !important; --quote-border: #e7cec2 !important;
+    --quote-fg: #3d3d3a !important;
+    --open-bg: #fdfbf8 !important; --row-hover: #f7f4ee !important;
+  }
+  html, body { background: #fff !important; display: block; height: auto; }
+  #sidebar, #menu, #progress, .copy, .chnav, #stylebtn, #stylepanel { display: none !important; }
+  #pane { overflow: visible; display: block; }
+  /* the on-screen column is 2x; print gets back to a sane page scale */
+  #content { max-width: none; padding: 0; font-size: 10.5pt; line-height: 1.5; }
+  /* the title is hidden on screen (the sidebar carries it); on paper it heads the book */
+  #content > h1:first-child {
+    display: block; font: 500 26pt/1.15 var(--serif);
+    margin: 0 0 .5em; break-after: avoid;
+  }
+  h2 { font-size: 19pt; margin: 0 0 .6em; }
+  /* Only chapters start a new page, not every section. The break sits on the
+     chapter's anchor, not on its h2: Chrome makes the Contents links point at the
+     anchor, and an anchor left at the bottom of the previous page makes every
+     "go to chapter" link land one page early. As a zero-height block the anchor
+     sits at the top of the new page, which is also where the h2 starts. */
+  a[id^="ch"] { display: block; height: 0; margin: 0; break-before: page; }
+  a[id^="ch"] + h2 { break-before: auto; }
+  h2[data-appendix] { break-before: page; }   /* appendices start fresh too */
+  h3 { font-size: 12.5pt; }
+  h4 { font-size: 10.5pt; }
+  h2, h3, h4 { break-after: avoid; break-inside: avoid; }
+  table { font-size: 8.5pt; break-inside: avoid; }
+  details p { font-size: 10pt; }
+  details { break-inside: avoid; }
+  pre {
+    white-space: pre-wrap; word-break: break-word;
+    break-inside: avoid; font-size: 7.2pt; line-height: 1.35;
+    border: 1px solid var(--line-soft) !important;
+  }
+  blockquote, table, figure { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<button id="menu" type="button" aria-label="Toggle contents">☰ Contents</button>
+
+<nav id="sidebar" aria-label="Table of contents">
+  <div class="brand">
+    <p class="eyebrow">Acme Windows · Job Management System</p>
+    <h1>JMS · Technical Specification</h1>
+    <p>Schema, routes, templates, tests and the tasks that build them.</p></div>
+  <div class="filter">
+    <input id="filter" type="search" placeholder="Filter chapters and sections…" aria-label="Filter table of contents">
+  </div>
+  <div id="toc"><ol>
+<li class="chapter"><a href="#ch01"><span class="num">01</span>Scope, decisions and conventions</a>
+<ul class="sections">
+<li><a href="#11-what-v1-builds">1.1 What v1 builds</a></li>
+<li><a href="#12-fixed-technical-decisions">1.2 Fixed technical decisions</a></li>
+<li><a href="#13-deliberate-changes-from-_planmd">1.3 Deliberate changes from _PLAN.md</a></li>
+<li><a href="#14-data-and-code-conventions">1.4 Data and code conventions</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch02"><span class="num">02</span>Architecture</a>
+<ul class="sections">
+<li><a href="#21-runtime-shape">2.1 Runtime shape</a></li>
+<li><a href="#22-request-lifecycle">2.2 Request lifecycle</a></li>
+<li><a href="#23-concurrency-and-process-model">2.3 Concurrency and process model</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch03"><span class="num">03</span>Stack, dependencies and scripts</a>
+<ul class="sections">
+<li><a href="#31-dependencies">3.1 Dependencies</a></li>
+<li><a href="#32-packagejson-scripts">3.2 package.json scripts</a></li>
+<li><a href="#33-version-policy">3.3 Version policy</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch04"><span class="num">04</span>Repository layout</a>
+</li>
+<li class="chapter"><a href="#ch05"><span class="num">05</span>Configuration</a>
+<ul class="sections">
+<li><a href="#51-environment-variables">5.1 Environment variables</a></li>
+<li><a href="#52-validation">5.2 Validation</a></li>
+<li><a href="#53-directories">5.3 Directories</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch06"><span class="num">06</span>HTTP conventions</a>
+<ul class="sections">
+<li><a href="#61-responses-and-status-codes">6.1 Responses and status codes</a></li>
+<li><a href="#62-htmx-rules">6.2 HTMX rules</a></li>
+<li><a href="#63-csrf-and-flash">6.3 CSRF and flash</a></li>
+<li><a href="#64-errors-and-not-found-behaviour">6.4 Errors and not-found behaviour</a></li>
+<li><a href="#65-pagination-filtering-and-sorting">6.5 Pagination, filtering and sorting</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch07"><span class="num">07</span>JSON database</a>
+<ul class="sections">
+<li><a href="#71-file-shape">7.1 File shape</a></li>
+<li><a href="#72-store-api">7.2 Store API</a></li>
+<li><a href="#73-transactions-locking-and-atomic-writes">7.3 Transactions, locking and atomic writes</a></li>
+<li><a href="#74-schema-validation-and-migrations">7.4 Schema validation and migrations</a></li>
+<li><a href="#75-indexes">7.5 Indexes</a></li>
+<li><a href="#76-future-sql-adapter">7.6 Future SQL adapter</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch08"><span class="num">08</span>Data model</a>
+<ul class="sections">
+<li><a href="#81-shared-value-objects">8.1 Shared value objects</a></li>
+<li><a href="#82-companies">8.2 companies</a></li>
+<li><a href="#83-users">8.3 users</a></li>
+<li><a href="#84-roles">8.4 roles</a></li>
+<li><a href="#85-permissions">8.5 permissions</a></li>
+<li><a href="#86-customers">8.6 customers</a></li>
+<li><a href="#87-jobs">8.7 jobs</a></li>
+<li><a href="#88-job_assignments">8.8 job_assignments</a></li>
+<li><a href="#89-job_events">8.9 job_events</a></li>
+<li><a href="#810-invoices">8.10 invoices</a></li>
+<li><a href="#811-documents">8.11 documents</a></li>
+<li><a href="#812-settings">8.12 settings</a></li>
+<li><a href="#813-sessions-separate-file">8.13 sessions (separate file)</a></li>
+<li><a href="#814-audit_log">8.14 audit_log</a></li>
+<li><a href="#815-relationships">8.15 Relationships</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch09"><span class="num">09</span>Authentication and sessions</a>
+<ul class="sections">
+<li><a href="#91-sign-in">9.1 Sign-in</a></li>
+<li><a href="#92-session-lifecycle">9.2 Session lifecycle</a></li>
+<li><a href="#93-password-rules">9.3 Password rules</a></li>
+<li><a href="#94-first-sign-in-change-password">9.4 First sign-in / change password</a></li>
+<li><a href="#95-rate-limiting">9.5 Rate limiting</a></li>
+<li><a href="#96-password-reset-and-invites">9.6 Password reset and invites</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch10"><span class="num">10</span>Authorization</a>
+<ul class="sections">
+<li><a href="#101-middleware-order">10.1 Middleware order</a></li>
+<li><a href="#102-action-keys-and-default-matrix">10.2 Action keys and default matrix</a></li>
+<li><a href="#103-object-level-scoping">10.3 Object-level scoping</a></li>
+<li><a href="#104-ui-visibility-is-not-enforcement">10.4 UI visibility is not enforcement</a></li>
+<li><a href="#105-safeguards-the-matrix-cannot-remove">10.5 Safeguards the matrix cannot remove</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch11"><span class="num">11</span>Domain services and rules</a>
+<ul class="sections">
+<li><a href="#111-status-machine">11.1 Status machine</a></li>
+<li><a href="#112-transition-algorithm">11.2 Transition algorithm</a></li>
+<li><a href="#113-assignments">11.3 Assignments</a></li>
+<li><a href="#114-scheduling-and-conflicts">11.4 Scheduling and conflicts</a></li>
+<li><a href="#115-references-and-numbering">11.5 References and numbering</a></li>
+<li><a href="#116-notes-and-visibility">11.6 Notes and visibility</a></li>
+<li><a href="#117-invoices">11.7 Invoices</a></li>
+<li><a href="#118-documents-and-pdfs">11.8 Documents and PDFs</a></li>
+<li><a href="#119-archive-and-audit">11.9 Archive and audit</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch12"><span class="num">12</span>Routes</a>
+<ul class="sections">
+<li><a href="#121-public-and-account">12.1 Public and account</a></li>
+<li><a href="#122-dashboards">12.2 Dashboards</a></li>
+<li><a href="#123-jobs">12.3 Jobs</a></li>
+<li><a href="#124-customers">12.4 Customers</a></li>
+<li><a href="#125-invoices">12.5 Invoices</a></li>
+<li><a href="#126-customer-portal">12.6 Customer portal</a></li>
+<li><a href="#127-insights-and-search">12.7 Insights and search</a></li>
+<li><a href="#128-admin">12.8 Admin</a></li>
+<li><a href="#129-htmx-partials">12.9 HTMX partials</a></li>
+<li><a href="#1210-controller-pattern">12.10 Controller pattern</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch13"><span class="num">13</span>Templates and UI</a>
+<ul class="sections">
+<li><a href="#131-template-inventory">13.1 Template inventory</a></li>
+<li><a href="#132-layout-and-shared-context">13.2 Layout and shared context</a></li>
+<li><a href="#133-navigation-rules">13.3 Navigation rules</a></li>
+<li><a href="#134-forms">13.4 Forms</a></li>
+<li><a href="#135-status-control">13.5 Status control</a></li>
+<li><a href="#136-lists-tables-and-mobile">13.6 Lists, tables and mobile</a></li>
+<li><a href="#137-theme-and-aa-panel">13.7 Theme and Aa panel</a></li>
+<li><a href="#138-empty-error-and-edge-states">13.8 Empty, error and edge states</a></li>
+<li><a href="#139-accessibility-implementation">13.9 Accessibility implementation</a></li>
+<li><a href="#1310-print">13.10 Print</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch14"><span class="num">14</span>PDF generation</a>
+<ul class="sections">
+<li><a href="#141-job-sheet">14.1 Job sheet</a></li>
+<li><a href="#142-invoice">14.2 Invoice</a></li>
+<li><a href="#143-generation-flow">14.3 Generation flow</a></li>
+<li><a href="#144-layout-tokens">14.4 Layout tokens</a></li>
+<li><a href="#145-tests">14.5 Tests</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch15"><span class="num">15</span>Seed data</a>
+<ul class="sections">
+<li><a href="#151-command-and-determinism">15.1 Command and determinism</a></li>
+<li><a href="#152-staff-accounts">15.2 Staff accounts</a></li>
+<li><a href="#153-customer-accounts">15.3 Customer accounts</a></li>
+<li><a href="#154-jobs">15.4 Jobs</a></li>
+<li><a href="#155-assignments">15.5 Assignments</a></li>
+<li><a href="#156-events-invoices-and-documents">15.6 Events, invoices and documents</a></li>
+<li><a href="#157-acceptance-checks">15.7 Acceptance checks</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch16"><span class="num">16</span>Security and audit</a>
+<ul class="sections">
+<li><a href="#161-headers-and-transport">16.1 Headers and transport</a></li>
+<li><a href="#162-input-and-output">16.2 Input and output</a></li>
+<li><a href="#163-audit-events">16.3 Audit events</a></li>
+<li><a href="#164-logging">16.4 Logging</a></li>
+<li><a href="#165-backups">16.5 Backups</a></li>
+<li><a href="#166-threat-tests">16.6 Threat tests</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch17"><span class="num">17</span>Testing</a>
+<ul class="sections">
+<li><a href="#171-test-setup">17.1 Test setup</a></li>
+<li><a href="#172-unit-tests">17.2 Unit tests</a></li>
+<li><a href="#173-http-and-workflow-tests">17.3 HTTP and workflow tests</a></li>
+<li><a href="#174-permission-matrix-test">17.4 Permission matrix test</a></li>
+<li><a href="#175-seed-test">17.5 Seed test</a></li>
+<li><a href="#176-accessibility-and-performance">17.6 Accessibility and performance</a></li>
+<li><a href="#177-ci-order">17.7 CI order</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch18"><span class="num">18</span>Operations</a>
+<ul class="sections">
+<li><a href="#181-local-development">18.1 Local development</a></li>
+<li><a href="#182-production">18.2 Production</a></li>
+<li><a href="#183-backup-and-restore-drill">18.3 Backup and restore drill</a></li>
+<li><a href="#184-performance-budgets">18.4 Performance budgets</a></li>
+<li><a href="#185-observability">18.5 Observability</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch19"><span class="num">19</span>Implementation order</a>
+<ul class="sections">
+<li><a href="#191-definition-of-done">19.1 Definition of done</a></li>
+</ul>
+</li>
+<li class="chapter"><a href="#ch20"><span class="num">20</span>Traceability and open questions</a>
+<ul class="sections">
+<li><a href="#201-plan-to-technical-spec">20.1 Plan to technical spec</a></li>
+<li><a href="#202-open-questions-for-build-sign-off">20.2 Open questions for build sign-off</a></li>
+</ul>
+</li>
+</ol></div>
+  <div class="sidebar-foot">
+    Tech spec v0.1.0 · <a href="_PLAN.md">back: _PLAN.md</a>
+  </div>
+</nav>
+
+<main id="pane">
+  <div id="progress" aria-hidden="true"><span></span></div>
+  <article id="content">
+<h1 id="jms-technical-specification">JMS — Technical Specification</h1>
+<blockquote>
+<p><strong>What this is.</strong> The implementation contract for JMS v1. It turns <code>_PLAN.md</code> into
+a browser application: Node service, HTMX-rendered templates, a JSON document store
+with table-like collections, server-side authorisation, PDF job sheets/invoices and a
+reproducible seed dataset.</p>
+<p><strong>Status.</strong> Draft v0.1 — ready to build. <code>_PLAN.md</code> remains the product authority; this
+document is the engineering authority. Where the two differ, §1.3 records the change
+explicitly.</p>
+<p><strong>Documentation rule.</strong> <code>_PLAN.md</code>, <code>_TECH.md</code> and help pages are HTML-only. Markdown is
+converted to HTML or authored directly. The application itself does generate PDF job
+sheets and invoices.</p>
+</blockquote>
+<hr />
+<a id="ch01"></a>
+<h2 id="1-scope-decisions-and-conventions">1. Scope, decisions and conventions</h2>
+<h3 id="11-what-v1-builds">1.1 What v1 builds</h3>
+<p>A single deployable Node web application for Acme Windows that provides:</p>
+<ul>
+<li>sign-in, first-sign-in password change, sessions and server-side authorisation;</li>
+<li>an editable role × action permission matrix;</li>
+<li>customers, customer portal logins, jobs, assignments, scheduling and status tracking;</li>
+<li>a customer portal limited to the customer's own jobs, updates and documents;</li>
+<li>invoices with gapless numbering and server-generated PDFs;</li>
+<li>global search, operations/engineer dashboards, timeline, workload and financial views;</li>
+<li>an admin area for users, roles, permissions, company settings, themes and audit;</li>
+<li>a JSON data store that behaves like a small relational database and can be replaced by
+  SQLite/Postgres without rewriting routes or templates.</li>
+</ul>
+<h3 id="12-fixed-technical-decisions">1.2 Fixed technical decisions</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D13</td>
+<td>Server runtime</td>
+<td>Node.js 22 LTS, ES modules, one process</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>HTTP framework</td>
+<td>Express 4</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>Templates</td>
+<td>Nunjucks, server-rendered HTML</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>Interactivity</td>
+<td>HTMX 2, vendored locally; no SPA, no CDN at runtime</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>Initial database</td>
+<td>JSON document store with table-like collections</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>Password hashing</td>
+<td>bcrypt, cost 12 (<code>bcryptjs</code> for portability)</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>Validation</td>
+<td>Zod schemas at every write boundary</td>
+</tr>
+<tr>
+<td>D20</td>
+<td>Dates/timezone</td>
+<td>Luxon; store UTC ISO 8601; display <code>Europe/London</code></td>
+</tr>
+<tr>
+<td>D21</td>
+<td>Money</td>
+<td>integer pence; VAT as integer basis points; never floats</td>
+</tr>
+<tr>
+<td>D22</td>
+<td>PDF engine</td>
+<td>PDFKit, server-side, A4</td>
+</tr>
+<tr>
+<td>D23</td>
+<td>Logging</td>
+<td>Pino structured JSON logs</td>
+</tr>
+<tr>
+<td>D24</td>
+<td>Tests</td>
+<td>Node built-in test runner + Supertest; HTTP-level workflow tests</td>
+</tr>
+<tr>
+<td>D25</td>
+<td>Managers as engineers</td>
+<td><code>user.can_engineer = true</code> capability on MANAGER accounts</td>
+</tr>
+<tr>
+<td>D26</td>
+<td>Seed data</td>
+<td>2 admins, 2 managers (field-capable), 8 engineers, 10 customers, 1–4 jobs each</td>
+</tr>
+<tr>
+<td>D27</td>
+<td>Docs build</td>
+<td>Markdown → HTML only; no PDF build for docs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-deliberate-changes-from-_planmd">1.3 Deliberate changes from <code>_PLAN.md</code></h3>
+<table>
+<thead>
+<tr>
+<th>Plan reference</th>
+<th>Change</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§10 N3</td>
+<td>v1 starts on the JSON store, not SQLite</td>
+<td>User decision; a repository boundary keeps a later SQL adapter cheap</td>
+</tr>
+<tr>
+<td>§2.1</td>
+<td>Managers may be field-capable via <code>can_engineer</code></td>
+<td>User decision; they keep the MANAGER role and may be assigned to jobs</td>
+</tr>
+<tr>
+<td>§10 N6</td>
+<td>Seed is 2 admins / 2 managers / 8 engineers / 10 customers / 1–4 jobs each</td>
+<td>User decision; replaces the earlier 1/2/5/20/60 seed</td>
+</tr>
+<tr>
+<td>§11.2</td>
+<td>Documentation is HTML-only</td>
+<td>Docs no longer need PDFs; product PDFs remain</td>
+</tr>
+</tbody>
+</table>
+<p>Everything else follows <code>_PLAN.md</code>, including the action keys in §2.3, the invariants in
+§2.4, the status machine in §3.3, the UX rules in §6 and the security rules in §9.</p>
+<h3 id="14-data-and-code-conventions">1.4 Data and code conventions</h3>
+<ul>
+<li><strong>IDs:</strong> UUID v4 strings generated with <code>crypto.randomUUID()</code>.</li>
+<li><strong>Timestamps:</strong> UTC ISO 8601 strings (<code>2026-03-16T08:00:00.000Z</code>). Render in the company
+  timezone. Never store local-time strings.</li>
+<li><strong>Dates:</strong> business dates use <code>YYYY-MM-DD</code> only where a time is meaningless (invoice due
+  date is stored as an instant; display is local).</li>
+<li><strong>Money:</strong> integer minor units (<code>price_net: 425000</code> means £4,250.00).</li>
+<li><strong>VAT:</strong> integer basis points (<code>vat_rate_bp: 2000</code> means 20.00%).</li>
+<li><strong>Percentages:</strong> basis points unless stated otherwise.</li>
+<li><strong>Emails:</strong> lower-cased and trimmed before uniqueness checks.</li>
+<li><strong>Soft deletion:</strong> jobs and customers use <code>archived_at</code>; invoices use <code>VOID</code>; audit and
+  events are append-only and never deleted.</li>
+<li><strong>Validation:</strong> reject unknown fields on writes; coerce only form strings explicitly.</li>
+<li><strong>Escaping:</strong> Nunjucks autoescape on. Notes are plain text, never HTML.</li>
+<li><strong>No secrets in code:</strong> configuration comes from environment variables.</li>
+</ul>
+<hr />
+<div class="chnav"><span class="grow"></span><a class="grow" href="#ch02">2. Architecture &rarr;</a></div><a id="ch02"></a>
+<h2 id="2-architecture">2. Architecture</h2>
+<h3 id="21-runtime-shape">2.1 Runtime shape</h3>
+<pre><code>Browser (HTMX + progressive forms)
+        │  HTTP, cookies, HTML fragments
+        ▼
+Express app
+  ├─ middleware: request id, logging, sessions, CSRF, auth, permissions
+  ├─ routes/controllers: parse, authorise, call services, render
+  ├─ services: jobs, invoices, permissions, PDFs, audit
+  ├─ repositories: typed access to collections
+  └─ templates: Nunjucks layouts, pages, partials, macros
+        │
+        ├─ data/jms.json          domain collections (single writer)
+        ├─ data/sessions.json     session records (separate write-heavy store)
+        ├─ storage/documents/     generated PDFs
+        └─ backups/               timestamped copies
+</code></pre>
+<h3 id="22-request-lifecycle">2.2 Request lifecycle</h3>
+<ol>
+<li>Express assigns a request ID and starts a Pino child logger.</li>
+<li>Security headers are set; static files are served with cache headers.</li>
+<li>The session cookie is read; the session record is loaded and idleness expiry checked.</li>
+<li>The authenticated user is loaded; deactivated/archived users are signed out.</li>
+<li>CSRF is verified for every unsafe method (<code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code>).</li>
+<li>The route guard runs <code>requirePermission(actionKey)</code>.</li>
+<li>The controller calls a service, which applies object scoping and domain rules.</li>
+<li>The service writes domain changes and audit rows inside one store transaction.</li>
+<li>The controller renders a full page or an HTMX fragment and sets flash data.</li>
+<li>The store persists the new snapshot atomically before the response is considered
+    successful.</li>
+</ol>
+<h3 id="23-concurrency-and-process-model">2.3 Concurrency and process model</h3>
+<ul>
+<li><strong>One Node process only.</strong> The JSON store is not safe for multiple writers. Do not run
+  PM2 cluster mode, multiple containers or multiple replicas against the same data file.</li>
+<li>A lock file (<code>data/jms.lock</code>) contains the PID. Startup refuses to run if another live
+  process owns the lock; stale locks are removed only after an explicit check.</li>
+<li>All domain writes go through <code>store.transaction()</code>, which serialises writers with a
+  promise queue. Reads use the in-memory snapshot and do not queue.</li>
+<li>Session writes go to a separate store and are throttled: <code>last_seen_at</code> is persisted at
+  most once per minute per session.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch01">&larr; 1. Scope, decisions and conventions</a><a class="grow" href="#ch03">3. Stack, dependencies and scripts &rarr;</a></div><a id="ch03"></a>
+<h2 id="3-stack-dependencies-and-scripts">3. Stack, dependencies and scripts</h2>
+<h3 id="31-dependencies">3.1 Dependencies</h3>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Purpose</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>express</code></td>
+<td>HTTP routing, middleware</td>
+<td>4.x</td>
+</tr>
+<tr>
+<td><code>nunjucks</code></td>
+<td>Server templates</td>
+<td>autoescape, async filters off</td>
+</tr>
+<tr>
+<td><code>bcryptjs</code></td>
+<td>Password hashing</td>
+<td>cost 12; no native build step</td>
+</tr>
+<tr>
+<td><code>zod</code></td>
+<td>Request/schema validation</td>
+<td>fail fast on config and writes</td>
+</tr>
+<tr>
+<td><code>luxon</code></td>
+<td>Timezone-aware dates</td>
+<td><code>Europe/London</code></td>
+</tr>
+<tr>
+<td><code>pdfkit</code></td>
+<td>Job sheet and invoice PDFs</td>
+<td>A4, streams to file</td>
+</tr>
+<tr>
+<td><code>helmet</code></td>
+<td>Security headers/CSP</td>
+<td>configure for local HTMX assets</td>
+</tr>
+<tr>
+<td><code>compression</code></td>
+<td>Gzip/Brotli</td>
+<td>static + HTML</td>
+</tr>
+<tr>
+<td><code>pino</code>, <code>pino-http</code></td>
+<td>Structured logs</td>
+<td>request IDs, redaction</td>
+</tr>
+<tr>
+<td><code>cookie</code></td>
+<td>Cookie parsing</td>
+<td>signed session cookie</td>
+</tr>
+<tr>
+<td><code>htmx.org</code></td>
+<td>UI behaviour</td>
+<td>vendored in <code>public/vendor/</code></td>
+</tr>
+<tr>
+<td><code>supertest</code> (dev)</td>
+<td>HTTP tests</td>
+<td>with Node test runner</td>
+</tr>
+<tr>
+<td><code>pdf-parse</code> (dev)</td>
+<td>Assert PDF text in tests</td>
+<td>no production dependency</td>
+</tr>
+<tr>
+<td><code>eslint</code> (dev)</td>
+<td>Lint</td>
+<td>flat config</td>
+</tr>
+</tbody>
+</table>
+<p>No build step. No CDN. Static assets are served from <code>public/</code>.</p>
+<h3 id="32-packagejson-scripts">3.2 <code>package.json</code> scripts</h3>
+<pre><code class="language-json">{
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;node src/server.js&quot;,
+    &quot;dev&quot;: &quot;node --watch src/server.js&quot;,
+    &quot;seed&quot;: &quot;node scripts/seed.js&quot;,
+    &quot;seed:force&quot;: &quot;node scripts/seed.js --force&quot;,
+    &quot;reset&quot;: &quot;node scripts/reset.js --force&quot;,
+    &quot;backup&quot;: &quot;node scripts/backup.js&quot;,
+    &quot;restore&quot;: &quot;node scripts/restore.js&quot;,
+    &quot;test&quot;: &quot;node --test&quot;,
+    &quot;test:watch&quot;: &quot;node --test --watch&quot;,
+    &quot;lint&quot;: &quot;eslint .&quot;,
+    &quot;check&quot;: &quot;npm run lint &amp;&amp; npm test&quot;
+  }
+}
+</code></pre>
+<h3 id="33-version-policy">3.3 Version policy</h3>
+<ul>
+<li><code>package-lock.json</code> is committed.</li>
+<li>Engines: <code>"node": "&gt;=22.11"</code>.</li>
+<li>Production installs use <code>npm ci --omit=dev</code>.</li>
+<li>Dependency updates are a deliberate commit; no automatic major upgrades.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch02">&larr; 2. Architecture</a><a class="grow" href="#ch04">4. Repository layout &rarr;</a></div><a id="ch04"></a>
+<h2 id="4-repository-layout">4. Repository layout</h2>
+<pre><code>JMS/
+  _PLAN.md  _TECH.md  README.md
+  docs.toml  jms_theme.toml
+  skills/make-jms-html/
+  package.json  package-lock.json  .env.example  .gitignore
+  data/
+    jms.json                 # created by seed; ignored by git
+    sessions.json            # created at runtime; ignored
+    jms.lock
+  backups/                   # ignored
+  storage/documents/         # ignored
+  scripts/
+    seed.js
+    reset.js
+    backup.js
+    restore.js
+  src/
+    server.js                # listen, graceful shutdown
+    app.js                   # express app factory (testable)
+    config.js                # env parsing + Zod validation
+    logger.js
+    db/
+      store.js               # atomic JSON store, transactions, lock
+      indexes.js
+      schemas.js             # Zod schemas per collection
+      migrations/
+      repositories/
+        users.js
+        customers.js
+        jobs.js
+        invoices.js
+        documents.js
+        audit.js
+        permissions.js
+    auth/
+      passwords.js
+      sessions.js
+      csrf.js
+      rate-limit.js
+    domain/
+      status.js              # transition table + guards
+      permissions.js         # action keys, matrix helpers, scoping
+      references.js          # JOB/INV numbering
+      money.js
+      dates.js
+    services/
+      users.js
+      customers.js
+      jobs.js
+      invoices.js
+      documents.js
+      dashboard.js
+      audit.js
+      settings.js
+    routes/
+      public.js
+      account.js
+      dashboards.js
+      jobs.js
+      customers.js
+      invoices.js
+      portal.js
+      insights.js
+      admin.js
+      search.js
+      partials.js
+    middleware/
+      auth.js
+      permissions.js
+      csrf.js
+      errors.js
+      htmx.js
+      request-id.js
+    forms/
+      auth.js
+      customers.js
+      jobs.js
+      invoices.js
+      users.js
+      settings.js
+    views/
+      layouts/
+        app.njk
+        auth.njk
+        print.njk
+      pages/…
+      partials/…
+      macros/…
+    public/
+      css/tokens.css
+      css/app.css
+      css/print.css
+      js/app.js
+      js/appearance.js
+      js/theme-boot.js
+      vendor/htmx.min.js
+  tests/
+    helpers/
+    unit/
+    http/
+    workflows/
+</code></pre>
+<hr />
+<div class="chnav"><a class="grow" href="#ch03">&larr; 3. Stack, dependencies and scripts</a><a class="grow" href="#ch05">5. Configuration &rarr;</a></div><a id="ch05"></a>
+<h2 id="5-configuration">5. Configuration</h2>
+<h3 id="51-environment-variables">5.1 Environment variables</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NODE_ENV</code></td>
+<td>no</td>
+<td><code>development</code></td>
+<td><code>development</code>, <code>test</code>, <code>production</code></td>
+</tr>
+<tr>
+<td><code>PORT</code></td>
+<td>no</td>
+<td><code>3000</code></td>
+<td>HTTP port</td>
+</tr>
+<tr>
+<td><code>APP_URL</code></td>
+<td>production</td>
+<td><code>http://localhost:3000</code></td>
+<td>absolute links and cookie decisions</td>
+</tr>
+<tr>
+<td><code>SESSION_SECRET</code></td>
+<td>production</td>
+<td>—</td>
+<td>32+ random bytes, signs session IDs</td>
+</tr>
+<tr>
+<td><code>DATA_FILE</code></td>
+<td>no</td>
+<td><code>data/jms.json</code></td>
+<td>domain store path</td>
+</tr>
+<tr>
+<td><code>SESSION_FILE</code></td>
+<td>no</td>
+<td><code>data/sessions.json</code></td>
+<td>session store path</td>
+</tr>
+<tr>
+<td><code>BACKUP_DIR</code></td>
+<td>no</td>
+<td><code>backups</code></td>
+<td>backup destination</td>
+</tr>
+<tr>
+<td><code>PDF_DIR</code></td>
+<td>no</td>
+<td><code>storage/documents</code></td>
+<td>generated PDFs</td>
+</tr>
+<tr>
+<td><code>SESSION_IDLE_MINUTES</code></td>
+<td>no</td>
+<td><code>60</code></td>
+<td>inactivity expiry</td>
+</tr>
+<tr>
+<td><code>COOKIE_SECURE</code></td>
+<td>production</td>
+<td><code>true</code> in production</td>
+<td>Secure cookie flag</td>
+</tr>
+<tr>
+<td><code>TRUST_PROXY</code></td>
+<td>no</td>
+<td><code>false</code></td>
+<td>set when behind a trusted proxy</td>
+</tr>
+<tr>
+<td><code>DEFAULT_PASSWORD</code></td>
+<td>no</td>
+<td><code>JMS123</code></td>
+<td>seed/invite starting password only</td>
+</tr>
+<tr>
+<td><code>COMPANY_TIMEZONE</code></td>
+<td>no</td>
+<td><code>Europe/London</code></td>
+<td>display timezone</td>
+</tr>
+<tr>
+<td><code>CURRENCY</code></td>
+<td>no</td>
+<td><code>GBP</code></td>
+<td>display currency</td>
+</tr>
+<tr>
+<td><code>VAT_RATE_BP</code></td>
+<td>no</td>
+<td><code>2000</code></td>
+<td>default VAT (20%)</td>
+</tr>
+<tr>
+<td><code>LOG_LEVEL</code></td>
+<td>no</td>
+<td><code>info</code></td>
+<td>pino level</td>
+</tr>
+<tr>
+<td><code>SEED</code></td>
+<td>no</td>
+<td><code>20260316</code></td>
+<td>deterministic seed value</td>
+</tr>
+</tbody>
+</table>
+<p><code>.env.example</code> documents every variable. <code>.env</code> is ignored. Production validation fails
+startup if <code>SESSION_SECRET</code> is missing/weak, <code>COOKIE_SECURE</code> is false, or <code>NODE_ENV</code> is not
+<code>production</code>.</p>
+<h3 id="52-validation">5.2 Validation</h3>
+<p><code>src/config.js</code> parses <code>process.env</code> with a Zod object, applies defaults and exports a
+frozen config. No module reads <code>process.env</code> directly. Tests inject config overrides.</p>
+<h3 id="53-directories">5.3 Directories</h3>
+<p>On boot the app ensures <code>data/</code>, <code>backups/</code> and <code>storage/documents/</code> exist and are
+writable. Failure is fatal with a clear log line. The data directory must be on persistent
+storage in production.</p>
+<hr />
+<div class="chnav"><a class="grow" href="#ch04">&larr; 4. Repository layout</a><a class="grow" href="#ch06">6. HTTP conventions &rarr;</a></div><a id="ch06"></a>
+<h2 id="6-http-conventions">6. HTTP conventions</h2>
+<h3 id="61-responses-and-status-codes">6.1 Responses and status codes</h3>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Page render</td>
+<td><code>200 text/html</code></td>
+</tr>
+<tr>
+<td>Successful unsafe request</td>
+<td><code>302</code> redirect to the next screen, with flash</td>
+</tr>
+<tr>
+<td>Successful HTMX mutation</td>
+<td><code>200</code> fragment + <code>HX-Trigger: jms:flash</code></td>
+</tr>
+<tr>
+<td>Validation failure</td>
+<td><code>400</code> with the form and field errors</td>
+</tr>
+<tr>
+<td>Not signed in</td>
+<td><code>302</code> to <code>/signin?next=…</code></td>
+</tr>
+<tr>
+<td>Permission denied</td>
+<td><code>403</code> friendly page/fragment</td>
+</tr>
+<tr>
+<td>Object out of scope / not found</td>
+<td><code>404</code> (do not reveal existence)</td>
+</tr>
+<tr>
+<td>Conflict (duplicate email, lead clash)</td>
+<td><code>409</code> with explanation</td>
+</tr>
+<tr>
+<td>Server error</td>
+<td><code>500</code> friendly page, request ID shown, details only logged</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-htmx-rules">6.2 HTMX rules</h3>
+<ul>
+<li>The server sets <code>HX-Request: true</code> on HTMX calls; controllers branch on it.</li>
+<li>HTMX responses return a fragment, never a full document.</li>
+<li>Full-page forms are the baseline. Every create/edit form works without JavaScript.</li>
+<li>Lists, search, filters, status control and timeline refresh use HTMX.</li>
+<li>After a mutation, return the updated fragment and trigger a flash event.</li>
+<li>Set <code>HX-Redirect</code> only when a full navigation is genuinely needed.</li>
+<li>Disable submit buttons on submit (<code>app.js</code>); show an inline busy state within 300 ms.</li>
+<li>Never rely on client-side checks for authorisation or validation.</li>
+</ul>
+<h3 id="63-csrf-and-flash">6.3 CSRF and flash</h3>
+<ul>
+<li>A random CSRF token is created per session and exposed as <code>csrfToken</code>.</li>
+<li>Full forms include <code>&lt;input type="hidden" name="_csrf" value="…"&gt;</code>.</li>
+<li>HTMX requests send <code>X-CSRF-Token</code> from a <code>&lt;meta&gt;</code> tag.</li>
+<li>Missing/invalid token → <code>403</code>, no state change.</li>
+<li>Flash messages are stored in the session as <code>{type, message}</code> and rendered once.</li>
+</ul>
+<h3 id="64-errors-and-not-found-behaviour">6.4 Errors and not-found behaviour</h3>
+<ul>
+<li>Signed-in users never see a raw stack trace.</li>
+<li>Out-of-scope records return the friendly not-found page, not a 403, to avoid ID probing.</li>
+<li>A friendly 403 explains the missing permission and links to the user's landing screen.</li>
+<li>Validation errors re-render the form with values preserved and focus on the first error.</li>
+</ul>
+<h3 id="65-pagination-filtering-and-sorting">6.5 Pagination, filtering and sorting</h3>
+<ul>
+<li>Default page size 25; maximum 100.</li>
+<li><code>?page=2&amp;per_page=25</code>; invalid values fall back to defaults.</li>
+<li>Sort/filter parameters are allow-listed per list; unknown keys are ignored.</li>
+<li>Search requires at least 2 characters.</li>
+<li>Lists show a count and the active filters as removable pills.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch05">&larr; 5. Configuration</a><a class="grow" href="#ch07">7. JSON database &rarr;</a></div><a id="ch07"></a>
+<h2 id="7-json-database">7. JSON database</h2>
+<h3 id="71-file-shape">7.1 File shape</h3>
+<p><code>data/jms.json</code> is one JSON object. Each top-level key except <code>_meta</code> is a "table": an array
+of records. This is deliberately relational in spirit, not a free-form document dump.</p>
+<pre><code class="language-json">{
+  &quot;_meta&quot;: {
+    &quot;schema_version&quot;: 1,
+    &quot;seed_version&quot;: &quot;2026-03-16.1&quot;,
+    &quot;created_at&quot;: &quot;2026-03-16T08:00:00.000Z&quot;,
+    &quot;updated_at&quot;: &quot;2026-03-16T08:00:00.000Z&quot;,
+    &quot;sequences&quot;: {
+      &quot;job&quot;: { &quot;2026&quot;: 26 },
+      &quot;invoice&quot;: { &quot;2026&quot;: 2 }
+    }
+  },
+  &quot;companies&quot;: [],
+  &quot;roles&quot;: [],
+  &quot;permissions&quot;: [],
+  &quot;users&quot;: [],
+  &quot;customers&quot;: [],
+  &quot;jobs&quot;: [],
+  &quot;job_assignments&quot;: [],
+  &quot;job_events&quot;: [],
+  &quot;invoices&quot;: [],
+  &quot;documents&quot;: [],
+  &quot;settings&quot;: [],
+  &quot;audit_log&quot;: []
+}
+</code></pre>
+<p><code>sessions</code> live in <code>data/sessions.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;_meta&quot;: { &quot;schema_version&quot;: 1 },
+  &quot;sessions&quot;: []
+}
+</code></pre>
+<h3 id="72-store-api">7.2 Store API</h3>
+<p><code>src/db/store.js</code> exposes a small, table-oriented interface. Routes and services never
+read the file directly.</p>
+<pre><code class="language-js">const store = await createStore({
+  file,
+  schemas,          // Zod schema per collection
+  empty,            // initial data factory
+  lockFile,
+});
+
+store.all(&quot;jobs&quot;);
+store.get(&quot;jobs&quot;, id);
+store.findOne(&quot;users&quot;, (u) =&gt; u.email === email);
+store.insert(&quot;jobs&quot;, record);
+store.update(&quot;jobs&quot;, id, (job) =&gt; ({ ...job, status: &quot;SCHEDULED&quot; }));
+store.transaction(async (tx) =&gt; {
+  tx.insert(&quot;job_events&quot;, event);
+  tx.update(&quot;jobs&quot;, jobId, patch);
+});
+store.snapshot();
+store.backup(&quot;pre-migration&quot;);
+</code></pre>
+<p>Repositories wrap these methods with domain-specific functions, so replacing JSON with SQL
+means replacing repositories, not controllers.</p>
+<h3 id="73-transactions-locking-and-atomic-writes">7.3 Transactions, locking and atomic writes</h3>
+<ul>
+<li>A transaction clones the current data object (small dataset), applies mutations to the
+  clone, validates the affected records, then swaps it in and persists.</li>
+<li>On any thrown error, the clone is discarded; memory and disk keep the previous snapshot.</li>
+<li>Writers are serialised through a promise queue. Read requests continue against the
+  current committed snapshot.</li>
+<li>Persistence writes <code>data/jms.json.tmp</code>, <code>fsync</code>s it where supported, renames it over the
+  target, and keeps the previous file as <code>data/jms.json.bak</code>.</li>
+<li>A failed write returns 500 and logs the request ID. The in-memory state is rolled back to
+  the last persisted snapshot, not left ahead of disk.</li>
+<li>A process-level lock prevents two writers on one data file.</li>
+</ul>
+<h3 id="74-schema-validation-and-migrations">7.4 Schema validation and migrations</h3>
+<ul>
+<li>Every collection has a Zod schema in <code>src/db/schemas.js</code>.</li>
+<li>Boot validates <code>_meta.schema_version</code>, then every record. Invalid data refuses startup
+  with a clear message and a path to the backup.</li>
+<li>Migrations live in <code>src/db/migrations/NNN-description.js</code> and export
+  <code>{ from, to, up(data) }</code>. They run in order inside a transaction, after a backup.</li>
+<li>v1 starts at <code>schema_version: 1</code>; no migrations are required on first release.</li>
+<li>Seed idempotency is tracked by <code>_meta.seed_version</code>.</li>
+</ul>
+<h3 id="75-indexes">7.5 Indexes</h3>
+<p>On boot, build in-memory maps:</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>users by id/email</td>
+<td><code>Map&lt;string, User&gt;</code></td>
+</tr>
+<tr>
+<td>users by role</td>
+<td><code>Map&lt;roleKey, Set&lt;userId&gt;&gt;</code></td>
+</tr>
+<tr>
+<td>customers by id/email</td>
+<td><code>Map&lt;string, Customer&gt;</code></td>
+</tr>
+<tr>
+<td>jobs by id/reference</td>
+<td><code>Map&lt;string, Job&gt;</code></td>
+</tr>
+<tr>
+<td>jobs by customer</td>
+<td><code>Map&lt;customerId, Set&lt;jobId&gt;&gt;</code></td>
+</tr>
+<tr>
+<td>assignments by job/user/active</td>
+<td><code>Map&lt;string, Set&lt;Assignment&gt;&gt;</code></td>
+</tr>
+<tr>
+<td>invoices by number/job/status</td>
+<td><code>Map&lt;string, Invoice&gt;</code></td>
+</tr>
+<tr>
+<td>documents by entity</td>
+<td><code>Map&lt;"TYPE:id", Document[]&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Indexes are rebuilt after every committed mutation that affects their keys. For the v1
+dataset (under 100 jobs) this is cheaper and simpler than query planners.</p>
+<h3 id="76-future-sql-adapter">7.6 Future SQL adapter</h3>
+<p>The repository contract is the seam:</p>
+<table>
+<thead>
+<tr>
+<th>JSON collection</th>
+<th>Future table</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>companies</code></td>
+<td><code>companies</code></td>
+<td>one row</td>
+</tr>
+<tr>
+<td><code>users</code></td>
+<td><code>users</code></td>
+<td><code>can_engineer</code> boolean</td>
+</tr>
+<tr>
+<td><code>roles</code>, <code>permissions</code></td>
+<td><code>roles</code>, <code>permissions</code></td>
+<td>permission composite key</td>
+</tr>
+<tr>
+<td><code>customers</code></td>
+<td><code>customers</code></td>
+<td>address columns or JSONB</td>
+</tr>
+<tr>
+<td><code>jobs</code></td>
+<td><code>jobs</code></td>
+<td>money as integer, timestamps as <code>timestamptz</code></td>
+</tr>
+<tr>
+<td><code>job_assignments</code></td>
+<td><code>job_assignments</code></td>
+<td>partial unique index for active lead</td>
+</tr>
+<tr>
+<td><code>job_events</code></td>
+<td><code>job_events</code></td>
+<td>append-only</td>
+</tr>
+<tr>
+<td><code>invoices</code></td>
+<td><code>invoices</code> + <code>invoice_lines</code></td>
+<td>line items normalised</td>
+</tr>
+<tr>
+<td><code>documents</code></td>
+<td><code>documents</code></td>
+<td>file path/checksum</td>
+</tr>
+<tr>
+<td><code>settings</code></td>
+<td><code>settings</code></td>
+<td>key/value JSONB</td>
+</tr>
+<tr>
+<td><code>audit_log</code></td>
+<td><code>audit_log</code></td>
+<td>append-only, indexed by time</td>
+</tr>
+</tbody>
+</table>
+<p>No route may contain a JSON-file assumption or an in-memory array query.</p>
+<hr />
+<div class="chnav"><a class="grow" href="#ch06">&larr; 6. HTTP conventions</a><a class="grow" href="#ch08">8. Data model &rarr;</a></div><a id="ch08"></a>
+<h2 id="8-data-model">8. Data model</h2>
+<h3 id="81-shared-value-objects">8.1 Shared value objects</h3>
+<p><strong>Address</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>line1</code></td>
+<td>string(1–120)</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>line2</code></td>
+<td>string(0–120)</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>town</code></td>
+<td>string(1–80)</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>postcode</code></td>
+<td>string(3–12)</td>
+<td>yes</td>
+<td>normalise upper case</td>
+</tr>
+<tr>
+<td><code>country</code></td>
+<td>string(2)</td>
+<td>no</td>
+<td>default <code>GB</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-companies">8.2 <code>companies</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Constraints</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>PK</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>yes</td>
+<td><code>Acme Windows</code> in seed</td>
+</tr>
+<tr>
+<td><code>trading_name</code></td>
+<td>string/null</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>string</td>
+<td>yes</td>
+<td>valid email</td>
+</tr>
+<tr>
+<td><code>phone</code></td>
+<td>string</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>address</code></td>
+<td>Address</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>vat_number</code></td>
+<td>string/null</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>logo_path</code></td>
+<td>string/null</td>
+<td>no</td>
+<td>relative to <code>public/</code></td>
+</tr>
+<tr>
+<td><code>currency</code></td>
+<td>string</td>
+<td>yes</td>
+<td><code>GBP</code></td>
+</tr>
+<tr>
+<td><code>timezone</code></td>
+<td>string</td>
+<td>yes</td>
+<td><code>Europe/London</code></td>
+</tr>
+<tr>
+<td><code>default_theme</code></td>
+<td>object</td>
+<td>yes</td>
+<td>mode + token overrides</td>
+</tr>
+<tr>
+<td><code>invoice_due_days</code></td>
+<td>int</td>
+<td>yes</td>
+<td>default 14</td>
+</tr>
+<tr>
+<td><code>pdf_footer</code></td>
+<td>string</td>
+<td>yes</td>
+<td>plain text</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-users">8.3 <code>users</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Constraints</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>PK</td>
+</tr>
+<tr>
+<td><code>company_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>FK company</td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>string</td>
+<td>yes</td>
+<td>lower-case, unique</td>
+</tr>
+<tr>
+<td><code>password_hash</code></td>
+<td>string</td>
+<td>yes</td>
+<td>bcrypt</td>
+</tr>
+<tr>
+<td><code>display_name</code></td>
+<td>string</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>role_key</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>ADMIN</code>, <code>MANAGER</code>, <code>ENGINEER</code>, <code>CUSTOMER</code></td>
+</tr>
+<tr>
+<td><code>customer_id</code></td>
+<td>uuid/null</td>
+<td>conditional</td>
+<td>required iff <code>role_key = CUSTOMER</code></td>
+</tr>
+<tr>
+<td><code>can_engineer</code></td>
+<td>boolean</td>
+<td>yes</td>
+<td>true for ENGINEER; optional for MANAGER; false otherwise</td>
+</tr>
+<tr>
+<td><code>phone</code></td>
+<td>string/null</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>INVITED</code>, <code>ACTIVE</code>, <code>SUSPENDED</code>, <code>ARCHIVED</code></td>
+</tr>
+<tr>
+<td><code>must_change_password</code></td>
+<td>boolean</td>
+<td>yes</td>
+<td>true for invited/default-password accounts</td>
+</tr>
+<tr>
+<td><code>theme_prefs</code></td>
+<td>object/null</td>
+<td>no</td>
+<td>user overrides</td>
+</tr>
+<tr>
+<td><code>last_login_at</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Rules:</p>
+<ul>
+<li>Email uniqueness is global within the company; the JSON store enforces it in the user
+  repository before insert/update.</li>
+<li><code>CUSTOMER</code> users must point at exactly one customer. No other role may set <code>customer_id</code>.</li>
+<li><code>ENGINEER</code> users have <code>can_engineer: true</code>. <code>MANAGER</code> users may be seeded/edited to
+  <code>can_engineer: true</code>. <code>ADMIN</code>/<code>CUSTOMER</code> users may not.</li>
+<li>A field-capable user is one with <code>can_engineer: true</code> and <code>status: ACTIVE</code>.</li>
+<li>Deactivation revokes all sessions and removes active assignments from future jobs but
+  keeps historical assignments.</li>
+</ul>
+<h3 id="84-roles">8.4 <code>roles</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>key</code></td>
+<td>enum</td>
+<td>yes</td>
+<td>PK: <code>ADMIN</code>, <code>MANAGER</code>, <code>ENGINEER</code>, <code>CUSTOMER</code></td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td>string</td>
+<td>yes</td>
+<td>display label</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>string</td>
+<td>yes</td>
+<td>plain-language summary</td>
+</tr>
+<tr>
+<td><code>is_system</code></td>
+<td>boolean</td>
+<td>yes</td>
+<td>true for v1 roles</td>
+</tr>
+<tr>
+<td><code>sort_order</code></td>
+<td>int</td>
+<td>yes</td>
+<td>navigation order</td>
+</tr>
+</tbody>
+</table>
+<p>System roles cannot be created or deleted in v1; only their permissions are editable.</p>
+<h3 id="85-permissions">8.5 <code>permissions</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>role_key</code></td>
+<td>enum</td>
+<td>yes</td>
+<td>composite PK part</td>
+</tr>
+<tr>
+<td><code>action_key</code></td>
+<td>string</td>
+<td>yes</td>
+<td>composite PK part</td>
+</tr>
+<tr>
+<td><code>allowed</code></td>
+<td>boolean</td>
+<td>yes</td>
+<td>default from §10.2</td>
+</tr>
+</tbody>
+</table>
+<p>Composite uniqueness is <code>(role_key, action_key)</code>. Every action key in §10.2 has a row for
+every role, so the matrix is explicit rather than "missing means denied".</p>
+<h3 id="86-customers">8.6 <code>customers</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Constraints</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>PK</td>
+</tr>
+<tr>
+<td><code>company_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>yes</td>
+<td>unique per company (case-insensitive)</td>
+</tr>
+<tr>
+<td><code>contact_name</code></td>
+<td>string</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>string</td>
+<td>yes</td>
+<td>unique per company</td>
+</tr>
+<tr>
+<td><code>phone</code></td>
+<td>string</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>address</code></td>
+<td>Address</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td>string</td>
+<td>no</td>
+<td>internal only</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>ACTIVE</code>, <code>ARCHIVED</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_by</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>user id</td>
+</tr>
+<tr>
+<td><code>archived_at</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="87-jobs">8.7 <code>jobs</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Constraints</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>PK</td>
+</tr>
+<tr>
+<td><code>company_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>reference</code></td>
+<td>string</td>
+<td>yes</td>
+<td><code>JOB-YYYY-NNNN</code>, unique</td>
+</tr>
+<tr>
+<td><code>customer_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>FK customer</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>string</td>
+<td>yes</td>
+<td>1–140 chars</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>string</td>
+<td>yes</td>
+<td>plain text</td>
+</tr>
+<tr>
+<td><code>work_type</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>WINDOW_INSTALL</code>, <code>REPAIR</code>, <code>SURVEY</code></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>yes</td>
+<td>§11.1</td>
+</tr>
+<tr>
+<td><code>priority</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>NORMAL</code>, <code>URGENT</code></td>
+</tr>
+<tr>
+<td><code>site_address</code></td>
+<td>Address</td>
+<td>yes</td>
+<td>defaults to customer address</td>
+</tr>
+<tr>
+<td><code>planned_start</code></td>
+<td>iso8601/null</td>
+<td>conditional</td>
+<td>required before leaving <code>DRAFT</code></td>
+</tr>
+<tr>
+<td><code>planned_end</code></td>
+<td>iso8601/null</td>
+<td>conditional</td>
+<td>≥ <code>planned_start</code></td>
+</tr>
+<tr>
+<td><code>planned_slot</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>AM</code>, <code>PM</code>, <code>ALL_DAY</code></td>
+</tr>
+<tr>
+<td><code>actual_start</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td>stamped on <code>IN_PROGRESS</code></td>
+</tr>
+<tr>
+<td><code>actual_end</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td>stamped on <code>COMPLETED</code></td>
+</tr>
+<tr>
+<td><code>price_net</code></td>
+<td>int/null</td>
+<td>no</td>
+<td>pence; manager/admin only</td>
+</tr>
+<tr>
+<td><code>vat_rate_bp</code></td>
+<td>int</td>
+<td>yes</td>
+<td>default company VAT</td>
+</tr>
+<tr>
+<td><code>price_gross</code></td>
+<td>int/null</td>
+<td>no</td>
+<td>derived and stored at write time</td>
+</tr>
+<tr>
+<td><code>internal_notes</code></td>
+<td>string</td>
+<td>no</td>
+<td>never customer-visible</td>
+</tr>
+<tr>
+<td><code>customer_notes</code></td>
+<td>string</td>
+<td>no</td>
+<td>customer-visible</td>
+</tr>
+<tr>
+<td><code>created_by</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>archived_at</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Rules:</p>
+<ul>
+<li><code>planned_end</code> must not be before <code>planned_start</code>.</li>
+<li><code>actual_end</code> must not be before <code>actual_start</code>.</li>
+<li><code>price_gross = price_net + round(price_net * vat_rate_bp / 10000)</code>.</li>
+<li>A job may have at most one active lead assignment.</li>
+<li>A job may have one live invoice (<code>status != VOID</code>).</li>
+</ul>
+<h3 id="88-job_assignments">8.8 <code>job_assignments</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>PK</td>
+</tr>
+<tr>
+<td><code>job_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>field-capable user</td>
+</tr>
+<tr>
+<td><code>is_lead</code></td>
+<td>boolean</td>
+<td>yes</td>
+<td>exactly one active lead per job</td>
+</tr>
+<tr>
+<td><code>assigned_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>assigned_by</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>removed_at</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td>soft removal</td>
+</tr>
+</tbody>
+</table>
+<p>Rules:</p>
+<ul>
+<li><code>user_id</code> must satisfy <code>can_engineer &amp;&amp; status === "ACTIVE"</code>.</li>
+<li><code>(job_id, user_id)</code> may have only one active assignment (<code>removed_at: null</code>).</li>
+<li>Every active lead change writes an assignment event and an audit row.</li>
+<li>Historical assignments remain after removal; "assigned at the time" is reconstructable.</li>
+</ul>
+<h3 id="89-job_events">8.9 <code>job_events</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>PK</td>
+</tr>
+<tr>
+<td><code>job_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>actor_user_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>STATUS_CHANGE</code>, <code>ASSIGNMENT</code>, <code>SCHEDULE_CHANGE</code>, <code>NOTE</code>, <code>DOCUMENT</code>, <code>PRICE_CHANGE</code>, <code>CREATED</code>, <code>ARCHIVED</code></td>
+</tr>
+<tr>
+<td><code>from_value</code></td>
+<td>string/null</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>to_value</code></td>
+<td>string/null</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>string</td>
+<td>no</td>
+<td>plain text</td>
+</tr>
+<tr>
+<td><code>visibility</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>INTERNAL</code>, <code>CUSTOMER</code></td>
+</tr>
+<tr>
+<td><code>at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Append-only. The customer timeline includes only <code>visibility: CUSTOMER</code>. Internal notes and
+price changes are internal unless explicitly published as a customer note.</p>
+<h3 id="810-invoices">8.10 <code>invoices</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>PK</td>
+</tr>
+<tr>
+<td><code>company_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>number</code></td>
+<td>string</td>
+<td>yes</td>
+<td><code>INV-YYYY-NNNN</code>, gapless, unique</td>
+</tr>
+<tr>
+<td><code>job_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>DRAFT</code>, <code>ISSUED</code>, <code>PAID</code>, <code>VOID</code></td>
+</tr>
+<tr>
+<td><code>issued_at</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td>required when <code>ISSUED</code>/<code>PAID</code></td>
+</tr>
+<tr>
+<td><code>due_at</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td>issued + company due days</td>
+</tr>
+<tr>
+<td><code>paid_at</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td>required when <code>PAID</code></td>
+</tr>
+<tr>
+<td><code>net</code></td>
+<td>int</td>
+<td>yes</td>
+<td>pence</td>
+</tr>
+<tr>
+<td><code>vat_rate_bp</code></td>
+<td>int</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>vat</code></td>
+<td>int</td>
+<td>yes</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>gross</code></td>
+<td>int</td>
+<td>yes</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>lines</code></td>
+<td>array</td>
+<td>yes</td>
+<td>see below</td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td>string</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_by</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>voided_at</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>void_reason</code></td>
+<td>string/null</td>
+<td>no</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Invoice line:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>description</code></td>
+<td>string</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>qty</code></td>
+<td>number</td>
+<td>yes</td>
+<td>positive, up to 3 decimals</td>
+</tr>
+<tr>
+<td><code>unit_pence</code></td>
+<td>int</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>amount_pence</code></td>
+<td>int</td>
+<td>yes</td>
+<td><code>round(qty * unit_pence)</code></td>
+</tr>
+</tbody>
+</table>
+<p>Rules:</p>
+<ul>
+<li><code>net</code> must equal the sum of line <code>amount_pence</code>.</li>
+<li><code>vat = round(net * vat_rate_bp / 10000)</code>; <code>gross = net + vat</code>.</li>
+<li>Number allocation happens inside the invoice transaction; voiding keeps the number.</li>
+<li>One job has at most one invoice with <code>status != VOID</code>. Re-issue = void old + create new.</li>
+<li><code>ISSUED</code>/<code>PAID</code> invoices are customer-visible; <code>DRAFT</code> is not.</li>
+</ul>
+<h3 id="811-documents">8.11 <code>documents</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>PK</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>JOB_SHEET</code>, <code>INVOICE</code></td>
+</tr>
+<tr>
+<td><code>entity_type</code></td>
+<td>enum</td>
+<td>yes</td>
+<td><code>JOB</code>, <code>INVOICE</code></td>
+</tr>
+<tr>
+<td><code>entity_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>int</td>
+<td>yes</td>
+<td>increments per generation</td>
+</tr>
+<tr>
+<td><code>generated_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>generated_by</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>file_path</code></td>
+<td>string</td>
+<td>yes</td>
+<td>server-controlled, never from user input</td>
+</tr>
+<tr>
+<td><code>checksum</code></td>
+<td>string</td>
+<td>yes</td>
+<td>SHA-256 of the file</td>
+</tr>
+<tr>
+<td><code>size_bytes</code></td>
+<td>int</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>mime</code></td>
+<td>string</td>
+<td>yes</td>
+<td><code>application/pdf</code></td>
+</tr>
+</tbody>
+</table>
+<p>No stale cache: every download regenerates from live data and appends a new document row.
+The previous file remains for audit; retention can prune old versions later.</p>
+<h3 id="812-settings">8.12 <code>settings</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>key</code></td>
+<td>string</td>
+<td>yes</td>
+<td>PK, e.g. <code>company.vat_rate_bp</code></td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>JSON</td>
+<td>yes</td>
+<td>scalar/object validated by setting key</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_by</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Required keys: <code>company.vat_rate_bp</code>, <code>company.invoice_due_days</code>, <code>company.default_theme</code>,
+<code>company.pdf_footer</code>, <code>security.password_min_length</code>, <code>security.session_idle_minutes</code>.</p>
+<h3 id="813-sessions-separate-file">8.13 <code>sessions</code> (separate file)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id_hash</code></td>
+<td>string</td>
+<td>yes</td>
+<td>SHA-256 of the cookie value; never store the raw token</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>csrf_token</code></td>
+<td>string</td>
+<td>yes</td>
+<td>random, per session</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>last_seen_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td>persisted at most once per minute</td>
+</tr>
+<tr>
+<td><code>expires_at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ip</code></td>
+<td>string</td>
+<td>no</td>
+<td>for logs</td>
+</tr>
+<tr>
+<td><code>user_agent</code></td>
+<td>string</td>
+<td>no</td>
+<td>for logs</td>
+</tr>
+<tr>
+<td><code>revoked_at</code></td>
+<td>iso8601/null</td>
+<td>no</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="814-audit_log">8.14 <code>audit_log</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td>PK</td>
+</tr>
+<tr>
+<td><code>company_id</code></td>
+<td>uuid</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>actor_user_id</code></td>
+<td>uuid/null</td>
+<td>no</td>
+<td>null for failed anonymous sign-in</td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td>string</td>
+<td>yes</td>
+<td>e.g. <code>permission.update</code></td>
+</tr>
+<tr>
+<td><code>entity_type</code></td>
+<td>string</td>
+<td>yes</td>
+<td><code>JOB</code>, <code>USER</code>, <code>INVOICE</code>, <code>PERMISSION</code>, <code>SETTING</code>, <code>AUTH</code></td>
+</tr>
+<tr>
+<td><code>entity_id</code></td>
+<td>string/null</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>before</code></td>
+<td>JSON/null</td>
+<td>no</td>
+<td>changed fields only, redacted</td>
+</tr>
+<tr>
+<td><code>after</code></td>
+<td>JSON/null</td>
+<td>no</td>
+<td>changed fields only, redacted</td>
+</tr>
+<tr>
+<td><code>at</code></td>
+<td>iso8601</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ip</code></td>
+<td>string</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>user_agent</code></td>
+<td>string</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>request_id</code></td>
+<td>string</td>
+<td>no</td>
+<td>correlates with logs</td>
+</tr>
+</tbody>
+</table>
+<p>Append-only. Never store password hashes, raw session tokens, CSRF tokens or full request
+bodies.</p>
+<h3 id="815-relationships">8.15 Relationships</h3>
+<pre><code>Company 1─n User           Company 1─n Customer 1─n Job n─n User (assignments)
+Company 1─n Job            Job 1─n JobEvent        Job 1─0..1 Invoice
+Role    1─n User           Role 1─n Permission     Job 1─n Document
+Customer 1─0..1 User (portal login)
+Invoice 1─n Document
+</code></pre>
+<hr />
+<div class="chnav"><a class="grow" href="#ch07">&larr; 7. JSON database</a><a class="grow" href="#ch09">9. Authentication and sessions &rarr;</a></div><a id="ch09"></a>
+<h2 id="9-authentication-and-sessions">9. Authentication and sessions</h2>
+<h3 id="91-sign-in">9.1 Sign-in</h3>
+<p><code>POST /signin</code> accepts <code>email</code>, <code>password</code>, <code>_csrf</code>, optional <code>next</code>.</p>
+<ol>
+<li>Normalise email; rate-limit by IP + email.</li>
+<li>Find an active user. A missing user and a wrong password produce the same generic error.</li>
+<li>Compare with bcrypt. On failure: audit <code>auth.signin.failed</code>, increment limiter, re-render
+   the sign-in form with a plain-language message.</li>
+<li>On success: rotate the session ID, clear the old session, set <code>last_login_at</code>, audit
+   <code>auth.signin.success</code>.</li>
+<li>If <code>must_change_password</code>, redirect to <code>/account/password</code> and allow only password change,
+   sign-out and static assets until it is cleared.</li>
+<li>Otherwise redirect to <code>next</code> if it is a safe same-origin path, else to the role landing
+   page: ADMIN/MANAGER → <code>/dashboard/operations</code>; ENGINEER → <code>/my-jobs</code>;
+   CUSTOMER → <code>/portal/jobs</code>.</li>
+</ol>
+<h3 id="92-session-lifecycle">9.2 Session lifecycle</h3>
+<ul>
+<li>Cookie name: <code>jms_sid</code> in development; <code>__Host-jms_sid</code> in production.</li>
+<li>Value: 32 random bytes, base64url. The store holds only its SHA-256 hash.</li>
+<li>Attributes: <code>HttpOnly</code>, <code>SameSite=Lax</code>, <code>Path=/</code>, <code>Secure</code> in production.</li>
+<li>Idle expiry 60 minutes (configurable). <code>expires_at</code> slides on activity; persistence is
+  throttled to once per minute.</li>
+<li>Absolute expiry 12 hours from sign-in.</li>
+<li>Sign-out deletes/revokes the session and clears the cookie.</li>
+<li>Password change, role change, deactivation or archive revokes all sessions for the user.</li>
+<li>A revoked or expired cookie redirects to sign-in with an explanation; the original form
+  state is not promised.</li>
+</ul>
+<h3 id="93-password-rules">9.3 Password rules</h3>
+<ul>
+<li>Hash with bcrypt cost 12.</li>
+<li>Minimum 10 characters, at least one letter and one digit; maximum 200 characters.</li>
+<li>Reject the user's email, display name and <code>JMS123</code> as a new password.</li>
+<li><code>DEFAULT_PASSWORD</code> is only for invites/seed and always sets <code>must_change_password</code>.</li>
+<li>Password change requires the current password (unless the account is in forced-change
+  mode, where the session already proves the default password).</li>
+<li>Password hashes are never logged, rendered or audited.</li>
+</ul>
+<h3 id="94-first-sign-in-change-password">9.4 First sign-in / change password</h3>
+<ul>
+<li><code>/account/password</code> is available to every authenticated user.</li>
+<li>Forced-change mode is a middleware gate: any other page redirects there.</li>
+<li>Success clears <code>must_change_password</code>, revokes all other sessions, keeps the current
+  session (with a rotated ID), audits <code>auth.password.change</code>.</li>
+</ul>
+<h3 id="95-rate-limiting">9.5 Rate limiting</h3>
+<p>In-memory sliding window, single process:</p>
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Limit</th>
+<th>Window</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sign-in by IP + email</td>
+<td>5 failures</td>
+<td>15 min</td>
+<td>block 15 min</td>
+</tr>
+<tr>
+<td>Sign-in by IP</td>
+<td>20 failures</td>
+<td>15 min</td>
+<td>block 15 min</td>
+</tr>
+<tr>
+<td>Password reset by user</td>
+<td>3</td>
+<td>60 min</td>
+<td>block</td>
+</tr>
+<tr>
+<td>Search</td>
+<td>60 requests</td>
+<td>1 min</td>
+<td>429 with retry hint</td>
+</tr>
+</tbody>
+</table>
+<p>Limiter keys are cleaned up on a timer. Successful sign-in clears the email key.</p>
+<h3 id="96-password-reset-and-invites">9.6 Password reset and invites</h3>
+<ul>
+<li>Staff with <code>user.reset.password</code> can issue a new temporary password. It is displayed once,
+  stored hashed, and sets <code>must_change_password</code>.</li>
+<li><code>customer.invite</code> creates or repairs a CUSTOMER login for a customer record: default
+  password, <code>INVITED</code>, <code>must_change_password</code>, audit.</li>
+<li>No email delivery in v1; the screen states the temporary password and asks staff to pass
+  it on securely.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch08">&larr; 8. Data model</a><a class="grow" href="#ch10">10. Authorization &rarr;</a></div><a id="ch10"></a>
+<h2 id="10-authorization">10. Authorization</h2>
+<h3 id="101-middleware-order">10.1 Middleware order</h3>
+<pre><code class="language-js">app.use(requestId);
+app.use(securityHeaders);
+app.use(compression());
+app.use(staticAssets);
+app.use(cookieParser);
+app.use(loadSession);
+app.use(loadUser);
+app.use(csrfProtection);
+app.use(flash);
+app.use(routeGuards);
+app.use(routes);
+app.use(errorHandler);
+</code></pre>
+<p><code>loadSession</code> never trusts a user ID from a cookie. <code>loadUser</code> re-reads the user on every
+request so role/permission changes take effect immediately.</p>
+<h3 id="102-action-keys-and-default-matrix">10.2 Action keys and default matrix</h3>
+<p>The canonical keys and defaults. <code>allowed</code> is seeded into <code>permissions</code>; an Admin can
+toggle the non-safeguarded cells later.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Action key</th>
+<th>Allowed roles by default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Customers</td>
+<td><code>customer.view.all</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.view.own</code></td>
+<td>ADMIN, MANAGER, ENGINEER, CUSTOMER</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.create</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.edit</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.invite</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>customer.archive</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.view.all</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.view.assigned</code></td>
+<td>ADMIN, MANAGER, ENGINEER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.view.own</code></td>
+<td>ADMIN, MANAGER, CUSTOMER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.create</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.edit</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.assign</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.schedule</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.status.advance</code></td>
+<td>ADMIN, MANAGER, ENGINEER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.status.override</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.note.add</code></td>
+<td>ADMIN, MANAGER, ENGINEER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.cancel</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>job.archive</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.view</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.create</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.edit.role</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.reset.password</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><code>user.deactivate</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.view.all</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.view.own</code></td>
+<td>ADMIN, MANAGER, CUSTOMER</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.create</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.issue</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>invoice.mark.paid</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Documents</td>
+<td><code>document.job.pdf</code></td>
+<td>ADMIN, MANAGER, ENGINEER, CUSTOMER</td>
+</tr>
+<tr>
+<td>Documents</td>
+<td><code>document.invoice.pdf</code></td>
+<td>ADMIN, MANAGER, CUSTOMER</td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>insight.operational</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>insight.financial</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>insight.workload</code></td>
+<td>ADMIN, MANAGER</td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>insight.timeline</code></td>
+<td>ADMIN, MANAGER, ENGINEER</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.roles.manage</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.permissions.edit</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.settings.manage</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.audit.view</code></td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>admin.theme.default</code></td>
+<td>ADMIN</td>
+</tr>
+</tbody>
+</table>
+<p><code>src/domain/permissions.js</code> exports <code>ACTION_KEYS</code>, <code>DEFAULT_MATRIX</code> and <code>can(user, key)</code>.
+The same matrix drives navigation, buttons, route guards and tests.</p>
+<h3 id="103-object-level-scoping">10.3 Object-level scoping</h3>
+<p>These are code invariants, not permission cells.</p>
+<p><strong>Customer scope</strong></p>
+<ul>
+<li>A CUSTOMER user has exactly one <code>customer_id</code>.</li>
+<li>Every job query adds <code>job.customer_id === user.customer_id</code>.</li>
+<li>Direct access to another customer's job, invoice or document returns 404.</li>
+<li>Customer responses use a customer presenter that removes <code>price_net</code>, <code>price_gross</code>,
+  <code>internal_notes</code>, internal events, other customers and engineer phone numbers.</li>
+</ul>
+<p><strong>Engineer scope</strong></p>
+<ul>
+<li>An ENGINEER sees jobs with an active assignment (<code>removed_at: null</code>) plus jobs they
+  completed in the last 90 days.</li>
+<li>Direct access to another engineer's job returns 404.</li>
+<li>Engineer responses remove price, invoice and internal-note fields.</li>
+<li>A field-capable MANAGER assigned to a job gets the same field affordances, but their
+  role also grants broader visibility.</li>
+</ul>
+<p><strong>Manager/Admin scope</strong></p>
+<ul>
+<li>See all jobs, customers, invoices and insights.</li>
+<li>Admin-only areas remain gated by the admin action keys.</li>
+</ul>
+<p><strong>Customer records for engineers</strong></p>
+<ul>
+<li><code>customer.view.own</code> for an ENGINEER means the customer record of a job they are
+  assigned to, including phone (needed on site), but not other customers and not exports.</li>
+</ul>
+<h3 id="104-ui-visibility-is-not-enforcement">10.4 UI visibility is not enforcement</h3>
+<ul>
+<li><code>res.locals.can</code> is a function bound to the current user.</li>
+<li>Nav pills and buttons render only when <code>can</code> is true.</li>
+<li>Every route and every HTMX partial repeats the check server-side.</li>
+<li>Hidden fields never carry role, owner or permission decisions.</li>
+<li>A permission change applies on the next request because the matrix is read from the store
+  and the user is reloaded per request.</li>
+</ul>
+<h3 id="105-safeguards-the-matrix-cannot-remove">10.5 Safeguards the matrix cannot remove</h3>
+<ol>
+<li>At least one ACTIVE ADMIN must exist at all times.</li>
+<li>The last Admin cannot remove their own <code>admin.permissions.edit</code>, deactivate themselves
+   or change their own role.</li>
+<li><code>admin.audit.view</code> cannot be granted to CUSTOMER or ENGINEER; the save endpoint rejects
+   it with a validation error and an explanation.</li>
+<li>Every matrix edit writes an audit row with role, action key, before and after.</li>
+<li>System roles cannot be deleted or renamed in v1.</li>
+</ol>
+<p>These are enforced in <code>services/permissions.js</code>, not only in the UI.</p>
+<hr />
+<div class="chnav"><a class="grow" href="#ch09">&larr; 9. Authentication and sessions</a><a class="grow" href="#ch11">11. Domain services and rules &rarr;</a></div><a id="ch11"></a>
+<h2 id="11-domain-services-and-rules">11. Domain services and rules</h2>
+<h3 id="111-status-machine">11.1 Status machine</h3>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>Allowed next</th>
+<th>Who may enter</th>
+<th>Guards / side effects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DRAFT</code></td>
+<td><code>SCHEDULED</code>, <code>CANCELLED</code></td>
+<td>Manager/Admin</td>
+<td>leaving DRAFT needs planned dates and ≥1 field-capable assignment</td>
+</tr>
+<tr>
+<td><code>SCHEDULED</code></td>
+<td><code>IN_PROGRESS</code>, <code>ON_HOLD</code>, <code>CANCELLED</code>, <code>SCHEDULED</code></td>
+<td>Manager/Admin; assigned field user for <code>IN_PROGRESS</code></td>
+<td>reschedule stays SCHEDULED and writes a schedule event</td>
+</tr>
+<tr>
+<td><code>IN_PROGRESS</code></td>
+<td><code>COMPLETED</code>, <code>ON_HOLD</code></td>
+<td>assigned field user, Manager/Admin</td>
+<td>stamps <code>actual_start</code> on entry if blank</td>
+</tr>
+<tr>
+<td><code>ON_HOLD</code></td>
+<td><code>IN_PROGRESS</code>, <code>CANCELLED</code></td>
+<td>assigned field user for <code>IN_PROGRESS</code>; Manager/Admin for <code>CANCELLED</code></td>
+<td>reason note required</td>
+</tr>
+<tr>
+<td><code>COMPLETED</code></td>
+<td><code>INVOICED</code>, <code>IN_PROGRESS</code></td>
+<td>Manager/Admin</td>
+<td>stamps <code>actual_end</code>; reopen needs override</td>
+</tr>
+<tr>
+<td><code>INVOICED</code></td>
+<td><code>PAID</code>, <code>COMPLETED</code></td>
+<td>Manager/Admin</td>
+<td><code>PAID</code> only via invoice paid; <code>COMPLETED</code> only after void</td>
+</tr>
+<tr>
+<td><code>PAID</code></td>
+<td>—</td>
+<td>—</td>
+<td>terminal</td>
+</tr>
+<tr>
+<td><code>CANCELLED</code></td>
+<td>—</td>
+<td>—</td>
+<td>terminal</td>
+</tr>
+</tbody>
+</table>
+<p><code>INVOICED</code> and <code>PAID</code> are <strong>not</strong> selectable in the generic status control. The invoice
+service performs those transitions so an invoice always exists.</p>
+<h3 id="112-transition-algorithm">11.2 Transition algorithm</h3>
+<p><code>src/domain/status.js</code> exports:</p>
+<pre><code class="language-js">canTransition({ user, job, to, action }) -&gt; { ok, code, message }
+</code></pre>
+<p>Checks in order:</p>
+<ol>
+<li><code>to</code> is in the transition table for <code>job.status</code>.</li>
+<li>The user has <code>job.status.override</code>, or is an assigned field-capable user taking one of
+   the forward field transitions (<code>SCHEDULED → IN_PROGRESS</code>, <code>IN_PROGRESS → COMPLETED</code>,
+   <code>IN_PROGRESS → ON_HOLD</code>, <code>ON_HOLD → IN_PROGRESS</code>).</li>
+<li>DRAFT exit guards are met.</li>
+<li>Required note/reason is present where the transition demands it.</li>
+<li>The target is not invoice-controlled (<code>INVOICED</code>, <code>PAID</code>).</li>
+</ol>
+<p>On success, in one transaction: update job, stamp actual timestamps, append <code>JobEvent</code>,
+append audit row. Return the updated job.</p>
+<h3 id="113-assignments">11.3 Assignments</h3>
+<ul>
+<li>Only field-capable active users may be assigned.</li>
+<li>The assign screen shows active ENGINEERs and field-capable MANAGERs.</li>
+<li>Saving replaces the active assignment set: new rows inserted, removed rows get
+  <code>removed_at</code> (never deleted), lead changes recorded.</li>
+<li>At most one active lead. If the lead is removed, the manager must choose a new lead or
+  the save is rejected with a clear message.</li>
+<li>Assignment changes append <code>ASSIGNMENT</code> events and audit rows. A newly assigned field user
+  sees the job immediately under My jobs.</li>
+<li>Removing an engineer from a <code>SCHEDULED</code> job is allowed but shows a warning if it would
+  leave no active assignee while dates are set.</li>
+</ul>
+<h3 id="114-scheduling-and-conflicts">11.4 Scheduling and conflicts</h3>
+<p><code>POST /jobs/:id/schedule</code> accepts <code>planned_start</code>, <code>planned_end</code>, <code>planned_slot</code>.</p>
+<ul>
+<li>Validate start/end and timezone conversion.</li>
+<li>Find overlapping active assignments for each selected field user where the other job is
+  <code>SCHEDULED</code>, <code>IN_PROGRESS</code> or <code>ON_HOLD</code> and its planned range overlaps.</li>
+<li>Conflicts are advisory: return a warning naming the engineer and the clashing job. The
+  form offers <strong>Save anyway</strong>; the save records a <code>SCHEDULE_CHANGE</code> event mentioning the
+  accepted conflict.</li>
+<li>Rescheduling a SCHEDULED job keeps the status SCHEDULED and writes an event; it does not
+  use the status endpoint.</li>
+<li>Leaving DRAFT is offered once dates and an assignee exist; the UI defaults to yes.</li>
+</ul>
+<h3 id="115-references-and-numbering">11.5 References and numbering</h3>
+<ul>
+<li>Job reference: <code>JOB-${year}-${String(seq).padStart(4, "0")}</code>, year from the company-local
+  creation date.</li>
+<li>Invoice number: <code>INV-${year}-${String(seq).padStart(4, "0")}</code>.</li>
+<li>Sequences live in <code>_meta.sequences.job[year]</code> and <code>_meta.sequences.invoice[year]</code> and are
+  incremented inside the creating transaction.</li>
+<li>Invoice numbers are gapless: voiding keeps the number, re-issuing takes the next one.</li>
+<li>References are immutable after creation.</li>
+<li>Duplicate references are impossible because allocation and insert share one transaction.</li>
+</ul>
+<h3 id="116-notes-and-visibility">11.6 Notes and visibility</h3>
+<ul>
+<li><code>internal_notes</code> is a single internal field on the job and is never rendered to
+  customers or engineers? — Engineers may see operational internal notes required for the
+  work, but not pricing notes. In v1, engineers see internal notes; customers never do.</li>
+<li><code>customer_notes</code> is customer-visible.</li>
+<li>Timeline notes choose <code>INTERNAL</code> or <code>CUSTOMER</code> visibility; the UI labels the choice
+  plainly and never defaults to customer-visible.</li>
+<li>A note is plain text; line breaks are preserved, HTML is escaped.</li>
+</ul>
+<h3 id="117-invoices">11.7 Invoices</h3>
+<ul>
+<li>Create from a COMPLETED job or from the invoice list with a job selector.</li>
+<li>Default lines from the job title and <code>price_net</code>; manager can edit lines.</li>
+<li>Save as DRAFT, then preview the PDF, then Issue.</li>
+<li>Issue: allocate number if not already allocated, set <code>issued_at</code>, <code>due_at</code> from company
+  terms, set invoice <code>ISSUED</code>, set job <code>INVOICED</code>, write events/audit.</li>
+<li>Mark paid: <code>ISSUED → PAID</code>, stamp <code>paid_at</code>, set job <code>PAID</code>, event/audit.</li>
+<li>Void: <code>ISSUED → VOID</code>, stamp reason, set job back to <code>COMPLETED</code>, keep number and record.</li>
+<li>Re-issue after void creates a new DRAFT with the next number.</li>
+<li>Financial views use invoice net for invoiced and paid amounts.</li>
+</ul>
+<h3 id="118-documents-and-pdfs">11.8 Documents and PDFs</h3>
+<ul>
+<li>Job sheet and invoice PDFs are generated on demand by <code>services/documents.js</code>.</li>
+<li>Every generation appends a <code>documents</code> row with version, checksum, size and path.</li>
+<li>The file path is derived from the document ID, never from user input.</li>
+<li>A missing file is regenerated; a stale file is never served by a cached URL.</li>
+<li>Access rules are evaluated before generation, not after.</li>
+</ul>
+<h3 id="119-archive-and-audit">11.9 Archive and audit</h3>
+<ul>
+<li>Archive job/customer sets <code>archived_at</code>; it disappears from normal lists but remains
+  searchable by admins in the archive view.</li>
+<li>Restore clears <code>archived_at</code>.</li>
+<li>Delete is not exposed for jobs, customers or invoices.</li>
+<li>Every state change in §16.3 writes an audit row in the same transaction.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch10">&larr; 10. Authorization</a><a class="grow" href="#ch12">12. Routes &rarr;</a></div><a id="ch12"></a>
+<h2 id="12-routes">12. Routes</h2>
+<p>All paths below are relative to the app root. <code>A/M/E/C</code> mean ADMIN/MANAGER/ENGINEER/CUSTOMER.
+A route guard is mandatory even when an object check also exists.</p>
+<h3 id="121-public-and-account">12.1 Public and account</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+<th>Guard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/healthz</code></td>
+<td>liveness + data file check</td>
+<td>public</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/signin</code></td>
+<td>sign-in form</td>
+<td>public</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/signin</code></td>
+<td>authenticate</td>
+<td>public, rate-limited</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/signout</code></td>
+<td>revoke session</td>
+<td>authenticated</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/account/password</code></td>
+<td>change password form</td>
+<td>authenticated</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/account/password</code></td>
+<td>save password</td>
+<td>authenticated</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/account/appearance</code></td>
+<td>Aa panel page</td>
+<td>authenticated</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/account/appearance</code></td>
+<td>save theme prefs</td>
+<td>authenticated</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/</code></td>
+<td>redirect to role landing</td>
+<td>authenticated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="122-dashboards">12.2 Dashboards</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+<th>Guard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/dashboard/operations</code></td>
+<td>today, week, exceptions</td>
+<td><code>insight.operational</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/dashboard/engineer</code></td>
+<td>today's jobs, next 7 days</td>
+<td>field-capable + <code>job.view.assigned</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/my-jobs</code></td>
+<td>assigned jobs, today first</td>
+<td><code>job.view.assigned</code> + field-capable</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/portal/jobs</code></td>
+<td>customer's own jobs</td>
+<td><code>job.view.own</code> + CUSTOMER scope</td>
+</tr>
+</tbody>
+</table>
+<h3 id="123-jobs">12.3 Jobs</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+<th>Guard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/jobs</code></td>
+<td>all jobs, filters</td>
+<td><code>job.view.all</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/jobs/new</code></td>
+<td>create form</td>
+<td><code>job.create</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/jobs</code></td>
+<td>create job</td>
+<td><code>job.create</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/jobs/:id</code></td>
+<td>job detail + timeline</td>
+<td><code>job.view.all</code> or field-assigned scope (staff route; customers use <code>/portal/jobs/:id</code>)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/jobs/:id/edit</code></td>
+<td>edit form</td>
+<td><code>job.edit</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/jobs/:id</code></td>
+<td>save job</td>
+<td><code>job.edit</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/jobs/:id/assign</code></td>
+<td>assignment screen</td>
+<td><code>job.assign</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/jobs/:id/assign</code></td>
+<td>save assignments</td>
+<td><code>job.assign</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/jobs/:id/schedule</code></td>
+<td>schedule screen</td>
+<td><code>job.schedule</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/jobs/:id/schedule</code></td>
+<td>save schedule</td>
+<td><code>job.schedule</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/jobs/:id/status</code></td>
+<td>transition status</td>
+<td><code>job.status.advance</code> / <code>job.status.override</code> + transition guard</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/jobs/:id/notes</code></td>
+<td>add timeline note</td>
+<td><code>job.note.add</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/jobs/:id/cancel</code></td>
+<td>cancel with reason</td>
+<td><code>job.cancel</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/jobs/:id/archive</code></td>
+<td>archive</td>
+<td><code>job.archive</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/jobs/:id/documents</code></td>
+<td>generated documents</td>
+<td><code>document.job.pdf</code> + (<code>job.view.all</code> or field-assigned scope)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/jobs/:id/job-sheet.pdf</code></td>
+<td>download/generate job sheet</td>
+<td><code>document.job.pdf</code> + (<code>job.view.all</code> or field-assigned scope)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/jobs/:id/timeline</code></td>
+<td>HTMX timeline fragment</td>
+<td>scoped job view</td>
+</tr>
+</tbody>
+</table>
+<h3 id="124-customers">12.4 Customers</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+<th>Guard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/customers</code></td>
+<td>list/search</td>
+<td><code>customer.view.all</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/customers/new</code></td>
+<td>create form</td>
+<td><code>customer.create</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/customers</code></td>
+<td>create customer + optional login</td>
+<td><code>customer.create</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/customers/:id</code></td>
+<td>detail, jobs, logins</td>
+<td><code>customer.view.all</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/customers/:id/edit</code></td>
+<td>edit form</td>
+<td><code>customer.edit</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/customers/:id</code></td>
+<td>save customer</td>
+<td><code>customer.edit</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/customers/:id/invite</code></td>
+<td>create/reset portal login</td>
+<td><code>customer.invite</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/customers/:id/archive</code></td>
+<td>archive</td>
+<td><code>customer.archive</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="125-invoices">12.5 Invoices</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+<th>Guard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/invoices</code></td>
+<td>list/filter/totals</td>
+<td><code>invoice.view.all</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/invoices/new</code></td>
+<td>create form, optional <code>job_id</code></td>
+<td><code>invoice.create</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/invoices</code></td>
+<td>create draft</td>
+<td><code>invoice.create</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/invoices/:id</code></td>
+<td>detail + PDF preview</td>
+<td><code>invoice.view.all</code> (staff route; customers use <code>/portal/invoices/:id</code>)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/invoices/:id/issue</code></td>
+<td>issue</td>
+<td><code>invoice.issue</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/invoices/:id/void</code></td>
+<td>void with reason</td>
+<td><code>invoice.issue</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/invoices/:id/paid</code></td>
+<td>mark paid</td>
+<td><code>invoice.mark.paid</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/invoices/:id/pdf</code></td>
+<td>download/generate invoice PDF</td>
+<td><code>document.invoice.pdf</code> + <code>invoice.view.all</code> (customers use portal)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="126-customer-portal">12.6 Customer portal</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+<th>Guard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/portal/jobs</code></td>
+<td>own jobs</td>
+<td><code>job.view.own</code> + CUSTOMER</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/portal/jobs/:id</code></td>
+<td>own job detail</td>
+<td><code>job.view.own</code> + CUSTOMER scope</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/portal/jobs/:id/job-sheet.pdf</code></td>
+<td>own job sheet</td>
+<td><code>document.job.pdf</code> + CUSTOMER scope</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/portal/invoices</code></td>
+<td>own issued/paid/void invoices</td>
+<td><code>invoice.view.own</code> + CUSTOMER</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/portal/invoices/:id</code></td>
+<td>own invoice detail</td>
+<td><code>invoice.view.own</code> + CUSTOMER scope</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/portal/invoices/:id/pdf</code></td>
+<td>own invoice PDF</td>
+<td><code>document.invoice.pdf</code> + CUSTOMER scope</td>
+</tr>
+</tbody>
+</table>
+<h3 id="127-insights-and-search">12.7 Insights and search</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+<th>Guard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/insights/timeline</code></td>
+<td>week/month planned jobs</td>
+<td><code>insight.timeline</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/insights/workload</code></td>
+<td>jobs per field user</td>
+<td><code>insight.workload</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/insights/financials</code></td>
+<td>quoted/invoiced/paid</td>
+<td><code>insight.financial</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/insights/needs-invoicing</code></td>
+<td>completed jobs without live invoice</td>
+<td><code>insight.operational</code> + <code>invoice.create</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/search</code></td>
+<td>grouped global search</td>
+<td>scoped by role</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/search/partial</code></td>
+<td>search fragment</td>
+<td>scoped by role</td>
+</tr>
+</tbody>
+</table>
+<h3 id="128-admin">12.8 Admin</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+<th>Guard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/admin/users</code></td>
+<td>user list</td>
+<td><code>user.view</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/users/new</code></td>
+<td>create user form</td>
+<td><code>user.create</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/users</code></td>
+<td>create user</td>
+<td><code>user.create</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/users/:id</code></td>
+<td>user detail</td>
+<td><code>user.view</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/users/:id/role</code></td>
+<td>change role / <code>can_engineer</code></td>
+<td><code>user.edit.role</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/users/:id/reset-password</code></td>
+<td>temporary password</td>
+<td><code>user.reset.password</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/users/:id/deactivate</code></td>
+<td>suspend/archive</td>
+<td><code>user.deactivate</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/roles</code></td>
+<td>role × action matrix</td>
+<td><code>admin.roles.manage</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/roles/permissions</code></td>
+<td>save matrix changes</td>
+<td><code>admin.permissions.edit</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/settings</code></td>
+<td>company settings form</td>
+<td><code>admin.settings.manage</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/settings</code></td>
+<td>save settings</td>
+<td><code>admin.settings.manage</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/audit</code></td>
+<td>filterable audit list</td>
+<td><code>admin.audit.view</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/archive</code></td>
+<td>archived jobs/customers</td>
+<td><code>job.archive</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/archive/:type/:id/restore</code></td>
+<td>restore</td>
+<td><code>job.archive</code> / <code>customer.archive</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="129-htmx-partials">12.9 HTMX partials</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Fragment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/partials/jobs/list</code></td>
+<td>job table/cards</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/partials/jobs/:id/status</code></td>
+<td>allowed status control</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/partials/jobs/:id/timeline</code></td>
+<td>event timeline</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/partials/customers/list</code></td>
+<td>customer list</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/partials/invoices/list</code></td>
+<td>invoice list</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/partials/users/list</code></td>
+<td>user list</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/partials/insights/timeline</code></td>
+<td>timeline rows</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/partials/insights/workload</code></td>
+<td>workload rows</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/partials/insights/financials</code></td>
+<td>financial summary</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/partials/search</code></td>
+<td>grouped search results</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/partials/account/appearance</code></td>
+<td>save theme, return panel state</td>
+</tr>
+</tbody>
+</table>
+<p>Every partial repeats the same guard and scope as its full page.</p>
+<h3 id="1210-controller-pattern">12.10 Controller pattern</h3>
+<pre><code class="language-js">router.post(
+  &quot;/jobs/:id/status&quot;,
+  requirePermission(&quot;job.status.advance&quot;),
+  asyncHandler(async (req, res) =&gt; {
+    const job = await jobs.getVisibleOr404(req.user, req.params.id);
+    const result = await jobs.transition({ user: req.user, job, ...req.body });
+    if (req.isHtmx) return res.render(&quot;partials/jobs/status.njk&quot;, result);
+    setFlash(req, &quot;success&quot;, &quot;Job status updated.&quot;);
+    return res.redirect(`/jobs/${job.id}`);
+  }),
+);
+</code></pre>
+<p>Controllers stay thin: parse, guard, call service, render/redirect. Business rules live in
+services/domain modules and are independently testable.</p>
+<hr />
+<div class="chnav"><a class="grow" href="#ch11">&larr; 11. Domain services and rules</a><a class="grow" href="#ch13">13. Templates and UI &rarr;</a></div><a id="ch13"></a>
+<h2 id="13-templates-and-ui">13. Templates and UI</h2>
+<h3 id="131-template-inventory">13.1 Template inventory</h3>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Templates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Layouts</td>
+<td><code>layouts/app.njk</code>, <code>layouts/auth.njk</code>, <code>layouts/print.njk</code></td>
+</tr>
+<tr>
+<td>Auth</td>
+<td><code>pages/auth/signin.njk</code>, <code>pages/auth/password.njk</code></td>
+</tr>
+<tr>
+<td>Dashboards</td>
+<td><code>pages/dashboard/operations.njk</code>, <code>engineer.njk</code>, <code>portal.njk</code></td>
+</tr>
+<tr>
+<td>Jobs</td>
+<td><code>list.njk</code>, <code>detail.njk</code>, <code>form.njk</code>, <code>assign.njk</code>, <code>schedule.njk</code></td>
+</tr>
+<tr>
+<td>Customers</td>
+<td><code>list.njk</code>, <code>detail.njk</code>, <code>form.njk</code></td>
+</tr>
+<tr>
+<td>Invoices</td>
+<td><code>list.njk</code>, <code>detail.njk</code>, <code>form.njk</code></td>
+</tr>
+<tr>
+<td>Portal</td>
+<td><code>portal/jobs.njk</code>, <code>portal/job.njk</code>, <code>portal/invoices.njk</code>, <code>portal/invoice.njk</code></td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>timeline.njk</code>, <code>workload.njk</code>, <code>financials.njk</code>, <code>needs-invoicing.njk</code></td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>users/list.njk</code>, <code>users/detail.njk</code>, <code>roles.njk</code>, <code>settings.njk</code>, <code>audit.njk</code>, <code>archive.njk</code></td>
+</tr>
+<tr>
+<td>Account</td>
+<td><code>appearance.njk</code></td>
+</tr>
+<tr>
+<td>Partial macros</td>
+<td><code>macros/pill.njk</code>, <code>status.njk</code>, <code>field.njk</code>, <code>button.njk</code>, <code>table.njk</code>, <code>timeline.njk</code>, <code>empty.njk</code>, <code>flash.njk</code>, <code>pagination.njk</code>, <code>aa-panel.njk</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="132-layout-and-shared-context">13.2 Layout and shared context</h3>
+<p><code>app.njk</code> renders:</p>
+<ul>
+<li>top bar: brand, global search, <code>Dashboard</code>, <code>Jobs</code>, <code>Customers</code>, <code>Insights</code>, <code>Admin</code>
+  (only when the user has any admin permission), user menu;</li>
+<li>left TOC: grouped pills filtered by <code>can()</code>;</li>
+<li>content: page title, breadcrumb, one primary action, flash region, content block;</li>
+<li>Aa panel include and theme boot script.</li>
+</ul>
+<p><code>res.locals</code> provides <code>user</code>, <code>can</code>, <code>csrfToken</code>, <code>flash</code>, <code>currentPath</code>, <code>navGroups</code>,
+<code>theme</code>, <code>company</code>, <code>formatMoney</code>, <code>formatDate</code>, <code>formatDateTime</code>.</p>
+<h3 id="133-navigation-rules">13.3 Navigation rules</h3>
+<ul>
+<li>Top bar contains only the fixed few items from the plan.</li>
+<li>Left TOC entries are generated from a declarative nav definition; each entry has
+  <code>label</code>, <code>href</code>, <code>actionKey</code> and optional <code>scope</code>.</li>
+<li>A CUSTOMER sees only portal entries: My jobs, My invoices, Documents, Appearance.</li>
+<li>An ENGINEER sees My jobs, Timeline, Appearance.</li>
+<li>A field-capable MANAGER sees manager entries plus My jobs.</li>
+<li>An ADMIN sees everything plus Admin.</li>
+<li>Active state comes from the path prefix. Pills are large, 48px high, with a visible focus
+  ring.</li>
+</ul>
+<h3 id="134-forms">13.4 Forms</h3>
+<ul>
+<li>Single column, labels above fields, no placeholder-only labels.</li>
+<li>Every form has a hidden CSRF field.</li>
+<li>Required fields marked with text, not only an asterisk.</li>
+<li>Field errors appear next to the field and in a summary at the top; focus goes to the
+  first invalid field.</li>
+<li>Values survive a validation failure.</li>
+<li>Primary action is a 48px button; secondary actions are quieter pills.</li>
+<li>Destructive actions show a confirmation naming the record and its reference.</li>
+<li>No client-only validation is trusted.</li>
+</ul>
+<h3 id="135-status-control">13.5 Status control</h3>
+<ul>
+<li>Shows only transitions the current user may take.</li>
+<li>Full-width button row on mobile; thumb-reachable.</li>
+<li>Each button names the outcome (<code>Start job</code>, <code>Complete job</code>, <code>Put on hold</code>), not the status
+  code.</li>
+<li>The status pill always shows word + colour, never colour alone.</li>
+<li><code>INVOICED</code>/<code>PAID</code> never appear as manual status buttons.</li>
+<li>After an HTMX transition, replace the status block and timeline, and announce the change
+  with <code>aria-live="polite"</code>.</li>
+</ul>
+<h3 id="136-lists-tables-and-mobile">13.6 Lists, tables and mobile</h3>
+<ul>
+<li>Lists use semantic tables on wide screens and stacked cards under 720px.</li>
+<li>Tables scroll inside their own wrapper, never the page.</li>
+<li>Pagination is visible when there are more than 25 rows.</li>
+<li>Empty state: one sentence saying what would appear plus the create action if permitted.</li>
+<li>Status pills use text + colour token.</li>
+</ul>
+<h3 id="137-theme-and-aa-panel">13.7 Theme and Aa panel</h3>
+<ul>
+<li><code>public/css/tokens.css</code> defines one set of CSS custom properties for light and dark.</li>
+<li>App defaults: <code>--fs-content: 20px</code>, <code>--fs-ui: 17px</code>, line-height 1.55. This satisfies
+  plan U1 (18–20px body text) while the documentation theme uses 25px for long-form
+  reading. The same token names are used everywhere.</li>
+<li><code>theme-boot.js</code> applies the user's saved theme before first paint, from a JSON data block
+  rendered into the page. Resolution order: user prefs → company default → built-in.</li>
+<li><code>appearance.js</code> implements System/Light/Dark, type size, line height, layout width,
+  font stacks and colour tokens. Changes preview live; Save posts to the server.</li>
+<li>Font selections are curated <code>&lt;select&gt;</code> options; an unknown saved stack appears as
+  <code>Custom</code>.</li>
+<li>Reset restores company defaults; Copy TOML exports values using the same key names as
+  <code>jms_theme.toml</code>.</li>
+<li>The panel is hidden in print and on small screens; it never changes permissions or
+  content.</li>
+<li>No per-page CSS forks. Page-specific overrides are scoped classes, not new palettes.</li>
+</ul>
+<h3 id="138-empty-error-and-edge-states">13.8 Empty, error and edge states</h3>
+<ul>
+<li>Empty list: explanation + permitted create action.</li>
+<li>Permission denied: plain explanation + "back to my work" link.</li>
+<li>Not found/archived: say the record exists but is archived, with reference, if allowed.</li>
+<li>Save success: inline confirmation near the action; changed values visible.</li>
+<li>Validation: field-level plain language, preserved input, focus on first error.</li>
+<li>Session expiry: sign-in with explanation; no raw error.</li>
+<li>No JS: full-page forms and links still work.</li>
+<li>Slow request: busy state within 300ms; no double submit.</li>
+</ul>
+<h3 id="139-accessibility-implementation">13.9 Accessibility implementation</h3>
+<ul>
+<li>Landmarks: <code>header</code>, <code>nav</code>, <code>main</code>, <code>aside</code>; skip link to main.</li>
+<li>Every interactive element is a real button/link with keyboard access and visible focus.</li>
+<li>Hit areas at least 44×44px; primary buttons 48px high.</li>
+<li>Focus management on HTMX swaps: keep focus on the triggering control or move it to the
+  updated status region with an accessible announcement.</li>
+<li><code>aria-current="page"</code> on the active nav pill; <code>aria-live</code> for status changes and flash.</li>
+<li>Contrast meets WCAG 2.2 AA in both themes; tokens are checked with a contrast script in
+  CI.</li>
+<li>Reduced motion honoured; no animation is required to understand a change.</li>
+<li>Dates always include weekday, day, month, year and time where relevant:
+  <code>Tue 17 Mar 2026, 09:00</code>.</li>
+<li>Language is plain and active; jargon belongs only in admin screens.</li>
+</ul>
+<h3 id="1310-print">13.10 Print</h3>
+<ul>
+<li><code>print.css</code> hides top bar, TOC, filters, Aa panel and actions.</li>
+<li>Job sheet and invoice print on A4 with page numbers.</li>
+<li>Customer-facing print output excludes internal notes and prices where the screen does.</li>
+<li>Print styles are shared with the PDF layout tokens (same fonts, colours, spacing scale).</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch12">&larr; 12. Routes</a><a class="grow" href="#ch14">14. PDF generation &rarr;</a></div><a id="ch14"></a>
+<h2 id="14-pdf-generation">14. PDF generation</h2>
+<h3 id="141-job-sheet">14.1 Job sheet</h3>
+<p>Contents:</p>
+<ul>
+<li>company name, address, logo, VAT number if present;</li>
+<li>job reference, status as words, priority;</li>
+<li>customer and site address;</li>
+<li>work type, title, description;</li>
+<li>assigned engineers (names, lead marker);</li>
+<li>planned dates and slot;</li>
+<li>customer-visible notes;</li>
+<li>generation timestamp and page number.</li>
+</ul>
+<p>Rules:</p>
+<ul>
+<li>A4 portrait; printable in monochrome.</li>
+<li>No internal notes.</li>
+<li>No prices for CUSTOMER/ENGINEER downloads.</li>
+<li>Manager/Admin downloads may include the price block.</li>
+</ul>
+<h3 id="142-invoice">14.2 Invoice</h3>
+<p>Contents:</p>
+<ul>
+<li>company header/logo and VAT number;</li>
+<li><code>INVOICE</code> title, number, issue and due dates;</li>
+<li>customer and site address, job reference;</li>
+<li>line items: description, qty, unit, amount;</li>
+<li>net, VAT, gross;</li>
+<li>payment terms and company PDF footer;</li>
+<li><code>VOID</code> watermark when voided;</li>
+<li>page numbers.</li>
+</ul>
+<p>Rules:</p>
+<ul>
+<li>A4 portrait; gapless number displayed.</li>
+<li>Customer download allowed only for <code>ISSUED</code>/<code>PAID</code>/<code>VOID</code>; <code>DRAFT</code> is staff-only.</li>
+<li>Voided invoices remain downloadable by staff and show the watermark.</li>
+</ul>
+<h3 id="143-generation-flow">14.3 Generation flow</h3>
+<p><code>services/documents.js</code>:</p>
+<pre><code class="language-js">async function generateJobSheet({ user, job, requestId }) {
+  const visible = presentJobForPdf(user, job);  // removes forbidden fields
+  const doc = await documents.createRecord({ type: &quot;JOB_SHEET&quot;, entityType: &quot;JOB&quot;, ... });
+  await renderJobSheetPdf({ doc, data: visible });  // writes storage/documents/{id}.pdf
+  await documents.finalise(doc);                    // checksum, size, audit
+  return doc;
+}
+</code></pre>
+<ul>
+<li>Output path: <code>storage/documents/{document_id}.pdf</code>.</li>
+<li>Stream to a temp file, then rename; never leave partial files.</li>
+<li>SHA-256 checksum and size recorded.</li>
+<li>A download served by document ID re-checks permission and entity scope every time.</li>
+<li>If the file is missing, regenerate and update the document row; if generation fails,
+  return a friendly error and log the request ID.</li>
+<li>No long-lived signed URLs; access is session-based.</li>
+</ul>
+<h3 id="144-layout-tokens">14.4 Layout tokens</h3>
+<p>PDF layout uses the same house tokens as the app print styles:</p>
+<ul>
+<li>A4: 595.28 × 841.89 pt; margins 48pt.</li>
+<li>Serif for headings, sans for body, mono for references.</li>
+<li>Terracotta accent for rules and labels, but safe in grayscale.</li>
+<li>Footer: company name, page <code>n of m</code>, generation timestamp.</li>
+<li>Logo is optional; a missing logo must not fail generation.</li>
+</ul>
+<h3 id="145-tests">14.5 Tests</h3>
+<ul>
+<li>Generated buffer starts with <code>%PDF</code>.</li>
+<li><code>pdf-parse</code> text contains the reference, customer name and total.</li>
+<li>Customer job-sheet text never contains internal notes or price words.</li>
+<li>Customer invoice download is blocked for DRAFT and allowed after ISSUE.</li>
+<li>Void invoice contains <code>VOID</code>.</li>
+<li>Document row has a checksum that matches the file.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch13">&larr; 13. Templates and UI</a><a class="grow" href="#ch15">15. Seed data &rarr;</a></div><a id="ch15"></a>
+<h2 id="15-seed-data">15. Seed data</h2>
+<h3 id="151-command-and-determinism">15.1 Command and determinism</h3>
+<pre><code class="language-bash">npm run seed          # create data/jms.json if absent
+npm run seed:force    # replace existing data (after backup)
+</code></pre>
+<ul>
+<li><code>SEED=20260316</code> by default.</li>
+<li>Use a documented PRNG (mulberry32) seeded with the numeric seed; all choices must be
+  reproducible.</li>
+<li><code>SEED_NOW = 2026-03-16T08:00:00.000Z</code>.</li>
+<li>Seeding writes one transaction; it either produces the complete dataset or nothing.</li>
+<li>The script prints counts and fails if any acceptance check in §15.7 fails.</li>
+<li>Seed users share a precomputed bcrypt hash of <code>JMS123</code> (cost 12) to keep seeding fast;
+  all are <code>must_change_password: true</code>. Real provisioning hashes per user.</li>
+</ul>
+<h3 id="152-staff-accounts">15.2 Staff accounts</h3>
+<p>All staff are <code>ACTIVE</code>, role as below, default password <code>JMS123</code>.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Display name</th>
+<th>Email</th>
+<th>Role</th>
+<th><code>can_engineer</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Alex Morgan</td>
+<td><code>admin@acme.example</code></td>
+<td>ADMIN</td>
+<td>false</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Priya Shah</td>
+<td><code>admin2@acme.example</code></td>
+<td>ADMIN</td>
+<td>false</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Morgan Lee</td>
+<td><code>manager@acme.example</code></td>
+<td>MANAGER</td>
+<td>true</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Rita Patel</td>
+<td><code>manager2@acme.example</code></td>
+<td>MANAGER</td>
+<td>true</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Dan Walker</td>
+<td><code>engineer1@acme.example</code></td>
+<td>ENGINEER</td>
+<td>true</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Sam Okafor</td>
+<td><code>engineer2@acme.example</code></td>
+<td>ENGINEER</td>
+<td>true</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Luis García</td>
+<td><code>engineer3@acme.example</code></td>
+<td>ENGINEER</td>
+<td>true</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Hannah Brooks</td>
+<td><code>engineer4@acme.example</code></td>
+<td>ENGINEER</td>
+<td>true</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Tomasz Nowak</td>
+<td><code>engineer5@acme.example</code></td>
+<td>ENGINEER</td>
+<td>true</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Aisha Khan</td>
+<td><code>engineer6@acme.example</code></td>
+<td>ENGINEER</td>
+<td>true</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Ben Carter</td>
+<td><code>engineer7@acme.example</code></td>
+<td>ENGINEER</td>
+<td>true</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Grace Miller</td>
+<td><code>engineer8@acme.example</code></td>
+<td>ENGINEER</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<p>Phones use fictional UK ranges (<code>07700 9000xx</code>). The two managers are the "managers who can
+be engineers"; the assignment picker must include them.</p>
+<h3 id="153-customer-accounts">15.3 Customer accounts</h3>
+<p>Each customer gets a CUSTOMER login with the same email, <code>status: ACTIVE</code>, <code>INVITED</code>-style
+forced password change, and <code>customer_id</code> pointing at the record.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Customer</th>
+<th>Contact</th>
+<th>Email</th>
+<th>Phone</th>
+<th>Address</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Meadow House Ltd</td>
+<td>Elaine Foster</td>
+<td><code>customer1@example.com</code></td>
+<td>0161 555 0101</td>
+<td>12 Meadow Lane, Didsbury, Manchester M20 2AB</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Northgate Dental</td>
+<td>Dr James Hill</td>
+<td><code>customer2@example.com</code></td>
+<td>0161 555 0102</td>
+<td>4 Northgate, Stockport SK1 1AA</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Willow Court Management</td>
+<td>Susan Reed</td>
+<td><code>customer3@example.com</code></td>
+<td>0161 555 0103</td>
+<td>Willow Court, 88 Wilmslow Road, Manchester M14 5TP</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Brookside School</td>
+<td>Mark Evans</td>
+<td><code>customer4@example.com</code></td>
+<td>0161 555 0104</td>
+<td>Brookside School, 2 Brook Street, Altrincham WA14 1AA</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Harbour View Flats</td>
+<td>Nina Patel</td>
+<td><code>customer5@example.com</code></td>
+<td>0161 555 0105</td>
+<td>19 Harbour View, Salford M50 3UB</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Orchard Barn</td>
+<td>Tom Whitfield</td>
+<td><code>customer6@example.com</code></td>
+<td>0161 555 0106</td>
+<td>Orchard Barn, Church Lane, Wilmslow SK9 1AA</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Kingsway Hotel</td>
+<td>Chloe Adams</td>
+<td><code>customer7@example.com</code></td>
+<td>0161 555 0107</td>
+<td>120 Kingsway, Manchester M19 2AA</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Fernhill Surgery</td>
+<td>Dr A. Rahman</td>
+<td><code>customer8@example.com</code></td>
+<td>0161 555 0108</td>
+<td>Fernhill Surgery, 7 Fern Road, Stockport SK2 2BB</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Regent Street Offices</td>
+<td>Laura Green</td>
+<td><code>customer9@example.com</code></td>
+<td>0161 555 0109</td>
+<td>44 Regent Street, Manchester M1 2AB</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Stonebridge Villa</td>
+<td>Peter Jones</td>
+<td><code>customer10@example.com</code></td>
+<td>0161 555 0110</td>
+<td>Stonebridge Villa, 3 Stonebridge Lane, Cheshire SK8 3AA</td>
+</tr>
+</tbody>
+</table>
+<h3 id="154-jobs">15.4 Jobs</h3>
+<p>For each customer, draw a job count of 1–4 from the seeded PRNG <strong>before</strong> drawing job
+fields. With <code>SEED=20260316</code> and the algorithm in this section, the reference counts are
+<code>[3, 4, 2, 1, 3, 4, 3, 2, 2, 2]</code>, giving <strong>26 jobs</strong>.</p>
+<p>For each job:</p>
+<ol>
+<li>Reference: allocate <code>JOB-2026-NNNN</code> in sequence.</li>
+<li>Work type: weighted <code>WINDOW_INSTALL</code> 50%, <code>REPAIR</code> 35%, <code>SURVEY</code> 15%.</li>
+<li>Title: pick a matching title from a fixed table.</li>
+<li>Description: 1–2 sentences built from the work type and customer name.</li>
+<li>Priority: 15% <code>URGENT</code>, else <code>NORMAL</code>.</li>
+<li>Status: force the first eight jobs to cover all eight statuses exactly once (in the
+   order DRAFT, SCHEDULED, IN_PROGRESS, ON_HOLD, COMPLETED, INVOICED, PAID, CANCELLED);
+   remaining jobs use weights SCHEDULED 35%, COMPLETED 25%, IN_PROGRESS 15%, PAID 10%,
+   INVOICED 10%, ON_HOLD 5%.</li>
+<li>Planned dates:
+   - DRAFT: <code>planned_start</code>/<code>planned_end</code> null.
+   - SCHEDULED/IN_PROGRESS/ON_HOLD: within 7 days before to 21 days after <code>SEED_NOW</code>.
+   - COMPLETED/INVOICED/PAID/CANCELLED: 14–60 days before <code>SEED_NOW</code>.
+   - Duration 0 (same-day) or 1 day; slot AM/PM/ALL_DAY.</li>
+<li>Actual dates: IN_PROGRESS has <code>actual_start</code>; COMPLETED/INVOICED/PAID have both.</li>
+<li>Price: net £450–£6,500 in pence; VAT 20%; gross derived.</li>
+<li>Notes: some jobs get an internal note and a separate customer-visible note.</li>
+<li>Create a <code>CREATED</code> event, plus a <code>STATUS_CHANGE</code> event for the current status.</li>
+<li>Archive: none in seed.</li>
+</ol>
+<p>Fixed title pools:</p>
+<ul>
+<li>WINDOW_INSTALL: "Replace casement windows", "Install bay window", "Fit French doors",
+  "Replace bedroom windows", "Install sliding sash windows".</li>
+<li>REPAIR: "Repair failed sealed unit", "Replace broken hinge", "Fix draughty window",
+  "Replace window handle and lock", "Repair conservatory roof glazing".</li>
+<li>SURVEY: "Site survey for window replacement", "Measure for conservatory glazing",
+  "Survey for door replacement".</li>
+</ul>
+<h3 id="155-assignments">15.5 Assignments</h3>
+<ul>
+<li>Field-capable pool = 8 ENGINEERs + 2 field-capable MANAGERs (10 users).</li>
+<li>For every job, choose 1–2 distinct users from the pool using the seeded PRNG.</li>
+<li>The first chosen is lead; the rest are non-lead.</li>
+<li>Assignment dates: <code>created_at</code> plus a small deterministic offset.</li>
+<li>A field-capable manager may appear as lead or member, proving the <code>can_engineer</code> path.</li>
+<li>Do not assign to the same user twice on one job.</li>
+<li>Every assignment writes an <code>ASSIGNMENT</code> event.</li>
+</ul>
+<h3 id="156-events-invoices-and-documents">15.6 Events, invoices and documents</h3>
+<ul>
+<li>Jobs with <code>INVOICED</code> or <code>PAID</code> get one invoice:</li>
+<li><code>INVOICED</code>: status ISSUED, issued 1–10 days before <code>SEED_NOW</code>, due +14 days.</li>
+<li><code>PAID</code>: status PAID, issued 15–45 days before <code>SEED_NOW</code>, paid 1–10 days after issue.</li>
+<li>Number allocation is sequential in job creation order.</li>
+<li>Invoice net equals the job net; one line with the job title and amount.</li>
+<li><code>CANCELLED</code> jobs get a cancellation event with a reason.</li>
+<li>No PDFs are pre-generated in seed; first download creates the document row and file.</li>
+<li>No audit rows for seed provisioning except a single <code>seed.create</code> row; seeded records are
+  demo data, not user actions.</li>
+</ul>
+<h3 id="157-acceptance-checks">15.7 Acceptance checks</h3>
+<p>The seed script must assert:</p>
+<ul>
+<li>☐ exactly 2 ADMIN users, 2 MANAGER users, 8 ENGINEER users, 10 CUSTOMER users;</li>
+<li>☐ both managers have <code>can_engineer: true</code>;</li>
+<li>☐ exactly 10 customer records, each with one CUSTOMER login;</li>
+<li>☐ exactly 26 jobs for the reference seed, each customer having 1–4 jobs;</li>
+<li>☐ every job has at least one active assignment from the field-capable pool;</li>
+<li>☐ every assignment user satisfies <code>can_engineer &amp;&amp; ACTIVE</code>;</li>
+<li>☐ at least one job in each of the eight statuses;</li>
+<li>☐ every INVOICED/PAID job has exactly one live invoice; PAID has <code>paid_at</code>;</li>
+<li>☐ invoice numbers are unique and gapless for the year;</li>
+<li>☐ all default accounts have <code>must_change_password: true</code>;</li>
+<li>☐ <code>_meta.sequences.job["2026"]</code> equals the number of jobs;</li>
+<li>☐ no record references a missing foreign key.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch14">&larr; 14. PDF generation</a><a class="grow" href="#ch16">16. Security and audit &rarr;</a></div><a id="ch16"></a>
+<h2 id="16-security-and-audit">16. Security and audit</h2>
+<h3 id="161-headers-and-transport">16.1 Headers and transport</h3>
+<ul>
+<li>Helmet with:</li>
+<li><code>Content-Security-Policy</code>: <code>default-src 'self'; script-src 'self'; style-src 'self';
+    img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self';
+    frame-ancestors 'none'; form-action 'self'; base-uri 'self'</code>.</li>
+<li><code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: same-origin</code>,
+    <code>X-Frame-Options: DENY</code>.</li>
+<li>HTTPS terminates at the reverse proxy in production; <code>TRUST_PROXY</code> is enabled only then.</li>
+<li>Cookies are <code>Secure</code> in production. No secrets in URLs.</li>
+</ul>
+<h3 id="162-input-and-output">16.2 Input and output</h3>
+<ul>
+<li>Validate every request body/query with Zod; reject unknown fields.</li>
+<li>Escape all output; notes are plain text.</li>
+<li>No dynamic <code>require</code>, no <code>eval</code>, no shell commands with user input.</li>
+<li>PDF file paths come from generated document IDs only.</li>
+<li>Uploads are not part of v1.</li>
+<li>Rate limits cover sign-in, password reset and search.</li>
+</ul>
+<h3 id="163-audit-events">16.3 Audit events</h3>
+<p>Every mutation writes an audit row in the same transaction. Required actions:</p>
+<p><code>auth.signin.success</code>, <code>auth.signin.failed</code>, <code>auth.signout</code>, <code>auth.password.change</code>,
+<code>user.create</code>, <code>user.update.role</code>, <code>user.reset.password</code>, <code>user.deactivate</code>,
+<code>permission.update</code>, <code>customer.create</code>, <code>customer.update</code>, <code>customer.invite</code>,
+<code>customer.archive</code>, <code>customer.restore</code>, <code>job.create</code>, <code>job.update</code>, <code>job.assign</code>,
+<code>job.schedule</code>, <code>job.status.change</code>, <code>job.note.add</code>, <code>job.cancel</code>, <code>job.archive</code>,
+<code>job.restore</code>, <code>invoice.create</code>, <code>invoice.issue</code>, <code>invoice.void</code>, <code>invoice.paid</code>,
+<code>document.generate</code>, <code>settings.update</code>, <code>theme.default.update</code>.</p>
+<p>Audit <code>before</code>/<code>after</code> contains only changed fields and never secrets. Permission edits
+record <code>role_key</code>, <code>action_key</code>, <code>before</code>, <code>after</code>.</p>
+<h3 id="164-logging">16.4 Logging</h3>
+<ul>
+<li>Pino JSON to stdout; request ID on every line.</li>
+<li>Log method, path, status, duration, user ID (if signed in) and error code.</li>
+<li>Redact cookies, <code>authorization</code>, <code>password</code>, <code>_csrf</code>, session IDs, tokens.</li>
+<li>Do not log request bodies or personal notes.</li>
+<li>Error logs include stack traces; client responses do not.</li>
+</ul>
+<h3 id="165-backups">16.5 Backups</h3>
+<ul>
+<li><code>npm run backup</code> copies <code>data/jms.json</code> and <code>data/sessions.json</code> to
+  <code>backups/jms-YYYYMMDD-HHmmss/</code>.</li>
+<li>Keep 30 daily backups by default; pruning is configurable.</li>
+<li>The backup script verifies JSON parseability and checksums.</li>
+<li>A restore drill is required before go-live and recorded in the ops log.</li>
+</ul>
+<h3 id="166-threat-tests">16.6 Threat tests</h3>
+<p>Automated tests must cover:</p>
+<ul>
+<li>cross-customer job/invoice/document access returns 404;</li>
+<li>cross-engineer job access returns 404;</li>
+<li>missing/invalid CSRF is rejected;</li>
+<li>hidden role/owner fields cannot escalate or reassign;</li>
+<li>last-admin safeguards reject demotion/deactivation/permission removal;</li>
+<li><code>admin.audit.view</code> cannot be granted to CUSTOMER or ENGINEER;</li>
+<li>session revocation after password change/role change/deactivation;</li>
+<li>login rate limiting;</li>
+<li>malformed JSON/store corruption refuses startup safely;</li>
+<li>no price/internal-note leakage in customer/engineer HTML or PDF.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch15">&larr; 15. Seed data</a><a class="grow" href="#ch17">17. Testing &rarr;</a></div><a id="ch17"></a>
+<h2 id="17-testing">17. Testing</h2>
+<h3 id="171-test-setup">17.1 Test setup</h3>
+<ul>
+<li><code>tests/helpers/app.js</code> builds the Express app with a temporary <code>DATA_FILE</code> and
+  <code>SESSION_FILE</code>, runs the seed builder with a fixed clock, and returns a Supertest agent.</li>
+<li>Each test file creates its own temp directory; cleanup removes it.</li>
+<li>No network access. Fonts/HTMX are local fixtures.</li>
+<li><code>npm test</code> runs all <code>*.test.js</code> with the Node test runner.</li>
+</ul>
+<h3 id="172-unit-tests">17.2 Unit tests</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Tests</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>db/store</code></td>
+<td>insert/update/transaction rollback, atomic write, concurrent writers, migration, corruption</td>
+</tr>
+<tr>
+<td><code>domain/status</code></td>
+<td>every allowed/denied transition and guard</td>
+</tr>
+<tr>
+<td><code>domain/permissions</code></td>
+<td>matrix defaults, safeguards, <code>can()</code></td>
+</tr>
+<tr>
+<td><code>domain/references</code></td>
+<td>year rollover, gapless invoice numbers</td>
+</tr>
+<tr>
+<td><code>domain/money</code></td>
+<td>VAT rounding, line totals, no floats</td>
+</tr>
+<tr>
+<td><code>services/jobs</code></td>
+<td>assignment validation, conflict detection, scoping</td>
+</tr>
+<tr>
+<td><code>services/invoices</code></td>
+<td>issue/void/paid/re-issue, one live invoice</td>
+</tr>
+<tr>
+<td><code>services/documents</code></td>
+<td>checksum, version, regeneration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="173-http-and-workflow-tests">17.3 HTTP and workflow tests</h3>
+<p>For each workflow W1–W10, one end-to-end HTTP test:</p>
+<ul>
+<li>W1: create customer + login; duplicate email explains the existing record.</li>
+<li>W2: create job; reference allocated; DRAFT.</li>
+<li>W3: assign engineers + dates; DRAFT→SCHEDULED; conflict warning appears.</li>
+<li>W4: engineer signs in, sees only own jobs, starts/completes; forbidden transition
+  rejected.</li>
+<li>W5: completed job → invoice → issue → paid; PDFs downloadable.</li>
+<li>W6: customer sees only own job/invoice/document; guessed URL returns 404.</li>
+<li>W7: job sheet/invoice PDFs generated from live data; no internal notes/prices for
+  customers.</li>
+<li>W8: admin toggles a permission; nav pill and route effect change on next request; audit
+  row written; safeguards hold.</li>
+<li>W9: user changes appearance; prefs persist across sessions; company default applies.</li>
+<li>W10: search/timeline/workload/financials respect role scope and date ranges.</li>
+</ul>
+<h3 id="174-permission-matrix-test">17.4 Permission matrix test</h3>
+<p>A generated test iterates every role × action key × representative route:</p>
+<ul>
+<li>allowed → not 403;</li>
+<li>denied → 403 or 404 according to scope rules;</li>
+<li>nav markup contains the pill only when allowed.</li>
+</ul>
+<p>This test is the primary defence against a hidden button being the only control.</p>
+<h3 id="175-seed-test">17.5 Seed test</h3>
+<p>Asserts every check in §15.7, plus idempotent <code>seed:force</code> with a backup.</p>
+<h3 id="176-accessibility-and-performance">17.6 Accessibility and performance</h3>
+<ul>
+<li>Automated: <code>axe-core</code> in a Playwright smoke suite for sign-in, jobs list, job detail,
+  portal and appearance panel; fail on serious/critical.</li>
+<li>Manual: keyboard-only walkthrough, 200% zoom, 360px viewport, light/dark contrast.</li>
+<li>Performance: request p95 &lt; 300ms on the seed dataset; list queries use indexes; no
+  N+1 rendering; response size under 500KB for normal pages.</li>
+</ul>
+<h3 id="177-ci-order">17.7 CI order</h3>
+<pre><code class="language-bash">npm ci
+npm run lint
+npm test
+</code></pre>
+<p>A separate <code>npm run test:a11y</code> runs the Playwright suite where browsers are available.</p>
+<hr />
+<div class="chnav"><a class="grow" href="#ch16">&larr; 16. Security and audit</a><a class="grow" href="#ch18">18. Operations &rarr;</a></div><a id="ch18"></a>
+<h2 id="18-operations">18. Operations</h2>
+<h3 id="181-local-development">18.1 Local development</h3>
+<pre><code class="language-bash">cp .env.example .env
+npm ci
+npm run seed
+npm run dev
+# http://localhost:3000
+</code></pre>
+<p>Sign in with <code>admin@acme.example</code> / <code>JMS123</code>; the app forces a password change, then lands
+on the operations dashboard.</p>
+<h3 id="182-production">18.2 Production</h3>
+<ul>
+<li>One Node process behind a reverse proxy (Caddy/Nginx) with HTTPS.</li>
+<li>Persistent volume for <code>data/</code>, <code>storage/</code> and <code>backups/</code>.</li>
+<li><code>NODE_ENV=production</code>, <code>COOKIE_SECURE=true</code>, strong <code>SESSION_SECRET</code>, <code>TRUST_PROXY=true</code>.</li>
+<li>Run <code>npm ci --omit=dev</code>, <code>npm run seed</code> only on first deploy, then <code>npm start</code>.</li>
+<li>Health check: <code>GET /healthz</code> returns <code>200 {"status":"ok","db":"ok","version":"…"}</code>.</li>
+<li>Graceful shutdown on <code>SIGTERM</code>/<code>SIGINT</code>: stop accepting, finish in-flight requests,
+  persist pending store writes, close the store, exit.</li>
+<li>No horizontal scaling against one JSON file. A future SQL adapter can lift this.</li>
+</ul>
+<h3 id="183-backup-and-restore-drill">18.3 Backup and restore drill</h3>
+<ol>
+<li><code>npm run backup</code> while the app is running.</li>
+<li>Stop the app.</li>
+<li>Move <code>data/jms.json</code> aside; restore the backup file.</li>
+<li><code>npm start</code>; verify sign-in, a job, an invoice and an audit row.</li>
+<li>Record date, backup name, verifier and result.</li>
+</ol>
+<h3 id="184-performance-budgets">18.4 Performance budgets</h3>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Budget</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Page p95</td>
+<td>&lt; 300ms</td>
+</tr>
+<tr>
+<td>JSON write</td>
+<td>&lt; 50ms for the v1 dataset</td>
+</tr>
+<tr>
+<td>Seed</td>
+<td>&lt; 10s</td>
+</tr>
+<tr>
+<td>PDF generation</td>
+<td>&lt; 2s per document</td>
+</tr>
+<tr>
+<td>List page</td>
+<td>25 rows default</td>
+</tr>
+<tr>
+<td>Search</td>
+<td>&lt; 100ms for 100 jobs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="185-observability">18.5 Observability</h3>
+<ul>
+<li>Structured logs for requests, errors and slow operations (&gt; 500ms).</li>
+<li>In-app audit view for admins.</li>
+<li>No external monitoring required for v1; a log drain is recommended.</li>
+<li>Error responses show the request ID so a log line can be found.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch17">&larr; 17. Testing</a><a class="grow" href="#ch19">19. Implementation order &rarr;</a></div><a id="ch19"></a>
+<h2 id="19-implementation-order">19. Implementation order</h2>
+<p>Each phase is a demonstrable vertical slice. Do not start a phase before its dependencies
+are green.</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Build</th>
+<th>Acceptance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>T0</strong></td>
+<td>Scaffold, config, logging, health, JSON store, schemas, seed skeleton</td>
+<td><code>npm test</code> runs; <code>/healthz</code> returns ok; empty store boots</td>
+</tr>
+<tr>
+<td><strong>T1</strong></td>
+<td>Auth, sessions, CSRF, password change, roles/permissions seed, app shell, nav</td>
+<td>Four seeded roles sign in; denied routes are friendly; matrix hides pills</td>
+</tr>
+<tr>
+<td><strong>T2</strong></td>
+<td>Customers CRUD, invite login, users admin, company settings</td>
+<td>W1 and user admin work; duplicate emails explained; audit rows written</td>
+</tr>
+<tr>
+<td><strong>T3</strong></td>
+<td>Jobs CRUD, references, detail, assignments, scheduling, conflict warning, list filters</td>
+<td>W2/W3 work; DRAFT exit guards enforced; <code>can_engineer</code> managers assignable</td>
+</tr>
+<tr>
+<td><strong>T4</strong></td>
+<td>My jobs, status control, actual timestamps, notes, timeline</td>
+<td>W4 works on a phone; forbidden transitions rejected; timeline renders</td>
+</tr>
+<tr>
+<td><strong>T5</strong></td>
+<td>Customer portal, scoped queries, portal invoices/documents</td>
+<td>W6 works; guessed cross-customer URLs return 404</td>
+</tr>
+<tr>
+<td><strong>T6</strong></td>
+<td>Invoices, numbering, issue/void/paid, job sheet/invoice PDFs, print CSS</td>
+<td>W5/W7 work; numbering gapless; PDFs pass content tests</td>
+</tr>
+<tr>
+<td><strong>T7</strong></td>
+<td>Search, dashboards, timeline, workload, financials</td>
+<td>W10 works; all views respect scope and dates</td>
+</tr>
+<tr>
+<td><strong>T8</strong></td>
+<td>Full audit view, archive/restore, appearance panel, backups, seed polish</td>
+<td>Matrix editable and audited; theme persists; restore drill passes</td>
+</tr>
+<tr>
+<td><strong>T9</strong></td>
+<td>Accessibility/performance pass, help pages, final docs</td>
+<td>§17 green; §12 checklist from the plan met</td>
+</tr>
+</tbody>
+</table>
+<h3 id="191-definition-of-done">19.1 Definition of done</h3>
+<ul>
+<li>☐ All <code>_PLAN.md</code> §12 checklist items pass.</li>
+<li>☐ All §10 action keys have server enforcement and tests.</li>
+<li>☐ Cross-customer and cross-engineer access tests fail closed with 404.</li>
+<li>☐ JSON store writes are atomic, backed up and restorable.</li>
+<li>☐ Seed produces the exact counts in §15.7.</li>
+<li>☐ Job sheet and invoice PDFs contain the right fields and no forbidden data.</li>
+<li>☐ Light/dark/system themes persist per user; company default applies.</li>
+<li>☐ 360px layout, keyboard walkthrough and WCAG AA contrast pass.</li>
+<li>☐ <code>_PLAN.html</code> and <code>_TECH.html</code> build from Markdown with no PDF step.</li>
+</ul>
+<hr />
+<div class="chnav"><a class="grow" href="#ch18">&larr; 18. Operations</a><a class="grow" href="#ch20">20. Traceability and open questions &rarr;</a></div><a id="ch20"></a>
+<h2 id="20-traceability-and-open-questions">20. Traceability and open questions</h2>
+<h3 id="201-plan-to-technical-spec">20.1 Plan to technical spec</h3>
+<table>
+<thead>
+<tr>
+<th><code>_PLAN.md</code></th>
+<th>Implemented in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§1 goals, non-goals</td>
+<td>§1, §19</td>
+</tr>
+<tr>
+<td>§2 roles, permissions, safeguards</td>
+<td>§8.3–8.5, §10</td>
+</tr>
+<tr>
+<td>§3 domain model, status machine</td>
+<td>§8, §11.1–11.2</td>
+</tr>
+<tr>
+<td>§4 workflows W1–W10</td>
+<td>§12, §17.3</td>
+</tr>
+<tr>
+<td>§5 screens/navigation</td>
+<td>§13.1–13.3</td>
+</tr>
+<tr>
+<td>§6 UX/accessibility</td>
+<td>§13.4–13.10</td>
+</tr>
+<tr>
+<td>§7 visual system/Aa panel</td>
+<td>§13.7</td>
+</tr>
+<tr>
+<td>§8 PDF requirements</td>
+<td>§14</td>
+</tr>
+<tr>
+<td>§9 security/audit</td>
+<td>§16</td>
+</tr>
+<tr>
+<td>§10 non-functional</td>
+<td>§7, §18</td>
+</tr>
+<tr>
+<td>§11 milestones</td>
+<td>§19</td>
+</tr>
+<tr>
+<td>§12 definition of done</td>
+<td>§19.1</td>
+</tr>
+<tr>
+<td>§13 decisions</td>
+<td>§1.2, §1.3, §20.2</td>
+</tr>
+</tbody>
+</table>
+<h3 id="202-open-questions-for-build-sign-off">20.2 Open questions for build sign-off</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Default if unanswered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>Should engineers see internal job notes?</td>
+<td>Yes, operational notes only; never pricing.</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>Should a manager with <code>can_engineer</code> see the customer price on their assigned job?</td>
+<td>Yes, because the MANAGER role already grants price visibility.</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>Should COMPLETED require a completion note?</td>
+<td>Ask for it in the UI; keep it optional.</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>Should customer portal show VOID invoices?</td>
+<td>Yes, with the VOID state, for transparency.</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>Should archive restore be Admin-only?</td>
+<td>Yes, via <code>job.archive</code> / <code>customer.archive</code>.</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>Should PDFs be retained forever?</td>
+<td>Keep all versions for v1; add pruning later.</td>
+</tr>
+<tr>
+<td>Q7</td>
+<td>Should sessions survive a server restart?</td>
+<td>Yes, via <code>data/sessions.json</code>; revoke expired on boot.</td>
+</tr>
+<tr>
+<td>Q8</td>
+<td>Should the JSON store use one file or one per collection?</td>
+<td>One domain file plus one sessions file; simpler transactions.</td>
+</tr>
+</tbody>
+</table><div class="chnav"><a class="grow" href="#ch19">&larr; 19. Implementation order</a><span class="grow"></span></div>
+  </article>
+</main>
+
+<button id="stylebtn" type="button" aria-expanded="false" aria-controls="stylepanel"
+        aria-label="Appearance settings" title="Appearance">Aa</button>
+
+<aside id="stylepanel" hidden aria-label="Appearance settings">
+  <div class="sp-head">
+    <h2>Appearance</h2>
+    <select id="sp-mode" aria-label="Colour scheme">
+      <option value="auto">Auto</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+    <button id="sp-close" type="button" aria-label="Close appearance panel">✕</button>
+  </div>
+  <div class="sp-body" id="sp-body"></div>
+  <div class="sp-foot">
+    <button id="sp-reset" type="button">Reset</button>
+    <span class="spacer"></span>
+    <button id="sp-copy" type="button">Copy TOML</button>
+  </div>
+</aside>
+
+<script>
+(() => {
+  const pane = document.getElementById('pane');
+  const toc = document.getElementById('toc');
+  const links = [...toc.querySelectorAll('a[href^="#"]')];
+  const bar = document.querySelector('#progress > span');
+  const body = document.body;
+
+  // ---- scroll-spy: the last heading whose top has passed the reading line ----
+  // (a scroll handler beats IntersectionObserver here: headings are tall and
+  // several can be visible at once, which made the observer pick the wrong one)
+  const targets = links
+    .map(a => ({ id: a.getAttribute('href').slice(1), el: document.getElementById(a.getAttribute('href').slice(1)) }))
+    .filter(t => t.el);
+
+  const setActive = (id) => {
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+    // keep the highlighted entry visible in the (independently scrolling) sidebar
+    const active = links.find(a => a.getAttribute('href') === '#' + id);
+    if (active) {
+      const box = active.getBoundingClientRect();
+      const paneBox = toc.getBoundingClientRect();
+      if (box.top < paneBox.top || box.bottom > paneBox.bottom) {
+        active.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  };
+
+  const sync = () => {
+    const max = pane.scrollHeight - pane.clientHeight;
+    if (bar) bar.style.width = (max > 0 ? (pane.scrollTop / max) * 100 : 0).toFixed(2) + '%';
+
+    const line = 96;                       // px below the top of the pane
+    let current = targets.length ? targets[0].id : null;
+    for (const t of targets) {
+      if (t.el.getBoundingClientRect().top - pane.getBoundingClientRect().top <= line) current = t.id;
+    }
+    if (current) setActive(current);
+  };
+
+  pane.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync);
+  sync();
+
+  // ---- TOC filter ----
+  const filter = document.getElementById('filter');
+  if (filter) {
+    filter.addEventListener('input', () => {
+      const q = filter.value.trim().toLowerCase();
+      toc.querySelectorAll('.chapter').forEach(ch => {
+        let any = false;
+        const head = ch.querySelector(':scope > a');
+        const headHit = head.textContent.toLowerCase().includes(q);
+        ch.querySelectorAll('.sections a').forEach(a => {
+          const hit = !q || a.textContent.toLowerCase().includes(q) || headHit;
+          a.parentElement.classList.toggle('hidden', !hit);
+          any = any || hit;
+        });
+        if (!q) ch.querySelectorAll('.sections li').forEach(li => li.classList.remove('hidden'));
+        ch.classList.toggle('hidden', q && !any && !headHit);
+      });
+    });
+  }
+
+  // ---- copy buttons on code blocks ----
+  document.querySelectorAll('#content pre').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.className = 'copy';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pre.innerText.replace(/^Copy\n?/, ''));
+        btn.textContent = 'Copied';
+      } catch {
+        btn.textContent = 'Ctrl+C';
+      }
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1400);
+    });
+    pre.appendChild(btn);
+  });
+
+  // ---- mobile drawer ----
+  const menu = document.getElementById('menu');
+  if (menu) {
+    menu.addEventListener('click', () => body.classList.toggle('nav-open'));
+    toc.addEventListener('click', (e) => {
+      if (e.target.closest('a')) body.classList.remove('nav-open');
+    });
+    pane.addEventListener('click', () => body.classList.remove('nav-open'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') body.classList.remove('nav-open');
+    });
+  }
+
+  // ---- open the first collapsed answer when printing ----
+  window.addEventListener('beforeprint', () => {
+    document.querySelectorAll('details').forEach(d => d.open = true);
+  });
+
+  // ============================================================
+  // appearance panel: edits the CSS custom properties in :root
+  // ============================================================
+  const SPEC = [{"table": "type", "title": "Type", "items": [{"key": "fs_content", "cssVar": "--fs-content", "kind": "size", "unit": "px", "min": 18, "max": 64, "step": 0.5, "label": "Book text"}, {"key": "lh_content", "cssVar": "--lh-content", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Book line height"}, {"key": "fs_ui", "cssVar": "--fs-ui", "kind": "size", "unit": "px", "min": 11, "max": 30, "step": 0.5, "label": "Sidebar and chrome text"}, {"key": "lh_ui", "cssVar": "--lh-ui", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Chrome line height"}]}, {"table": "layout", "title": "Layout", "items": [{"key": "sidebar", "cssVar": "--sidebar", "kind": "size", "unit": "px", "min": 240, "max": 560, "step": 5, "label": "Sidebar width"}, {"key": "measure", "cssVar": "--measure", "kind": "size", "unit": "%", "min": 40, "max": 100, "step": 1, "label": "Reading column width"}]}, {"table": "fonts", "title": "Fonts", "items": [{"key": "serif", "cssVar": "--serif", "kind": "font", "label": "Headings (serif)", "options": [{"label": "House serif (Iowan / Palatino)", "value": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif"}, {"label": "Georgia", "value": "Georgia, \"Times New Roman\", Times, serif"}, {"label": "Charter / Sitka", "value": "Charter, \"Bitstream Charter\", \"Sitka Text\", Cambria, serif"}, {"label": "Cambria", "value": "Cambria, \"Hoefler Text\", Georgia, serif"}, {"label": "Constantia", "value": "Constantia, \"Palatino Linotype\", Palatino, Georgia, serif"}, {"label": "Palatino", "value": "\"Palatino Linotype\", Palatino, \"Book Antiqua\", Georgia, serif"}, {"label": "Garamond", "value": "Garamond, \"EB Garamond\", \"Times New Roman\", serif"}, {"label": "Times", "value": "\"Times New Roman\", Times, Georgia, serif"}]}, {"key": "sans", "cssVar": "--sans", "kind": "font", "label": "Body (sans)", "options": [{"label": "House sans (system UI)", "value": "-apple-system, \"Segoe UI\", Inter, Helvetica, Arial, sans-serif"}, {"label": "Segoe UI", "value": "\"Segoe UI\", Tahoma, Geneva, Verdana, sans-serif"}, {"label": "Helvetica / Arial", "value": "Helvetica, Arial, \"Segoe UI\", sans-serif"}, {"label": "Verdana", "value": "Verdana, Geneva, Tahoma, sans-serif"}, {"label": "Tahoma", "value": "Tahoma, Verdana, Segoe UI, sans-serif"}, {"label": "Trebuchet MS", "value": "\"Trebuchet MS\", \"Lucida Grande\", Tahoma, sans-serif"}, {"label": "Calibri", "value": "Calibri, \"Segoe UI\", Candara, Optima, sans-serif"}, {"label": "Gill Sans / Optima", "value": "\"Gill Sans\", \"Gill Sans MT\", Optima, Candara, sans-serif"}]}, {"key": "mono", "cssVar": "--mono", "kind": "font", "label": "Code (mono)", "options": [{"label": "House mono (JetBrains)", "value": "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, ui-monospace, monospace"}, {"label": "Cascadia Mono", "value": "\"Cascadia Mono\", \"Cascadia Code\", Consolas, monospace"}, {"label": "Consolas", "value": "Consolas, \"Lucida Console\", Menlo, monospace"}, {"label": "SF Mono / Menlo", "value": "\"SF Mono\", Menlo, Monaco, \"DejaVu Sans Mono\", monospace"}, {"label": "Courier New", "value": "\"Courier New\", Courier, \"Nimbus Mono PS\", monospace"}, {"label": "Lucida Console", "value": "\"Lucida Console\", Monaco, \"DejaVu Sans Mono\", monospace"}]}]}, {"table": "colors", "title": "Colours", "colors": true, "items": [{"key": "paper", "cssVar": "--paper", "kind": "color", "label": "Page background"}, {"key": "surface", "cssVar": "--surface", "kind": "color", "label": "Sidebar background"}, {"key": "ivory", "cssVar": "--ivory", "kind": "color", "label": "Cards and inputs"}, {"key": "ink", "cssVar": "--ink", "kind": "color", "label": "Body text"}, {"key": "muted", "cssVar": "--muted", "kind": "color", "label": "Secondary text"}, {"key": "stone", "cssVar": "--stone", "kind": "color", "label": "Faint labels"}, {"key": "line", "cssVar": "--line", "kind": "color", "label": "Borders"}, {"key": "line_soft", "cssVar": "--line-soft", "kind": "color", "label": "Hairline borders"}, {"key": "terra", "cssVar": "--terra", "kind": "color", "label": "Accent"}, {"key": "terra_dark", "cssVar": "--terra-dark", "kind": "color", "label": "Links and accent text"}, {"key": "accent_strong", "cssVar": "--accent-strong", "kind": "color", "label": "Eyebrow / active label"}, {"key": "hover_bg", "cssVar": "--hover-bg", "kind": "color", "label": "Hover background"}, {"key": "active_bg", "cssVar": "--active-bg", "kind": "color", "label": "Active nav background"}, {"key": "active_fg", "cssVar": "--active-fg", "kind": "color", "label": "Active nav text"}, {"key": "focus_ring", "cssVar": "--focus-ring", "kind": "color", "label": "Focus ring"}, {"key": "code_bg", "cssVar": "--code-bg", "kind": "color", "label": "Code block background"}, {"key": "code_fg", "cssVar": "--code-fg", "kind": "color", "label": "Code block text"}, {"key": "inline_code_bg", "cssVar": "--inline-code-bg", "kind": "color", "label": "Inline code background"}, {"key": "inline_code_fg", "cssVar": "--inline-code-fg", "kind": "color", "label": "Inline code text"}, {"key": "quote_bg", "cssVar": "--quote-bg", "kind": "color", "label": "Callout background"}, {"key": "quote_border", "cssVar": "--quote-border", "kind": "color", "label": "Callout border"}, {"key": "quote_fg", "cssVar": "--quote-fg", "kind": "color", "label": "Callout text"}, {"key": "row_hover", "cssVar": "--row-hover", "kind": "color", "label": "Table row hover"}, {"key": "open_bg", "cssVar": "--open-bg", "kind": "color", "label": "Open answer background"}, {"key": "scroll_thumb", "cssVar": "--scroll-thumb", "kind": "color", "label": "Code scrollbar"}, {"key": "copy_bg", "cssVar": "--copy-bg", "kind": "color", "label": "Copy button background"}, {"key": "copy_fg", "cssVar": "--copy-fg", "kind": "color", "label": "Copy button text"}, {"key": "copy_border", "cssVar": "--copy-border", "kind": "color", "label": "Copy button border"}, {"key": "copy_hover", "cssVar": "--copy-hover", "kind": "color", "label": "Copy button hover"}]}];
+  const DEFAULTS = {"base": {"fs_ui": 20.4, "fs_content": 25, "lh_ui": 1.62, "lh_content": 1.62, "serif": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif", "sans": "-apple-system, \"Segoe UI\", Inter, Helvetica, Arial, sans-serif", "mono": "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, ui-monospace, monospace", "sidebar": 400, "measure": 80}, "colors": {"light": {"paper": "#f0eee6", "surface": "#fbfaf7", "ivory": "#fffdfa", "ink": "#1f1e1d", "muted": "#55524c", "stone": "#8c877c", "line": "#e2ddd2", "line_soft": "#ece8df", "terra": "#d97757", "terra_dark": "#c9633f", "accent_strong": "#a14e2f", "hover_bg": "#f4f1e9", "active_bg": "#f6ede6", "active_fg": "#8f3f27", "focus_ring": "#e3a98f", "code_bg": "#23211e", "code_fg": "#f3eee5", "inline_code_bg": "#eae7de", "inline_code_fg": "#6f3b26", "quote_bg": "#f8eee8", "quote_border": "#e7cec2", "quote_fg": "#3d3d3a", "row_hover": "#f7f4ee", "open_bg": "#fdf9f5", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}, "dark": {"paper": "#1b1a18", "surface": "#201f1c", "ivory": "#262420", "ink": "#f2ece1", "muted": "#c3bcae", "stone": "#9a9384", "line": "#34312b", "line_soft": "#2b2823", "terra": "#d97757", "terra_dark": "#d97757", "accent_strong": "#f0b49a", "hover_bg": "#262420", "active_bg": "#33261f", "active_fg": "#f0b49a", "focus_ring": "#8a5540", "code_bg": "#141312", "code_fg": "#f3eee5", "inline_code_bg": "#322e28", "inline_code_fg": "#f0b49a", "quote_bg": "#2a211d", "quote_border": "#4a332b", "quote_fg": "#e6ded2", "row_hover": "#262420", "open_bg": "#262420", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}}};
+  const INIT_MODE = "auto";
+  // the store key is tied to the built theme, so rebuilding with a changed
+  // book_theme.toml discards stale panel tweaks instead of shadowing them
+  const STORE = 'book-theme:' + "a4ed551255";
+  const root = document.documentElement;
+  const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const copy = (target, source) => {
+    Object.keys(target).forEach(k => { delete target[k]; });
+    Object.entries(clone(source)).forEach(([k, v]) => { target[k] = v; });
+  };
+
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORE)) || {}; } catch { saved = {}; }
+
+  const state = {
+    mode: ['auto', 'light', 'dark'].includes(saved.mode) ? saved.mode : INIT_MODE,
+    base: Object.assign(clone(DEFAULTS.base), saved.base || {}),
+    colors: {
+      light: Object.assign(clone(DEFAULTS.colors.light), (saved.colors || {}).light || {}),
+      dark: Object.assign(clone(DEFAULTS.colors.dark), (saved.colors || {}).dark || {}),
+    },
+  };
+
+  const resolved = () => state.mode === 'auto'
+    ? (darkQuery.matches ? 'dark' : 'light')
+    : state.mode;
+
+  const cssVal = (item, value) => item.unit === 'px' ? value + 'px'
+    : item.unit === '%' ? value + '%'
+    : String(value);
+
+  const apply = () => {
+    if (state.mode === 'auto') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', state.mode);
+
+    const mode = resolved();
+    SPEC.forEach(group => group.items.forEach(item => {
+      const value = item.kind === 'color' ? state.colors[mode][item.key] : state.base[item.key];
+      if (value === undefined || value === null || value === '') root.style.removeProperty(item.cssVar);
+      else if (item.kind === 'size' || item.kind === 'number') root.style.setProperty(item.cssVar, cssVal(item, value));
+      else root.style.setProperty(item.cssVar, String(value));
+    }));
+  };
+
+  const persist = () => {
+    try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* private mode */ }
+  };
+
+  // ---- build the panel ----
+  const panel = document.getElementById('stylepanel');
+  const button = document.getElementById('stylebtn');
+  const panelBody = document.getElementById('sp-body');
+  const modeSelect = document.getElementById('sp-mode');
+  const refs = {};
+
+  const hex6 = (value) => {
+    let v = String(value || '').trim().replace('#', '');
+    if (v.length === 3) v = v.split('').map(c => c + c).join('');
+    return '#' + v.slice(0, 6).padStart(6, '0');
+  };
+
+  const addGroup = (group) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'sp-group';
+
+    const title = document.createElement('h3');
+    title.textContent = group.title;
+    if (group.colors) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.id = 'sp-modetag';
+      title.appendChild(tag);
+    }
+    wrap.appendChild(title);
+
+    if (group.colors) {
+      const grid = document.createElement('div');
+      grid.className = 'sp-colors';
+      group.items.forEach(item => {
+        const label = document.createElement('label');
+        const swatch = document.createElement('input');
+        swatch.type = 'color';
+        swatch.title = item.label + '  (' + item.cssVar + ')';
+        swatch.setAttribute('aria-label', item.label);
+        const name = document.createElement('span');
+        name.className = 'swatch-label';
+        name.textContent = item.label;
+        const hex = document.createElement('span');
+        hex.className = 'hex';
+        label.append(swatch, name, hex);
+        grid.appendChild(label);
+
+        swatch.addEventListener('input', () => {
+          state.colors[resolved()][item.key] = swatch.value;
+          hex.textContent = swatch.value;
+          apply();
+          persist();
+        });
+        refs[item.key] = { swatch: swatch, hex: hex };
+      });
+      wrap.appendChild(grid);
+      panelBody.appendChild(wrap);
+      return;
+    }
+
+    group.items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'sp-row';
+      const label = document.createElement('label');
+      label.textContent = item.label;
+      row.appendChild(label);
+
+      if (item.kind === 'font') {
+        // curated dropdown: a theme stack that is not in the list survives as
+        // an extra "Custom" option so nothing the theme file set is lost
+        const select = document.createElement('select');
+        select.setAttribute('aria-label', item.label);
+        select.title = item.cssVar + ' - full stack is saved, not the name';
+        row.appendChild(select);
+
+        const fill = (current) => {
+          select.textContent = '';
+          const options = item.options || [];
+          if (current && !options.some(o => o.value === current)) {
+            const custom = document.createElement('option');
+            custom.value = current;
+            custom.textContent = 'Custom (theme stack)';
+            select.appendChild(custom);
+          }
+          options.forEach(o => {
+            const opt = document.createElement('option');
+            opt.value = o.value;
+            opt.textContent = o.label;
+            opt.title = o.value;
+            select.appendChild(opt);
+          });
+        };
+
+        fill(state.base[item.key]);
+        select.addEventListener('change', () => {
+          state.base[item.key] = select.value;
+          fill(select.value);
+          apply();
+          persist();
+        });
+        refs[item.key] = { input: select, fill: fill };
+      } else {
+        const out = document.createElement('output');
+        row.appendChild(out);
+        const input = document.createElement('input');
+        input.type = 'range';
+        input.min = item.min;
+        input.max = item.max;
+        input.step = item.step;
+        input.setAttribute('aria-label', item.label);
+        row.appendChild(input);
+        input.addEventListener('input', () => {
+          state.base[item.key] = Number(input.value);
+          out.textContent = input.value + (item.unit || '');
+          apply();
+          persist();
+        });
+        refs[item.key] = { input: input, out: out };
+      }
+      wrap.appendChild(row);
+    });
+
+    panelBody.appendChild(wrap);
+  };
+
+  SPEC.forEach(addGroup);
+
+  const refresh = () => {
+    if (modeSelect.value !== state.mode) modeSelect.value = state.mode;
+    const mode = resolved();
+    const modeTag = document.getElementById('sp-modetag');
+    if (modeTag) modeTag.textContent = mode;
+    if (button) button.title = 'Appearance - editing ' + mode + ' colours';
+
+    SPEC.forEach(group => group.items.forEach(item => {
+      const ref = refs[item.key];
+      if (!ref) return;
+      if (item.kind === 'color') {
+        const value = state.colors[mode][item.key] || '#000000';
+        ref.swatch.value = hex6(value);
+        ref.hex.textContent = String(value);
+      } else if (item.kind === 'font') {
+        const value = state.base[item.key] || '';
+        ref.fill(value);
+        ref.input.value = value;
+      } else {
+        const value = state.base[item.key];
+        ref.input.value = value;
+        ref.out.textContent = value + (item.unit || '');
+      }
+    }));
+  };
+
+  const reopen = () => { apply(); refresh(); };
+
+  modeSelect.value = state.mode;
+  modeSelect.addEventListener('change', () => {
+    state.mode = modeSelect.value;
+    reopen();
+    persist();
+  });
+
+  if (darkQuery.addEventListener) {
+    darkQuery.addEventListener('change', () => { if (state.mode === 'auto') reopen(); });
+  }
+
+  document.getElementById('sp-reset').addEventListener('click', () => {
+    copy(state.base, DEFAULTS.base);
+    copy(state.colors.light, DEFAULTS.colors.light);
+    copy(state.colors.dark, DEFAULTS.colors.dark);
+    state.mode = INIT_MODE;
+    try { localStorage.removeItem(STORE); } catch (e) { /* ignore */ }
+    reopen();
+  });
+
+  const colorItems = SPEC.filter(g => g.colors)[0].items;
+
+  const toToml = () => {
+    const lines = [
+      '# generated by the appearance panel in book.html',
+      '# save as book_theme.toml next to build_book.py, then: uv run python build_book.py',
+      '',
+      'mode = "' + state.mode + '"',
+      '',
+    ];
+
+    SPEC.forEach(group => {
+      if (group.colors) return;
+      lines.push('[' + group.table + ']');
+      group.items.forEach(item => {
+        const value = state.base[item.key];
+        lines.push(item.key + ' = ' + (item.kind === 'font' ? JSON.stringify(value) : value));
+      });
+      lines.push('');
+    });
+
+    lines.push('[colors]');
+    colorItems.forEach(item => lines.push(item.key + ' = "' + state.colors.light[item.key] + '"'));
+    lines.push('');
+    lines.push('[dark]');
+    colorItems.forEach(item => lines.push(item.key + ' = "' + state.colors.dark[item.key] + '"'));
+    lines.push('');
+    return lines.join('\n');
+  };
+
+  const copyText = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      // file:// has no async clipboard in some browsers; fall back to a textarea
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      area.remove();
+      return ok;
+    }
+  };
+
+  const copyBtn = document.getElementById('sp-copy');
+  copyBtn.addEventListener('click', async () => {
+    const ok = await copyText(toToml());
+    copyBtn.textContent = ok ? 'Copied' : 'Copy failed';
+    setTimeout(() => { copyBtn.textContent = 'Copy TOML'; }, 1600);
+  });
+
+  const toggle = (open) => {
+    panel.hidden = !open;
+    button.setAttribute('aria-expanded', String(open));
+  };
+
+  button.addEventListener('click', () => toggle(panel.hidden));
+  document.getElementById('sp-close').addEventListener('click', () => toggle(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !panel.hidden) toggle(false);
+  });
+
+  apply();
+  refresh();
+})();
+</script>
+</body>
+</html>
