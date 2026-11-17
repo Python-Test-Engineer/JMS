@@ -57,12 +57,12 @@ const googleAdminEmails = parsed.data.GOOGLE_ADMIN_EMAILS
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean);
 
-// Show only the provider prefix and the final four characters: sk-or-v1-****76b9
+// Show only the provider prefix and the first four characters of the key: sk-or-v1-a9ee****
 function maskApiKey(key) {
   if (!key) return "not configured";
-  const tail = key.slice(-4);
   const prefix = key.startsWith("sk-or-v1-") ? "sk-or-v1-" : key.startsWith("sk-") ? "sk-" : "";
-  return `${prefix}****${tail}`;
+  const body = key.startsWith(prefix) ? key.slice(prefix.length) : key;
+  return `${prefix}${body.slice(0, 4)}****`;
 }
 
 export const config = Object.freeze({

@@ -6,8 +6,8 @@
  *                .env as a non-persistent runtime key, so requests are billed
  *                to that key for the rest of this Pi process.
  *
- * Keys are never printed in full: only the provider prefix and the last four
- * characters, e.g. sk-or-v1-*********76b9.
+ * Keys are never printed in full: only the provider prefix and the first four
+ * characters of the key, e.g. sk-or-v1-a9ee****.
  */
 
 import fs from "node:fs";
@@ -61,7 +61,6 @@ function runtimeKeyApi(ctx: { modelRegistry: unknown }): RuntimeKeySetter | unde
 
 export function maskKey(key: string): string {
 	if (!key) return "not configured";
-	const tail = key.slice(-4);
 	const prefix = key.startsWith("sk-or-v1-")
 		? "sk-or-v1-"
 		: key.startsWith("sk-ant-")
@@ -69,7 +68,8 @@ export function maskKey(key: string): string {
 			: key.startsWith("sk-")
 				? "sk-"
 				: "";
-	return `${prefix}*********${tail}`;
+	const body = key.startsWith(prefix) ? key.slice(prefix.length) : key;
+	return `${prefix}${body.slice(0, 4)}****`;
 }
 
 export default function apiKeyExtension(pi: ExtensionAPI) {
@@ -77,7 +77,7 @@ export default function apiKeyExtension(pi: ExtensionAPI) {
 	const envOverrides = new Set<string>();
 
 	pi.registerCommand("api-key", {
-		description: "Show the API key in use by this Pi session, masked to the last 4 digits",
+		description: "Show the API key in use by this Pi session, masked to the first 4 characters",
 		handler: async (args, ctx) => {
 			const provider = (args.trim() || ctx.model?.provider || "openrouter").toLowerCase();
 			const modelLabel = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : "no active model";
