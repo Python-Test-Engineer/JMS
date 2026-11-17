@@ -12,9 +12,9 @@ assigned.'
 
 $0.30 (total so far)
 
-## Create JMS Demo Lite
+## Create JMS Demo Lite and DEMOs
 
 Based on _TECH.md and _PLAN.md build the app, create a NON-NODE demo version of the app in src so that I can upload this to netlify by drag and drop. Should not need to be built as a node app but a html/js app
 
-$0.30 (total so far)
+$0.75 (total so far)
 

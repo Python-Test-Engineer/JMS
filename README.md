@@ -1,13 +1,40 @@
 # JMS — Job Management System
 
+The only file I wrote was _IDEA.md.
+
+AI then made _PLAN.md then _TECH.md then src and demo-explainers
+
+TOTAL COST around $0.75 using OPENROUTER_MODEL=deepseek/deepseek-v4.1-flash-1017
+
+NOTE: Use custom site settings bottom right to change UI
+
 A CMS + job tracker for **Acme Windows**, a window-installation company. JMS replaces
 paper, spreadsheets and phone calls with one place where managers create customers and
 jobs, engineers report what happened on site, and customers watch their own installation
 progress — each seeing only what their role allows.
 
-> **Status: technical specification ready.** The idea brief and product plan are done, and
-> [`_TECH.md`](_TECH.md) specifies the implementation. [`src/`](src/) now contains the
-> browser-only **JMS Demo Lite**: a static, drag-and-drop Netlify edition of the app.
+> **TL;DR** — The product plan, technical spec, animated pitch demos and a working
+> browser-only app are all in this repo. There is no install step: open the HTML files
+> directly, or drag `src/` onto Netlify.
+
+## Start here
+
+| What do you want to do? | Open this | Notes |
+|---|---|---|
+| **See the story — what JMS does and why it saves time** | [`demo-explainers/index.html`](demo-explainers/index.html) | 10 short animated workflow explainers for non-technical business owners. Start with W1, then follow the left-hand contents. |
+| **Try the working app** | [`src/index.html`](src/index.html) | JMS Demo Lite: static HTML/CSS/JS, seeded with 12 staff, 10 customers and 26 jobs. Sign in with any demo account using password `JMS123`, or use the one-click role buttons. |
+| **Deploy the demo** | drag the [`src/`](src/) folder onto <https://app.netlify.com/drop> | No build command, no Node, no environment variables. |
+| **Read the product plan** | [`_PLAN.html`](_PLAN.html) | The full plan rendered as a searchable guide. |
+| **Read the technical spec** | [`_TECH.html`](_TECH.html) | Schema, routes, permissions, seed data and implementation order. |
+
+**Best five-minute path:** open `demo-explainers/index.html` to see the pitch, then open
+`src/index.html` and click the **Admin**, **Manager**, **Engineer** and **Customer** demo
+buttons to see how the same app changes for each role.
+
+> **Status: demo ready.** The idea brief, product plan and [`_TECH.md`](_TECH.md) are done.
+> [`demo-explainers/`](demo-explainers/index.html) contains the animated pitch demos and
+> [`src/`](src/) contains the browser-only **JMS Demo Lite**, a static, drag-and-drop
+> Netlify edition of the app.
 
 ---
 
@@ -74,6 +101,7 @@ spec can be read, searched and shared without an editor.
 | [`_PLAN.html`](_PLAN.html) | The plan rendered as a self-contained two-pane guide (house style, filterable contents, Aa appearance panel). |
 | [`_TECH.md`](_TECH.md) | **The technical specification** — stack, JSON store, schemas, routes, auth, templates, PDFs, seed data, tests and implementation order. |
 | [`_TECH.html`](_TECH.html) | The tech spec rendered in the same house-styled guide shell. |
+| [`demo-explainers/`](demo-explainers/index.html) | **Animated pitch demos** — 10 HTML workflow explainers (W1–W10) for showing JMS to non-technical business owners. Open `index.html` to start. |
 | [`COSTS.md`](COSTS.md) | Running log of the prompt used and the cost incurred at each stage. |
 | `docs.toml` | Build config — per-document page titles, eyebrow, subtitle and footer. |
 | `jms_theme.toml` | Theme tokens for the rendered pages (25px page text, sidebar 20% larger). |
