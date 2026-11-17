@@ -1,0 +1,43 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block content %}
+<form class="filter-bar" method="get" action="/search" role="search">
+  <label class="field field-inline"><span>Search</span><input type="search" name="q" minlength="2" value="{{ q }}" placeholder="At least two characters"></label>
+  <button class="button button-secondary" type="submit">Search</button>
+</form>
+{% if q.length >= 2 %}
+<p class="muted">Results for “{{ q }}”.</p>
+{% if results.jobs.length %}
+<section class="panel"><h2>Jobs</h2>
+  <ul class="record-list">
+    {% for job in results.jobs %}
+    <li><span><a class="mono" href="/jobs/{{ job.id }}">{{ job.reference }}</a> · <a href="/jobs/{{ job.id }}">{{ job.title }}</a><br><span class="muted">{{ job.customer_name }}</span></span>{{ ui.statusPill(job.status) }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% if results.customers.length %}
+<section class="panel"><h2>Customers</h2>
+  <ul class="record-list">
+    {% for customer in results.customers %}
+    <li><a href="/customers/{{ customer.id }}">{{ customer.name }}</a><span class="muted">{{ customer.email }}</span></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% if results.invoices.length %}
+<section class="panel"><h2>Invoices</h2>
+  <ul class="record-list">
+    {% for invoice in results.invoices %}
+    <li><a class="mono" href="/invoices/{{ invoice.id }}">{{ invoice.number or 'Draft' }}</a><span>{{ invoice.customer_name }} · {{ invoice.gross|money }}</span></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% if not results.jobs.length and not results.customers.length and not results.invoices.length %}
+<p class="muted">Nothing matched in the records you can see.</p>
+{% endif %}
+{% else %}
+<p class="muted">Type at least two characters to search.</p>
+{% endif %}
+{% endblock %}

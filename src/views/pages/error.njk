@@ -1,0 +1,9 @@
+{% extends "layouts/app.njk" %}
+{% block content %}
+<div class="panel error-panel">
+  <p class="big-code" aria-hidden="true">{{ status }}</p>
+  <p>{{ message }}</p>
+  <p class="muted">Request ID: <span class="mono">{{ requestId }}</span></p>
+  <a class="button button-primary" href="{{ '/portal/jobs' if user and user.role_key == 'CUSTOMER' else ('/my-jobs' if user and user.role_key == 'ENGINEER' else '/dashboard/operations') }}">Back to my work</a>
+</div>
+{% endblock %}

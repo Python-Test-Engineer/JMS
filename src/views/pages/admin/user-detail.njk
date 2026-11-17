@@ -1,0 +1,75 @@
+{% extends "layouts/app.njk" %}
+{% block pageActions %}<a class="button button-secondary" href="/admin/users">All users</a>{% endblock %}
+{% block content %}
+<div class="detail-head">
+  <p class="mono muted">{{ target.email }}</p>
+  <h1>{{ target.display_name }}</h1>
+  <p>{{ target.role_key|roleLabel }} · {{ target.status|capitalize }}{% if target.can_engineer %} · field capable{% endif %}</p>
+</div>
+<div class="two-col">
+  <section class="panel stack">
+    <h2>Account</h2>
+    <dl class="facts">
+      <dt>Phone</dt><dd>{{ target.phone or '—' }}</dd>
+      <dt>Customer</dt><dd>{% if customer %}<a href="/customers/{{ customer.id }}">{{ customer.name }}</a>{% else %}—{% endif %}</dd>
+      <dt>Last sign-in</dt><dd>{{ target.last_login_at|datetime if target.last_login_at else 'Never' }}</dd>
+      <dt>Password change</dt><dd>{{ 'Pending' if target.must_change_password else 'Complete' }}</dd>
+      <dt>Created</dt><dd>{{ target.created_at|date }}</dd>
+    </dl>
+    {% if can('user.edit.role') %}
+    <h3>Change role</h3>
+    <form method="post" action="/admin/users/{{ target.id }}/role" class="stack">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="form-grid">
+        <label class="field"><span>Role</span><select name="role_key">{% for role in ['ADMIN','MANAGER','ENGINEER','CUSTOMER'] %}<option value="{{ role }}" {% if target.role_key == role %}selected{% endif %}>{{ role|roleLabel }}</option>{% endfor %}</select></label>
+        <label class="field"><span>Customer</span><select name="customer_id"><option value="">None</option>{% for c in customers %}<option value="{{ c.id }}" {% if target.customer_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></label>
+      </div>
+      <p class="hint">Use the Customer field only for CUSTOMER logins; changing role signs the user out.</p>
+      <label class="check"><input type="checkbox" name="can_engineer" value="1" {% if target.can_engineer %}checked{% endif %}> Field capable</label>
+      <button class="button button-secondary" type="submit">Save role</button>
+    </form>
+    {% endif %}
+  </section>
+  <aside class="stack">
+    <section class="panel">
+      <h2>Assignments</h2>
+      {% if assignments.length %}
+      <ul class="record-list">
+        {% for assignment in assignments %}
+        <li><span><a class="mono" href="/jobs/{{ assignment.job_id }}">{{ assignment.reference }}</a> · {{ assignment.title }}</span><span class="muted">{{ assignment.status|statusLabel }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="muted">No active assignments.</p>{% endif %}
+    </section>
+    {% if can('user.reset.password') %}
+    <section class="panel">
+      <h2>Password</h2>
+      <form method="post" action="/admin/users/{{ target.id }}/reset-password">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button class="button button-secondary button-block" type="submit">Issue temporary password</button>
+      </form>
+      <p class="hint">Shown once after the action. All sessions are revoked.</p>
+    </section>
+    {% endif %}
+    {% if can('user.deactivate') %}
+    <section class="panel">
+      <h2>Account state</h2>
+      {% if canDeactivate %}
+      <form method="post" action="/admin/users/{{ target.id }}/deactivate">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {% if target.status == 'ACTIVE' %}
+        <input type="hidden" name="action" value="deactivate">
+        <button class="button button-danger button-block" type="submit">Suspend user</button>
+        {% else %}
+        <input type="hidden" name="action" value="reactivate">
+        <button class="button button-primary button-block" type="submit">Reactivate user</button>
+        {% endif %}
+      </form>
+      {% else %}
+      <p class="muted">The last active admin cannot be deactivated.</p>
+      {% endif %}
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

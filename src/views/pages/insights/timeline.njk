@@ -1,0 +1,32 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block content %}
+<p class="muted">Planned work for the next six weeks. Dates shown in {{ company.timezone }}.</p>
+{% if groups.length %}
+<div class="timeline-groups">
+  {% for day, jobs in groups %}
+  <section class="panel">
+    <h2>{{ day|date }}</h2>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Reference</th><th>Job</th><th>Customer</th><th>Slot</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for job in jobs %}
+          <tr>
+            <td><a class="mono" href="/jobs/{{ job.id }}">{{ job.reference }}</a></td>
+            <td>{{ job.title }}</td>
+            <td>{{ job.customer_name }}</td>
+            <td>{{ job.planned_slot|replace('_',' ')|title }}</td>
+            <td>{{ ui.statusPill(job.status) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endfor %}
+</div>
+{% else %}
+{{ ui.empty('No planned work in the next six weeks.', null, null) }}
+{% endif %}
+{% endblock %}

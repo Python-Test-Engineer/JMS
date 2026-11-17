@@ -1,0 +1,32 @@
+{% extends "layouts/app.njk" %}
+{% block content %}
+<form class="filter-bar" method="get" action="/admin/audit">
+  <label class="field field-inline"><span>Action contains</span><input type="search" name="action" value="{{ filters.action or '' }}" placeholder="job.update"></label>
+  <label class="field field-inline"><span>Entity</span>
+    <select name="entity_type">
+      <option value="">Any</option>
+      {% for type in ['JOB','CUSTOMER','INVOICE','USER','PERMISSION','SETTING','AUTH','DOCUMENT','SYSTEM'] %}<option value="{{ type }}" {% if filters.entity_type == type %}selected{% endif %}>{{ type }}</option>{% endfor %}
+    </select>
+  </label>
+  <button class="button button-secondary" type="submit">Filter</button>
+  <a class="button button-quiet" href="/admin/audit">Clear</a>
+</form>
+<p class="muted">{{ rows|length }} most recent entries. Append-only.</p>
+<div class="table-wrap">
+  <table class="data-table">
+    <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Before / after</th><th>Request</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.at|datetime }}</td>
+        <td>{{ row.actor_name or 'Anonymous' }}</td>
+        <td><span class="mono small">{{ row.action }}</span></td>
+        <td>{{ row.entity_type }}{% if row.entity_id %}<br><span class="mono small">{{ row.entity_id }}</span>{% endif %}</td>
+        <td><details><summary>Show</summary><pre class="json">{{ row.before_json or '—' }}</pre><pre class="json">{{ row.after_json or '—' }}</pre></details></td>
+        <td class="mono small">{{ row.request_id or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}
+{% if can('job.create') %}<a class="button button-primary" href="/jobs/new">Create job</a>{% endif %}
+{% endblock %}
+{% block content %}
+<form class="filter-bar" method="get" action="/jobs" role="search">
+  <label class="field field-inline"><span>Search</span><input type="search" name="q" minlength="2" value="{{ filters.q or '' }}" placeholder="Reference, title or customer"></label>
+  <label class="field field-inline"><span>Status</span>
+    <select name="status">
+      <option value="">All statuses</option>
+      {% for key, label in statuses %}<option value="{{ key }}" {% if filters.status == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="field field-inline"><span>Customer</span>
+    <select name="customer_id">
+      <option value="">All customers</option>
+      {% for customer in customers %}<option value="{{ customer.id }}" {% if filters.customer_id == customer.id %}selected{% endif %}>{{ customer.name }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="field field-inline"><span>Work type</span>
+    <select name="work_type">
+      <option value="">All work</option>
+      {% for type in workTypes %}<option value="{{ type }}" {% if filters.work_type == type %}selected{% endif %}>{{ type|workType }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="field field-inline"><span>Priority</span>
+    <select name="priority">
+      <option value="">Any</option>
+      <option value="URGENT" {% if filters.priority == 'URGENT' %}selected{% endif %}>Urgent only</option>
+    </select>
+  </label>
+  <button class="button button-secondary" type="submit">Apply filters</button>
+  <a class="button button-quiet" href="/jobs">Clear</a>
+</form>
+
+<p class="muted">{{ total }} job{{ '' if total == 1 else 's' }}{% if filters.q %} matching “{{ filters.q }}”{% endif %}</p>
+
+{% if jobs.length %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr><th>Reference</th><th>Job</th><th>Customer</th><th>Planned</th><th>Status</th><th>Lead</th></tr>
+    </thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <td><a class="mono" href="/jobs/{{ job.id }}">{{ job.reference }}</a></td>
+        <td><a href="/jobs/{{ job.id }}">{{ job.title }}</a><br><span class="muted">{{ job.work_type|workType }}{% if job.priority == 'URGENT' %} · <span class="tag tag-urgent">Urgent</span>{% endif %}</span></td>
+        <td>{{ job.customer_name }}</td>
+        <td>{{ job.planned_start|datetime if job.planned_start else 'Not scheduled' }}</td>
+        <td>{{ ui.statusPill(job.status) }}</td>
+        <td>{{ job.lead_name or 'Unassigned' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if pages > 1 %}
+<nav class="pagination" aria-label="Pages">
+  {% for n in range(1, pages + 1) %}
+  <a class="page{% if n == page %} is-current{% endif %}" href="/jobs?page={{ n }}&q={{ filters.q or '' }}&status={{ filters.status or '' }}&customer_id={{ filters.customer_id or '' }}&work_type={{ filters.work_type or '' }}&priority={{ filters.priority or '' }}" {% if n == page %}aria-current="page"{% endif %}>{{ n }}</a>
+  {% endfor %}
+</nav>
+{% endif %}
+{% else %}
+{{ ui.empty('No jobs match those filters.', '/jobs/new', 'Create a job') }}
+{% endif %}
+{% endblock %}

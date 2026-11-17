@@ -1,0 +1,33 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block content %}
+{% if errors and errors|length %}<div class="alert alert-error" role="alert">Check the highlighted fields and try again.</div>{% endif %}
+<form method="post" action="{{ '/customers/' + customer.id if mode == 'edit' else '/customers' }}" class="panel stack">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <div class="form-grid">
+    <label class="field"><span>Customer name <em>required</em></span><input type="text" name="name" required value="{{ values.name }}">{{ ui.error('name', errors) }}</label>
+    <label class="field"><span>Main contact <em>required</em></span><input type="text" name="contact_name" required value="{{ values.contact_name }}">{{ ui.error('contact_name', errors) }}</label>
+  </div>
+  <div class="form-grid">
+    <label class="field"><span>Email <em>required</em></span><input type="email" name="email" required value="{{ values.email }}">{{ ui.error('email', errors) }}</label>
+    <label class="field"><span>Phone <em>required</em></span><input type="tel" name="phone" required value="{{ values.phone }}">{{ ui.error('phone', errors) }}</label>
+  </div>
+  <fieldset class="fieldset">
+    <legend>Address</legend>
+    <label class="field"><span>Address line 1 <em>required</em></span><input type="text" name="line1" required value="{{ values.line1 }}">{{ ui.error('line1', errors) }}</label>
+    <label class="field"><span>Address line 2</span><input type="text" name="line2" value="{{ values.line2 }}"></label>
+    <div class="form-grid">
+      <label class="field"><span>Town or city <em>required</em></span><input type="text" name="town" required value="{{ values.town }}">{{ ui.error('town', errors) }}</label>
+      <label class="field"><span>Postcode <em>required</em></span><input type="text" name="postcode" required value="{{ values.postcode }}">{{ ui.error('postcode', errors) }}</label>
+    </div>
+  </fieldset>
+  <label class="field"><span>Internal notes</span><textarea name="notes" rows="2">{{ values.notes }}</textarea></label>
+  {% if mode == 'new' and can('customer.invite') %}
+  <label class="check"><input type="checkbox" name="invite" value="1" {% if values.invite %}checked{% endif %}> Create a customer portal login now (temporary password JMS123)</label>
+  {% endif %}
+  <div class="button-row">
+    <button class="button button-primary" type="submit">{{ 'Save customer' if mode == 'edit' else 'Create customer' }}</button>
+    <a class="button button-quiet" href="{{ '/customers/' + customer.id if mode == 'edit' else '/customers' }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}<a class="button button-secondary" href="/portal/jobs">All my jobs</a>{% endblock %}
+{% block content %}
+<div class="detail-head">
+  <p class="mono muted">{{ job.reference }}</p>
+  <h1>{{ job.title }}</h1>
+  <p>{{ ui.statusPill(job.status) }}</p>
+</div>
+<div class="two-col">
+  <section class="panel stack">
+    <h2>Your job</h2>
+    <dl class="facts">
+      <dt>Planned</dt><dd>{% if job.planned_start %}{{ job.planned_start|datetime }} → {{ job.planned_end|datetime }}<br><span class="muted">{{ job.planned_slot|replace('_',' ')|title }}</span>{% else %}Date to be confirmed{% endif %}</dd>
+      <dt>Work</dt><dd>{{ job.work_type|workType }}</dd>
+      <dt>Priority</dt><dd>{{ 'Urgent' if job.priority == 'URGENT' else 'Normal' }}</dd>
+      <dt>Our team</dt><dd>{% for assignment in assignments %}{{ assignment.display_name }}{% if assignment.is_lead %} (lead){% endif %}{% if not loop.last %}, {% endif %}{% else %}To be confirmed{% endfor %}</dd>
+    </dl>
+    <h3>What we will do</h3>
+    <p class="preline">{{ job.description }}</p>
+    {% if job.customer_notes %}<div class="callout"><h3>Notes</h3><p class="preline">{{ job.customer_notes }}</p></div>{% endif %}
+    <a class="button button-secondary" href="/portal/jobs/{{ job.id }}/job-sheet.pdf">Download job sheet (PDF)</a>
+  </section>
+  <aside class="stack">
+    <section class="panel">
+      <h2>Invoices</h2>
+      {% if invoices.length %}
+      <ul class="record-list">
+        {% for invoice in invoices %}
+        <li><a href="/portal/invoices/{{ invoice.id }}">{{ invoice.number or 'Invoice' }}</a><span>{{ invoice.gross|money }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">No invoice yet.</p>
+      {% endif %}
+    </section>
+  </aside>
+</div>
+<section class="panel">
+  <h2>Updates</h2>
+  {% include "partials/timeline.njk" %}
+</section>
+{% endblock %}

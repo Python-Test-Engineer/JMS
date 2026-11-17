@@ -1,0 +1,90 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}
+<div class="actions">
+  {% if invoice.status == 'DRAFT' and can('invoice.issue') %}
+  <form method="post" action="/invoices/{{ invoice.id }}/issue"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="button button-primary" type="submit">Issue invoice</button></form>
+  {% endif %}
+  {% if invoice.status == 'ISSUED' and can('invoice.mark.paid') %}
+  <form method="post" action="/invoices/{{ invoice.id }}/paid"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="button button-primary" type="submit">Mark paid</button></form>
+  {% endif %}
+  <a class="button button-secondary" href="/invoices/{{ invoice.id }}/pdf">Invoice PDF</a>
+</div>
+{% endblock %}
+{% block content %}
+<div class="detail-head">
+  <p class="mono muted">{{ invoice.number or 'Draft invoice' }} · {{ invoice.customer_name }}</p>
+  <h1>{{ invoice.job_title }}</h1>
+  <p><span class="pill pill-{{ invoice.status|lower }}">{{ invoice.status|capitalize }}</span></p>
+</div>
+<div class="two-col">
+  <section class="panel stack">
+    <h2>Invoice lines</h2>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th></tr></thead>
+        <tbody>
+          {% for line in lines %}
+          <tr><td>{{ line.description }}</td><td class="num">{{ line.qty }}</td><td class="num">{{ line.unit_pence|money }}</td><td class="num">{{ line.amount_pence|money }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <dl class="totals">
+      <dt>Net</dt><dd>{{ invoice.net|money }}</dd>
+      <dt>VAT ({{ (invoice.vat_rate_bp / 100)|round(2) }}%)</dt><dd>{{ invoice.vat|money }}</dd>
+      <dt>Gross</dt><dd><strong>{{ invoice.gross|money }}</strong></dd>
+    </dl>
+    {% if invoice.notes %}<p class="muted">{{ invoice.notes }}</p>{% endif %}
+    {% if invoice.void_reason %}<div class="callout"><strong>Void reason:</strong> {{ invoice.void_reason }} ({{ invoice.voided_at|datetime }})</div>{% endif %}
+
+    {% if invoice.status == 'DRAFT' and can('invoice.create') %}
+    <h3>Edit draft</h3>
+    <form method="post" action="/invoices/{{ invoice.id }}" class="stack">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <label class="field"><span>Description</span><input type="text" name="description" value="{{ values.description }}" required></label>
+      <div class="form-grid">
+        <label class="field"><span>Quantity</span><input type="number" name="qty" min="0.001" step="0.001" value="{{ values.qty }}" required></label>
+        <label class="field"><span>Unit price (pounds)</span><input type="text" inputmode="decimal" name="unit_pence" value="{{ values.unit_pence }}" required></label>
+      </div>
+      <label class="field"><span>VAT rate (basis points)</span><input type="number" name="vat_rate_bp" value="{{ values.vat_rate_bp }}" min="0" max="10000"></label>
+      <button class="button button-secondary" type="submit">Save draft changes</button>
+    </form>
+    {% endif %}
+  </section>
+  <aside class="stack">
+    <section class="panel">
+      <h2>Details</h2>
+      <dl class="facts">
+        <dt>Customer</dt><dd>{{ invoice.customer_name }}</dd>
+        <dt>Job</dt><dd><a class="mono" href="/jobs/{{ job.id }}">{{ job.reference }}</a></dd>
+        <dt>Issued</dt><dd>{{ invoice.issued_at|datetime if invoice.issued_at else 'Not issued' }}</dd>
+        <dt>Due</dt><dd>{{ invoice.due_at|date if invoice.due_at else '—' }}</dd>
+        <dt>Paid</dt><dd>{{ invoice.paid_at|datetime if invoice.paid_at else '—' }}</dd>
+      </dl>
+    </section>
+    {% if invoice.status == 'ISSUED' and can('invoice.issue') %}
+    <section class="panel">
+      <h2>Void this invoice</h2>
+      <form method="post" action="/invoices/{{ invoice.id }}/void" class="stack" onsubmit="return confirm('Void {{ invoice.number }}? The job returns to Completed and the invoice number is kept.')">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <label class="field"><span>Reason</span><textarea name="reason" rows="2" required></textarea></label>
+        <button class="button button-danger" type="submit">Void invoice</button>
+      </form>
+    </section>
+    {% endif %}
+    <section class="panel">
+      <h2>Documents</h2>
+      {% if documents.length %}
+      <ul class="record-list">
+        {% for doc in documents %}
+        <li><span>Version {{ doc.version }}<br><span class="muted">{{ doc.generated_at|datetime }}</span></span><span class="muted">{{ (doc.size_bytes / 1024)|round(1) }} KB</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">No PDF generated yet. The download link creates version 1.</p>
+      {% endif %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

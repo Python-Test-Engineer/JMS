@@ -1,0 +1,59 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}
+<div class="actions">
+  {% if can('customer.edit') %}<a class="button button-secondary" href="/customers/{{ customer.id }}/edit">Edit customer</a>{% endif %}
+  {% if can('job.create') %}<a class="button button-primary" href="/jobs/new?customer_id={{ customer.id }}">Create job</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<div class="two-col">
+  <section class="panel stack">
+    <h2>Customer details</h2>
+    <dl class="facts">
+      <dt>Contact</dt><dd>{{ customer.contact_name }}</dd>
+      <dt>Email</dt><dd><a href="mailto:{{ customer.email }}">{{ customer.email }}</a></dd>
+      <dt>Phone</dt><dd>{{ customer.phone }}</dd>
+      <dt>Address</dt><dd>{{ ui.address(customer.address) }}</dd>
+      <dt>Status</dt><dd>{{ customer.status|capitalize }}{% if customer.archived_at %} · archived {{ customer.archived_at|date }}{% endif %}</dd>
+    </dl>
+    {% if customer.notes %}<div class="callout"><h3>Internal notes</h3><p class="preline">{{ customer.notes }}</p></div>{% endif %}
+    {% if can('customer.archive') and not customer.archived_at %}
+    <form method="post" action="/customers/{{ customer.id }}/archive" onsubmit="return confirm('Archive {{ customer.name }}? Its portal logins will be signed out.')">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="button button-danger" type="submit">Archive customer</button>
+    </form>
+    {% endif %}
+  </section>
+  <aside class="stack">
+    <section class="panel">
+      <h2>Portal logins</h2>
+      {% if logins.length %}
+      <ul class="record-list">
+        {% for login in logins %}
+        <li><span><strong>{{ login.display_name }}</strong><br><span class="muted">{{ login.email }} · {{ login.status }}</span></span><span class="muted">{{ login.last_login_at|datetime if login.last_login_at else 'Never signed in' }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">No portal login yet.</p>
+      {% endif %}
+      {% if can('customer.invite') %}
+      <form method="post" action="/customers/{{ customer.id }}/invite" class="stack">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button class="button button-secondary button-block" type="submit">{{ 'Reset portal password' if logins.length else 'Create portal login' }}</button>
+      </form>
+      <p class="hint">The temporary password <code>JMS123</code> is shown after the action; the customer must change it on first sign-in.</p>
+      {% endif %}
+    </section>
+  </aside>
+</div>
+
+<section class="panel">
+  <div class="panel-head"><h2>Jobs</h2><span class="muted">{{ jobs|length }} total</span></div>
+  {% if jobs.length %}
+  {{ ui.jobTable(jobs, statuses, false) }}
+  {% else %}
+  <p class="muted">No jobs for this customer yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "layouts/app.njk" %}
+{% block content %}
+<p><a href="/jobs/{{ job.id }}">{{ job.reference }}</a> · {{ job.title }}</p>
+{% if errors and errors|length %}
+<div class="alert alert-error" role="alert">{% for error in errors %}<p>{{ error }}</p>{% endfor %}</div>
+{% endif %}
+<form method="post" action="/jobs/{{ job.id }}/assign" class="panel stack">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <p class="muted">Choose one or two active field-capable people. Mark exactly one as lead. Managers with field capability appear here too.</p>
+  <div class="check-list">
+    {% for option in options %}
+    {% set current = assignments|selectattr('user_id','equalto',option.id)|list %}
+    <label class="check-card">
+      <input type="checkbox" name="user_ids" value="{{ option.id }}" {% if current.length %}checked{% endif %}>
+      <span><strong>{{ option.display_name }}</strong><br><span class="muted">{{ option.role_key|roleLabel }} · {{ option.phone or 'no phone' }}</span></span>
+      <span class="check-lead"><input type="radio" name="lead_id" value="{{ option.id }}" {% if current.length and current[0].is_lead %}checked{% endif %}> Lead</span>
+    </label>
+    {% endfor %}
+  </div>
+  <div class="button-row">
+    <button class="button button-primary" type="submit">Save assignments</button>
+    <a class="button button-quiet" href="/jobs/{{ job.id }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "layouts/app.njk" %}
+{% block content %}
+<section class="panel">
+  <h2>Archived jobs</h2>
+  {% if jobs.length %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Reference</th><th>Job</th><th>Customer</th><th>Archived</th><th></th></tr></thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td><span class="mono">{{ job.reference }}</span></td>
+          <td>{{ job.title }}</td>
+          <td>{{ job.customer_name }}</td>
+          <td>{{ job.archived_at|date }}</td>
+          <td><form method="post" action="/admin/archive/job/{{ job.id }}/restore"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="button button-secondary" type="submit">Restore</button></form></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="muted">No archived jobs.</p>{% endif %}
+</section>
+<section class="panel">
+  <h2>Archived customers</h2>
+  {% if customers.length %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Customer</th><th>Contact</th><th>Archived</th><th></th></tr></thead>
+      <tbody>
+        {% for customer in customers %}
+        <tr>
+          <td>{{ customer.name }}</td>
+          <td>{{ customer.contact_name }}</td>
+          <td>{{ customer.archived_at|date }}</td>
+          <td><form method="post" action="/admin/archive/customer/{{ customer.id }}/restore"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="button button-secondary" type="submit">Restore</button></form></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="muted">No archived customers.</p>{% endif %}
+</section>
+{% endblock %}

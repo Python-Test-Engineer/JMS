@@ -68,3 +68,9 @@ live_bikeshare_*.csv
 Thumbs.db
 desktop.ini
 *.log
+# JMS SQLite and generated documents
+jms.db
+jms.db-wal
+jms.db-shm
+storage/documents/
+backups/

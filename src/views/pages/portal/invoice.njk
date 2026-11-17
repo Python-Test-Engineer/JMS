@@ -1,0 +1,32 @@
+{% extends "layouts/app.njk" %}
+{% block pageActions %}<a class="button button-secondary" href="/portal/invoices">All invoices</a>{% endblock %}
+{% block content %}
+<div class="detail-head">
+  <p class="mono muted">{{ invoice.number }} · {{ job.reference }}</p>
+  <h1>{{ job.title }}</h1>
+  <p><span class="pill pill-{{ invoice.status|lower }}">{{ invoice.status|capitalize }}</span></p>
+</div>
+<section class="panel stack">
+  <dl class="facts">
+    <dt>Issued</dt><dd>{{ invoice.issued_at|datetime }}</dd>
+    <dt>Due</dt><dd>{{ invoice.due_at|date }}</dd>
+    <dt>Status</dt><dd>{{ invoice.status|capitalize }}{% if invoice.void_reason %} · {{ invoice.void_reason }}{% endif %}</dd>
+  </dl>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th></tr></thead>
+      <tbody>
+        {% for line in lines %}
+        <tr><td>{{ line.description }}</td><td class="num">{{ line.qty }}</td><td class="num">{{ line.unit_pence|money }}</td><td class="num">{{ line.amount_pence|money }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <dl class="totals">
+    <dt>Net</dt><dd>{{ invoice.net|money }}</dd>
+    <dt>VAT</dt><dd>{{ invoice.vat|money }}</dd>
+    <dt>Total</dt><dd><strong>{{ invoice.gross|money }}</strong></dd>
+  </dl>
+  <p><a class="button button-secondary" href="/portal/invoices/{{ invoice.id }}/pdf">Download invoice (PDF)</a></p>
+</section>
+{% endblock %}

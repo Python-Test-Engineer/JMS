@@ -1,0 +1,25 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}<a class="button button-secondary" href="/portal/jobs">My jobs</a>{% endblock %}
+{% block content %}
+{% if invoices.length %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead><tr><th>Invoice</th><th>Job</th><th>Issued</th><th>Status</th><th class="num">Total</th></tr></thead>
+    <tbody>
+      {% for invoice in invoices %}
+      <tr>
+        <td><a class="mono" href="/portal/invoices/{{ invoice.id }}">{{ invoice.number or 'Invoice' }}</a></td>
+        <td>{{ invoice.job_reference }}</td>
+        <td>{{ invoice.issued_at|date if invoice.issued_at else '—' }}</td>
+        <td><span class="pill pill-{{ invoice.status|lower }}">{{ invoice.status|capitalize }}</span></td>
+        <td class="num">{{ invoice.gross|money }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{{ ui.empty('You have no invoices yet.', null, null) }}
+{% endif %}
+{% endblock %}

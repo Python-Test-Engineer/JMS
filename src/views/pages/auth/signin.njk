@@ -1,0 +1,27 @@
+{% extends "layouts/auth.njk" %}
+{% block content %}
+{% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+<form method="post" action="/signin" class="stack">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <input type="hidden" name="next" value="{{ next }}">
+  <label class="field">
+    <span>Email address</span>
+    <input type="email" name="email" autocomplete="username" required value="{{ email }}">
+  </label>
+  <label class="field">
+    <span>Password</span>
+    <input type="password" name="password" autocomplete="current-password" required>
+  </label>
+  <button class="button button-primary button-block" type="submit">Sign in</button>
+</form>
+<div class="demo-note">
+  <strong>Sample accounts</strong> — password <code>JMS123</code> for all.
+  <ul>
+    <li>Admin — <code>admin@acme.example</code></li>
+    <li>Manager — <code>manager@acme.example</code></li>
+    <li>Engineer — <code>engineer1@acme.example</code></li>
+    <li>Customer — <code>customer1@example.com</code></li>
+  </ul>
+  <p>Every seeded account is asked to choose a new password on first sign-in.</p>
+</div>
+{% endblock %}

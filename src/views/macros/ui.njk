@@ -1,0 +1,47 @@
+{% macro statusPill(status) -%}
+<span class="pill pill-{{ status|lower|replace('_','-') }}">{{ status|statusLabel }}</span>
+{%- endmacro %}
+
+{% macro error(name, errors) -%}
+{% if errors and errors[name] %}<p class="field-error">{{ errors[name] }}</p>{% endif %}
+{%- endmacro %}
+
+{% macro address(addr) -%}
+{% if addr %}{{ addr.line1 }}{% if addr.line2 %}, {{ addr.line2 }}{% endif %}, {{ addr.town }}{% if addr.postcode %}, {{ addr.postcode }}{% endif %}{% else %}—{% endif %}
+{%- endmacro %}
+
+{% macro empty(message, href, action) -%}
+<div class="empty">
+  <p>{{ message }}</p>
+  {% if href %}<a class="button button-secondary" href="{{ href }}">{{ action }}</a>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro jobTable(jobs, statuses, showCustomer) -%}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Reference</th>
+        <th>Job</th>
+        {% if showCustomer %}<th>Customer</th>{% endif %}
+        <th>Planned</th>
+        <th>Status</th>
+        <th>Lead</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <td><a class="mono" href="/jobs/{{ job.id }}">{{ job.reference }}</a></td>
+        <td><a href="/jobs/{{ job.id }}">{{ job.title }}</a><br><span class="muted">{{ job.work_type|workType }}</span></td>
+        {% if showCustomer %}<td>{{ job.customer_name or '—' }}</td>{% endif %}
+        <td>{{ job.planned_start|datetime if job.planned_start else 'Not scheduled' }}</td>
+        <td>{{ statusPill(job.status) }}</td>
+        <td>{{ job.lead_name or 'Unassigned' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{%- endmacro %}

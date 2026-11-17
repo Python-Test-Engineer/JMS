@@ -1,0 +1,31 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}{% if can('customer.create') %}<a class="button button-primary" href="/customers/new">Create customer</a>{% endif %}{% endblock %}
+{% block content %}
+<form class="filter-bar" method="get" action="/customers" role="search">
+  <label class="field field-inline"><span>Search</span><input type="search" name="q" minlength="2" value="{{ q }}" placeholder="Name, contact or email"></label>
+  <button class="button button-secondary" type="submit">Search</button>
+  <a class="button button-quiet" href="/customers">Clear</a>
+</form>
+<p class="muted">{{ customers|length }} customer{{ '' if customers|length == 1 else 's' }}.</p>
+{% if customers.length %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead><tr><th>Customer</th><th>Contact</th><th>Jobs</th><th>Portal logins</th><th></th></tr></thead>
+    <tbody>
+      {% for customer in customers %}
+      <tr>
+        <td><a href="/customers/{{ customer.id }}">{{ customer.name }}</a></td>
+        <td>{{ customer.contact_name }}<br><span class="muted">{{ customer.email }} · {{ customer.phone }}</span></td>
+        <td>{{ customer.job_count }}</td>
+        <td>{{ customer.login_count }}</td>
+        <td><a class="button button-quiet" href="/customers/{{ customer.id }}">Open</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{{ ui.empty('No customers match that search.', '/customers/new', 'Create customer') }}
+{% endif %}
+{% endblock %}

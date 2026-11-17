@@ -1,0 +1,27 @@
+{% extends "layouts/app.njk" %}
+{% block content %}
+<form method="post" action="/admin/settings" class="panel stack">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <h2>Company</h2>
+  <dl class="facts">
+    <dt>Name</dt><dd>{{ company.name }}</dd>
+    <dt>Email</dt><dd>{{ company.email }}</dd>
+    <dt>Phone</dt><dd>{{ company.phone }}</dd>
+    <dt>Currency</dt><dd>{{ company.currency }}</dd>
+    <dt>Timezone</dt><dd>{{ company.timezone }}</dd>
+  </dl>
+  <div class="form-grid">
+    <label class="field"><span>Default VAT rate (percent)</span><input type="number" name="vat_rate_percent" min="0" max="100" step="0.01" value="{{ (settings['company.vat_rate_bp'] or 2000) / 100 }}"></label>
+    <label class="field"><span>Invoice due days</span><input type="number" name="invoice_due_days" min="0" max="365" value="{{ settings['company.invoice_due_days'] or 14 }}"></label>
+  </div>
+  <div class="form-grid">
+    <label class="field"><span>Default theme</span>
+      <select name="default_theme">{% for mode in ['system','light','dark'] %}<option value="{{ mode }}" {% if themeMode == mode %}selected{% endif %}>{{ mode|capitalize }}</option>{% endfor %}</select>
+    </label>
+    <label class="field"><span>Minimum password length</span><input type="number" name="password_min_length" min="8" max="72" value="{{ settings['security.password_min_length'] or 10 }}"></label>
+    <label class="field"><span>Session idle minutes</span><input type="number" name="session_idle_minutes" min="5" max="1440" value="{{ settings['security.session_idle_minutes'] or 60 }}"></label>
+  </div>
+  <label class="field"><span>PDF footer</span><textarea name="pdf_footer" rows="2">{{ settings['company.pdf_footer'] or company.pdf_footer }}</textarea></label>
+  <div class="button-row"><button class="button button-primary" type="submit">Save settings</button></div>
+</form>
+{% endblock %}

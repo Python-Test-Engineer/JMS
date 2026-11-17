@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en-GB" data-theme="{{ theme.mode or 'system' }}" data-text="normal" data-leading="normal">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or 'Sign in' }} · JMS</title>
+  <link rel="stylesheet" href="/assets/css/tokens.css">
+  <link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body class="auth-body">
+  <main class="auth-card">
+    <p class="eyebrow">{{ company.name or 'Acme Windows' }} · Job Management</p>
+    <h1>{{ title }}</h1>
+    {% if flash %}<div class="alert alert-{{ flash.type }}" role="status">{{ flash.message }}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

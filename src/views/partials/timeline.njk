@@ -1,0 +1,21 @@
+{% if events and events.length %}
+<ol class="timeline">
+  {% for event in events %}
+  <li>
+    <div class="timeline-dot" aria-hidden="true"></div>
+    <div>
+      <p class="timeline-meta">
+        <strong>{{ event.type|replace('_',' ')|capitalize }}</strong>
+        <span>{{ event.at|datetime }}</span>
+        {% if event.visibility == 'CUSTOMER' %}<span class="tag">Customer visible</span>{% else %}<span class="tag tag-muted">Internal</span>{% endif %}
+      </p>
+      {% if event.from_value or event.to_value %}<p class="mono small">{{ event.from_value or '—' }} → {{ event.to_value or '—' }}</p>{% endif %}
+      {% if event.message %}<p>{{ event.message }}</p>{% endif %}
+      {% if event.actor_name %}<p class="muted small">By {{ event.actor_name }}</p>{% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ol>
+{% else %}
+<p class="muted">No activity yet.</p>
+{% endif %}

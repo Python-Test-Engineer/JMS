@@ -1,0 +1,42 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}{% if can('invoice.create') %}<a class="button button-primary" href="/invoices/new">Create invoice</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="stat-grid">
+  <div class="stat"><strong>{{ totals.draft|money }}</strong><span>Draft</span></div>
+  <div class="stat"><strong>{{ totals.issued|money }}</strong><span>Issued, unpaid</span></div>
+  <div class="stat"><strong>{{ totals.paid|money }}</strong><span>Paid</span></div>
+</div>
+<form class="filter-bar" method="get" action="/invoices">
+  <label class="field field-inline"><span>Search</span><input type="search" name="q" minlength="2" value="{{ filters.q or '' }}" placeholder="Number, job or customer"></label>
+  <label class="field field-inline"><span>Status</span>
+    <select name="status">
+      <option value="">All</option>
+      {% for status in ['DRAFT','ISSUED','PAID','VOID'] %}<option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status|capitalize }}</option>{% endfor %}
+    </select>
+  </label>
+  <button class="button button-secondary" type="submit">Apply</button>
+  <a class="button button-quiet" href="/invoices">Clear</a>
+</form>
+{% if invoices.length %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead><tr><th>Number</th><th>Customer</th><th>Job</th><th>Issued</th><th>Status</th><th class="num">Gross</th></tr></thead>
+    <tbody>
+      {% for invoice in invoices %}
+      <tr>
+        <td><a class="mono" href="/invoices/{{ invoice.id }}">{{ invoice.number or 'Draft' }}</a></td>
+        <td>{{ invoice.customer_name }}</td>
+        <td><span class="mono">{{ invoice.job_reference }}</span></td>
+        <td>{{ invoice.issued_at|date if invoice.issued_at else '—' }}</td>
+        <td><span class="pill pill-{{ invoice.status|lower }}">{{ invoice.status|capitalize }}</span></td>
+        <td class="num">{{ invoice.gross|money }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{{ ui.empty('No invoices match those filters.', '/invoices/new', 'Create invoice') }}
+{% endif %}
+{% endblock %}

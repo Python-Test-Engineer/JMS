@@ -1,0 +1,39 @@
+{% extends "layouts/app.njk" %}
+{% block content %}
+<p><a href="/jobs/{{ job.id }}">{{ job.reference }}</a> · {{ job.title }}</p>
+{% if conflicts and conflicts|length %}
+<div class="alert alert-warning" role="alert">
+  <strong>Possible clash</strong> — these field users already have overlapping work:
+  <ul>
+    {% for conflict in conflicts %}
+    <li>{{ conflict.engineer }} is on <span class="mono">{{ conflict.reference }}</span> {{ conflict.title }} ({{ conflict.planned_start|datetime }} → {{ conflict.planned_end|datetime }})</li>
+    {% endfor %}
+  </ul>
+  <p>You can save anyway and the accepted conflict will be recorded in the job timeline.</p>
+</div>
+{% endif %}
+<form method="post" action="/jobs/{{ job.id }}/schedule" class="panel stack narrow">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  {% if conflicts and conflicts|length %}<input type="hidden" name="force" value="1">{% endif %}
+  <label class="field">
+    <span>Planned start</span>
+    <input type="datetime-local" name="planned_start" value="{{ values.planned_start or '' }}" required>
+    {% if errors.planned_start %}<span class="field-error">{{ errors.planned_start }}</span>{% endif %}
+  </label>
+  <label class="field">
+    <span>Planned end</span>
+    <input type="datetime-local" name="planned_end" value="{{ values.planned_end or '' }}" required>
+    {% if errors.planned_end %}<span class="field-error">{{ errors.planned_end }}</span>{% endif %}
+  </label>
+  <label class="field">
+    <span>Slot</span>
+    <select name="planned_slot">
+      {% for slot in ['AM','PM','ALL_DAY'] %}<option value="{{ slot }}" {% if values.planned_slot == slot %}selected{% endif %}>{{ slot|replace('_',' ')|title }}</option>{% endfor %}
+    </select>
+  </label>
+  <div class="button-row">
+    <button class="button button-primary" type="submit">{{ 'Save anyway' if conflicts and conflicts|length else 'Save schedule' }}</button>
+    <a class="button button-quiet" href="/jobs/{{ job.id }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

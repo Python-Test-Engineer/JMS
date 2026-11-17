@@ -1,0 +1,31 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block content %}
+{% if errors and errors|length %}<div class="alert alert-error" role="alert">Check the highlighted fields and try again.</div>{% endif %}
+<form method="post" action="/admin/users" class="panel stack">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <div class="form-grid">
+    <label class="field"><span>Display name <em>required</em></span><input type="text" name="display_name" required value="{{ values.display_name }}">{{ ui.error('display_name', errors) }}</label>
+    <label class="field"><span>Email <em>required</em></span><input type="email" name="email" required value="{{ values.email }}">{{ ui.error('email', errors) }}</label>
+  </div>
+  <div class="form-grid">
+    <label class="field"><span>Role <em>required</em></span>
+      <select name="role_key">
+        {% for role in ['ADMIN','MANAGER','ENGINEER','CUSTOMER'] %}<option value="{{ role }}" {% if values.role_key == role %}selected{% endif %}>{{ role|roleLabel }}</option>{% endfor %}
+      </select>
+      {{ ui.error('role_key', errors) }}
+    </label>
+    <label class="field"><span>Customer (customer logins only)</span>
+      <select name="customer_id"><option value="">None</option>{% for customer in customers %}<option value="{{ customer.id }}" {% if values.customer_id == customer.id %}selected{% endif %}>{{ customer.name }}</option>{% endfor %}</select>
+      {{ ui.error('customer_id', errors) }}
+    </label>
+  </div>
+  <label class="field"><span>Phone</span><input type="tel" name="phone" value="{{ values.phone }}"></label>
+  <label class="check"><input type="checkbox" name="can_engineer" value="1" {% if values.can_engineer %}checked{% endif %}> Field capable (can be assigned to jobs)</label>
+  <p class="hint">The account starts with the temporary password <code>JMS123</code> and must change it on first sign-in.</p>
+  <div class="button-row">
+    <button class="button button-primary" type="submit">Create user</button>
+    <a class="button button-quiet" href="/admin/users">Cancel</a>
+  </div>
+</form>
+{% endblock %}

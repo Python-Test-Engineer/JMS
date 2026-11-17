@@ -1,0 +1,103 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}
+<div class="actions">
+  {% if can('job.edit') %}<a class="button button-secondary" href="/jobs/{{ job.id }}/edit">Edit job</a>{% endif %}
+  {% if can('job.assign') %}<a class="button button-secondary" href="/jobs/{{ job.id }}/assign">Assign</a>{% endif %}
+  {% if can('job.schedule') %}<a class="button button-secondary" href="/jobs/{{ job.id }}/schedule">Schedule</a>{% endif %}
+  {% if can('document.job.pdf') %}<a class="button button-secondary" href="/jobs/{{ job.id }}/job-sheet.pdf">Job sheet PDF</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<div class="detail-head">
+  <p class="mono muted">{{ job.reference }} · {{ job.created_at|date }}</p>
+  <h1>{{ job.title }}</h1>
+  <p>{{ ui.statusPill(job.status) }} {% if job.priority == 'URGENT' %}<span class="tag tag-urgent">Urgent</span>{% endif %}</p>
+</div>
+
+<div class="two-col">
+  <section class="panel stack">
+    <h2>Job details</h2>
+    <dl class="facts">
+      <dt>Customer</dt><dd><a href="/customers/{{ customer.id }}">{{ customer.name }}</a><br>{{ ui.address(customer.address) }}</dd>
+      <dt>Site</dt><dd>{{ ui.address(job.site_address) }}</dd>
+      <dt>Work type</dt><dd>{{ job.work_type|workType }}</dd>
+      <dt>Planned</dt><dd>{% if job.planned_start %}{{ job.planned_start|datetime }} → {{ job.planned_end|datetime }}<br><span class="muted">{{ job.planned_slot|replace('_',' ')|title }}</span>{% else %}Not scheduled{% endif %}</dd>
+      <dt>Actual</dt><dd>{{ job.actual_start|datetime if job.actual_start else '—' }}{% if job.actual_end %} → {{ job.actual_end|datetime }}{% endif %}</dd>
+      {% if showPrices and job.price_net is not none %}
+      <dt>Price</dt><dd>{{ job.price_net|money }} net · VAT {{ (job.vat_rate_bp / 100)|round(2) }}%<br><strong>{{ job.price_gross|money }}</strong> gross</dd>
+      {% endif %}
+    </dl>
+    <div>
+      <h3>Description</h3>
+      <p class="preline">{{ job.description }}</p>
+    </div>
+    {% if job.customer_notes %}
+    <div class="callout"><h3>Customer notes</h3><p class="preline">{{ job.customer_notes }}</p></div>
+    {% endif %}
+    {% if showInternal and job.internal_notes %}
+    <div class="callout callout-internal"><h3>Internal notes</h3><p class="preline">{{ job.internal_notes }}</p></div>
+    {% endif %}
+  </section>
+
+  <aside class="stack">
+    <section class="panel">
+      <h2>Assignments</h2>
+      {% if assignments.length %}
+      <ul class="record-list">
+        {% for assignment in assignments %}
+        <li><span><strong>{{ assignment.display_name }}</strong>{% if assignment.is_lead %} <span class="tag">Lead</span>{% endif %}<br><span class="muted">{{ assignment.role_key|roleLabel }}</span></span><span class="muted">{{ assignment.assigned_at|date }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">No active assignees.</p>
+      {% endif %}
+    </section>
+
+    <section class="panel">
+      <h2>Status</h2>
+      {% if transitions.length %}
+      <form method="post" action="/jobs/{{ job.id }}/status" class="stack">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <label class="field"><span>Reason or note (required for hold, cancel and some changes)</span><textarea name="note" rows="2"></textarea></label>
+        <div class="button-row">
+          {% for transition in transitions %}
+          <button class="button button-primary" type="submit" name="to" value="{{ transition.to }}">{{ transition.label }}</button>
+          {% endfor %}
+        </div>
+      </form>
+      {% else %}
+      <p class="muted">No manual status changes are available for you on this job.</p>
+      {% endif %}
+      {% if invoice %}
+      <p><a class="button button-secondary button-block" href="/invoices/{{ invoice.id }}">Open invoice {{ invoice.number or 'draft' }}</a></p>
+      {% endif %}
+      {% if can('job.archive') %}
+      <form method="post" action="/jobs/{{ job.id }}/archive" onsubmit="return confirm('Archive {{ job.reference }}? It will disappear from normal lists.')">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button class="button button-danger button-block" type="submit">Archive job</button>
+      </form>
+      {% endif %}
+    </section>
+
+    {% if can('job.note.add') %}
+    <section class="panel">
+      <h2>Add a note</h2>
+      <form method="post" action="/jobs/{{ job.id }}/notes" class="stack">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <label class="field"><span>Note</span><textarea name="message" rows="3" required></textarea></label>
+        <label class="field"><span>Visibility</span>
+          <select name="visibility"><option value="INTERNAL">Internal only</option><option value="CUSTOMER">Visible to customer</option></select>
+        </label>
+        <button class="button button-primary" type="submit">Add note</button>
+      </form>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+
+<section class="panel">
+  <h2>Timeline</h2>
+  {% include "partials/timeline.njk" %}
+</section>
+{% endblock %}

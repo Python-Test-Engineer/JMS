@@ -1,0 +1,36 @@
+{% extends "layouts/app.njk" %}
+{% block content %}
+{% if errors and errors|length %}
+<div class="alert alert-error" role="alert">{% for error in errors %}<p>{{ error }}</p>{% endfor %}</div>
+{% endif %}
+{% if saved %}<div class="alert alert-success" role="status">Permission matrix saved. Changes apply on the next request.</div>{% endif %}
+<p class="muted">Every action key has an explicit row for every role. Safeguards: <code>admin.audit.view</code> cannot be granted to Customer or Engineer, and the last active admin must keep permission editing.</p>
+<form method="post" action="/admin/roles/permissions" class="panel">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <div class="table-wrap">
+    <table class="data-table matrix">
+      <thead>
+        <tr><th>Action key</th>{% for role in roles %}<th>{{ roleLabels[role] }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for group, actions in groups %}
+        <tr class="matrix-group"><th colspan="{{ roles|length + 1 }}">{{ group }}</th></tr>
+        {% for action in actions %}
+        <tr>
+          <td><span class="mono small">{{ action }}</span></td>
+          {% for role in roles %}
+          <td>
+            <input type="checkbox" name="perm|{{ role }}|{{ action }}" value="1" aria-label="{{ action }} for {{ roleLabels[role] }}" {% if matrix[role][action] %}checked{% endif %}>
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="button-row">
+    <button class="button button-primary" type="submit">Save matrix</button>
+  </div>
+</form>
+{% endblock %}

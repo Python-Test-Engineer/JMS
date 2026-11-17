@@ -1,0 +1,26 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block content %}
+<p class="muted">Completed jobs without a live invoice. Re-issuing after a void creates the next gapless number.</p>
+{% if jobs.length %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead><tr><th>Reference</th><th>Job</th><th>Customer</th><th>Completed</th><th class="num">Net</th><th></th></tr></thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <td><a class="mono" href="/jobs/{{ job.id }}">{{ job.reference }}</a></td>
+        <td>{{ job.title }}</td>
+        <td>{{ job.customer_name }}</td>
+        <td>{{ job.actual_end|date }}</td>
+        <td class="num">{{ job.price_net|money }}</td>
+        <td>{% if can('invoice.create') %}<a class="button button-secondary" href="/invoices/new?job_id={{ job.id }}">Create invoice</a>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{{ ui.empty('Nothing is waiting to be invoiced.', null, null) }}
+{% endif %}
+{% endblock %}

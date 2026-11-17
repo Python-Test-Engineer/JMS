@@ -1,0 +1,31 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block content %}
+<p class="muted">Active assignments for field-capable staff. Managers with field capability appear alongside engineers.</p>
+{% for row in rows %}
+<section class="panel">
+  <div class="panel-head">
+    <h2>{{ row.display_name }} <span class="muted">· {{ row.role_key|roleLabel }}</span></h2>
+    <span class="pill">{{ row.count }} active · {{ row.week }} this week</span>
+  </div>
+  {% if row.jobs.length %}
+  <table class="data-table">
+    <thead><tr><th>Reference</th><th>Job</th><th>Customer</th><th>Planned</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for job in row.jobs %}
+      <tr>
+        <td><a class="mono" href="/jobs/{{ job.id }}">{{ job.reference }}</a></td>
+        <td>{{ job.title }}</td>
+        <td>{{ job.customer_name }}</td>
+        <td>{{ job.planned_start|datetime if job.planned_start else 'Not scheduled' }}</td>
+        <td>{{ ui.statusPill(job.status) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No active assignments.</p>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

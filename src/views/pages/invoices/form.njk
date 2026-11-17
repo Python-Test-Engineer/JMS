@@ -1,0 +1,28 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block content %}
+{% if errors and errors|length %}<div class="alert alert-error" role="alert">Check the highlighted fields and try again.</div>{% endif %}
+<form method="post" action="/invoices" class="panel stack">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <label class="field">
+    <span>Completed job <em>required</em></span>
+    <select name="job_id" required>
+      <option value="">Choose a completed job</option>
+      {% for job in jobs %}<option value="{{ job.id }}" {% if values.job_id == job.id %}selected{% endif %}>{{ job.reference }} · {{ job.customer_name }} · {{ job.title }}</option>{% endfor %}
+    </select>
+    {{ ui.error('job_id', errors) }}
+    {% if not jobs.length %}<span class="hint">There are no completed jobs without a live invoice.</span>{% endif %}
+  </label>
+  <label class="field"><span>Line description <em>required</em></span><input type="text" name="description" required value="{{ values.description }}">{{ ui.error('description', errors) }}</label>
+  <div class="form-grid">
+    <label class="field"><span>Quantity</span><input type="number" name="qty" min="0.001" step="0.001" value="{{ values.qty }}" required>{{ ui.error('qty', errors) }}</label>
+    <label class="field"><span>Unit price (pounds)</span><input type="text" inputmode="decimal" name="unit_pence" value="{{ values.unit_pence }}" required>{{ ui.error('unit_pence', errors) }}</label>
+  </div>
+  <label class="field"><span>VAT rate (basis points)</span><input type="number" name="vat_rate_bp" value="{{ values.vat_rate_bp }}" min="0" max="10000" step="1"><span class="hint">2000 = 20.00%</span></label>
+  <label class="field"><span>Payment terms / notes</span><textarea name="notes" rows="2">{{ values.notes }}</textarea></label>
+  <div class="button-row">
+    <button class="button button-primary" type="submit">Save draft</button>
+    <a class="button button-quiet" href="/invoices">Cancel</a>
+  </div>
+</form>
+{% endblock %}

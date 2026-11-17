@@ -1,0 +1,58 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}
+<div class="actions">
+  {% if can('job.create') %}<a class="button button-primary" href="/jobs/new">Create job</a>{% endif %}
+  {% if can('customer.create') %}<a class="button button-secondary" href="/customers/new">New customer</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="stat-grid" aria-label="Key numbers">
+  <div class="stat"><strong>{{ stats.today }}</strong><span>Jobs today</span></div>
+  <div class="stat"><strong>{{ stats.week }}</strong><span>Next 7 days</span></div>
+  <div class="stat"><strong>{{ stats.inProgress }}</strong><span>In progress</span></div>
+  <div class="stat"><strong>{{ stats.onHold }}</strong><span>On hold</span></div>
+  <div class="stat"><strong>{{ stats.needsInvoicing }}</strong><span>Needs invoicing</span></div>
+  <div class="stat"><strong>{{ stats.unpaid|money }}</strong><span>Unpaid invoices</span></div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Today</h2>
+    <a class="button button-quiet" href="/insights/timeline">Open timeline</a>
+  </div>
+  {% if today.length %}
+  {{ ui.jobTable(today, statuses, true) }}
+  {% else %}
+  {{ ui.empty('No jobs are planned for today.', '/jobs/new', 'Create a job') }}
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Next 7 days</h2>
+  {% if upcoming.length %}
+  {{ ui.jobTable(upcoming, statuses, true) }}
+  {% else %}
+  <p class="muted">Nothing else is booked in the next week.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Completed, waiting for an invoice</h2>
+    <a class="button button-quiet" href="/insights/needs-invoicing">See all</a>
+  </div>
+  {% if needsInvoicing.length %}
+  <ul class="record-list">
+    {% for job in needsInvoicing %}
+    <li>
+      <span><a href="/jobs/{{ job.id }}" class="mono">{{ job.reference }}</a> · {{ job.title }} · {{ job.customer_name }}</span>
+      <span>{{ job.actual_end|date }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Everything completed has an invoice.</p>
+  {% endif %}
+</section>
+{% endblock %}

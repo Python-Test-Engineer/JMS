@@ -1,0 +1,22 @@
+{% extends "layouts/app.njk" %}
+{% block pageActions %}{% if can('user.create') %}<a class="button button-primary" href="/admin/users/new">Create user</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Field capable</th><th>Status</th><th>Jobs</th><th></th></tr></thead>
+    <tbody>
+      {% for userRow in users %}
+      <tr>
+        <td><a href="/admin/users/{{ userRow.id }}">{{ userRow.display_name }}</a>{% if userRow.customer_name %}<br><span class="muted">{{ userRow.customer_name }}</span>{% endif %}</td>
+        <td>{{ userRow.email }}</td>
+        <td>{{ userRow.role_key|roleLabel }}</td>
+        <td>{{ 'Yes' if userRow.can_engineer else '—' }}</td>
+        <td>{{ userRow.status|capitalize }}{% if userRow.must_change_password %} · password change pending{% endif %}</td>
+        <td>{{ userRow.job_count }}</td>
+        <td><a class="button button-quiet" href="/admin/users/{{ userRow.id }}">Open</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

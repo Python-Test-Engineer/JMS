@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light;
+  --bg: #f5f1eb;
+  --bg-alt: #ece5db;
+  --surface: #fffdfa;
+  --surface-alt: #f9f5ef;
+  --text: #2b2926;
+  --text-muted: #665f57;
+  --border: #d9cec0;
+  --border-strong: #bfae9b;
+  --accent: #8a4b2f;
+  --accent-hover: #6f3a22;
+  --accent-contrast: #ffffff;
+  --accent-soft: #f2e4d9;
+  --success: #2f6b47;
+  --success-soft: #e2f0e7;
+  --danger: #a62f28;
+  --danger-soft: #f8e5e3;
+  --warning: #8a5a00;
+  --warning-soft: #fbf0d5;
+  --focus: #1d5fa8;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(43, 41, 38, 0.06), 0 8px 24px rgba(43, 41, 38, 0.05);
+  --font-ui: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-mono: "Cascadia Mono", Consolas, "SFMono-Regular", ui-monospace, monospace;
+  --fs-content: 20px;
+  --fs-ui: 17px;
+  --lh: 1.55;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1d1b19;
+  --bg-alt: #262321;
+  --surface: #2a2724;
+  --surface-alt: #322e2a;
+  --text: #f4efe8;
+  --text-muted: #c3b9ad;
+  --border: #4a443d;
+  --border-strong: #6b6054;
+  --accent: #e29a72;
+  --accent-hover: #f0b08c;
+  --accent-contrast: #24160e;
+  --accent-soft: #3b2a20;
+  --success: #8fd0a8;
+  --success-soft: #23362b;
+  --danger: #f3a39c;
+  --danger-soft: #3f2523;
+  --warning: #e8c477;
+  --warning-soft: #3d3220;
+  --focus: #8ec5ff;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    color-scheme: dark;
+    --bg: #1d1b19;
+    --bg-alt: #262321;
+    --surface: #2a2724;
+    --surface-alt: #322e2a;
+    --text: #f4efe8;
+    --text-muted: #c3b9ad;
+    --border: #4a443d;
+    --border-strong: #6b6054;
+    --accent: #e29a72;
+    --accent-hover: #f0b08c;
+    --accent-contrast: #24160e;
+    --accent-soft: #3b2a20;
+    --success: #8fd0a8;
+    --success-soft: #23362b;
+    --danger: #f3a39c;
+    --danger-soft: #3f2523;
+    --warning: #e8c477;
+    --warning-soft: #3d3220;
+    --focus: #8ec5ff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+}
+
+[data-text="large"] { --fs-content: 21.5px; --fs-ui: 18px; --lh: 1.6; }
+[data-text="small"] { --fs-content: 18.5px; --fs-ui: 16px; --lh: 1.5; }
+[data-leading="airy"] { --lh: 1.75; }
+[data-leading="tight"] { --lh: 1.4; }

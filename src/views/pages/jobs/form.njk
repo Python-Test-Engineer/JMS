@@ -1,0 +1,89 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block content %}
+{% if errors and errors|length %}
+<div class="alert alert-error" role="alert">Check the highlighted fields and try again.</div>
+{% endif %}
+<form method="post" action="{{ '/jobs/' + job.id if mode == 'edit' else '/jobs' }}" class="panel stack">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <div class="form-grid">
+    <label class="field">
+      <span>Customer <em>required</em></span>
+      <select name="customer_id" required>
+        <option value="">Choose a customer</option>
+        {% for customer in customers %}<option value="{{ customer.id }}" {% if values.customer_id == customer.id %}selected{% endif %}>{{ customer.name }}</option>{% endfor %}
+      </select>
+      {{ ui.error('customer_id', errors) }}
+    </label>
+    <label class="field">
+      <span>Work type <em>required</em></span>
+      <select name="work_type" required>
+        {% for type in workTypes %}<option value="{{ type }}" {% if values.work_type == type %}selected{% endif %}>{{ type|workType }}</option>{% endfor %}
+      </select>
+      {{ ui.error('work_type', errors) }}
+    </label>
+  </div>
+  <label class="field">
+    <span>Job title <em>required</em></span>
+    <input type="text" name="title" maxlength="140" required value="{{ values.title }}">
+    {{ ui.error('title', errors) }}
+  </label>
+  <label class="field">
+    <span>Description <em>required</em></span>
+    <textarea name="description" rows="4" required>{{ values.description }}</textarea>
+    {{ ui.error('description', errors) }}
+  </label>
+  <div class="form-grid">
+    <label class="field">
+      <span>Priority</span>
+      <select name="priority">
+        <option value="NORMAL" {% if values.priority != 'URGENT' %}selected{% endif %}>Normal</option>
+        <option value="URGENT" {% if values.priority == 'URGENT' %}selected{% endif %}>Urgent</option>
+      </select>
+    </label>
+    <label class="field">
+      <span>Planned slot</span>
+      <select name="planned_slot">
+        {% for slot in ['AM','PM','ALL_DAY'] %}<option value="{{ slot }}" {% if values.planned_slot == slot %}selected{% endif %}>{{ slot|replace('_',' ')|title }}</option>{% endfor %}
+      </select>
+    </label>
+  </div>
+  <div class="form-grid">
+    <label class="field">
+      <span>Planned start</span>
+      <input type="datetime-local" name="planned_start" value="{{ values.planned_start or '' }}">
+      {{ ui.error('planned_start', errors) }}
+    </label>
+    <label class="field">
+      <span>Planned end</span>
+      <input type="datetime-local" name="planned_end" value="{{ values.planned_end or '' }}">
+      {{ ui.error('planned_end', errors) }}
+    </label>
+  </div>
+  <div class="form-grid">
+    <label class="field">
+      <span>Price (net, pounds)</span>
+      <input type="text" inputmode="decimal" name="price_net" value="{{ values.price_net }}" placeholder="4250.00">
+      {{ ui.error('price_net', errors) }}
+    </label>
+    <label class="field">
+      <span>VAT rate (basis points)</span>
+      <input type="number" name="vat_rate_bp" value="{{ values.vat_rate_bp }}" min="0" max="10000" step="1">
+      <span class="hint">2000 = 20.00%</span>
+    </label>
+  </div>
+  <label class="field">
+    <span>Customer-visible notes</span>
+    <textarea name="customer_notes" rows="2">{{ values.customer_notes }}</textarea>
+  </label>
+  <label class="field">
+    <span>Internal notes</span>
+    <textarea name="internal_notes" rows="2">{{ values.internal_notes }}</textarea>
+    <span class="hint">Never shown to customers or on customer job sheets.</span>
+  </label>
+  <div class="button-row">
+    <button class="button button-primary" type="submit">{{ 'Save job' if mode == 'edit' else 'Create job' }}</button>
+    <a class="button button-quiet" href="{{ '/jobs/' + job.id if mode == 'edit' else '/jobs' }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

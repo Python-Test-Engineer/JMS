@@ -1,0 +1,24 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block pageActions %}<a class="button button-secondary" href="/portal/invoices">My invoices</a>{% endblock %}
+{% block content %}
+{% if jobs.length %}
+<div class="card-grid">
+  {% for job in jobs %}
+  <article class="job-card">
+    <div class="job-card-head">
+      <span class="mono">{{ job.reference }}</span>
+      {{ ui.statusPill(job.status) }}
+    </div>
+    <h2><a href="/portal/jobs/{{ job.id }}">{{ job.title }}</a></h2>
+    <p><strong>{{ job.planned_start|datetime if job.planned_start else 'Date to be confirmed' }}</strong><br>
+      <span class="muted">{{ job.work_type|workType }}{% if job.planned_slot %} · {{ job.planned_slot|replace('_',' ')|title }}{% endif %}</span></p>
+    {% if job.customer_notes %}<p class="muted">{{ job.customer_notes }}</p>{% endif %}
+    <a class="button button-secondary" href="/portal/jobs/{{ job.id }}">View progress</a>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+{{ ui.empty('You have no jobs yet. We will show them here when they are booked.', null, null) }}
+{% endif %}
+{% endblock %}

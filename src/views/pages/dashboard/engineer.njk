@@ -1,0 +1,29 @@
+{% extends "layouts/app.njk" %}
+{% import "macros/ui.njk" as ui %}
+{% block content %}
+<div class="stat-grid">
+  <div class="stat"><strong>{{ jobs|length }}</strong><span>Assigned jobs</span></div>
+  <div class="stat"><strong>{{ jobs|selectattr('status','equalto','IN_PROGRESS')|list|length }}</strong><span>In progress</span></div>
+  <div class="stat"><strong>{{ jobs|selectattr('status','equalto','SCHEDULED')|list|length }}</strong><span>Scheduled</span></div>
+</div>
+{% if jobs.length %}
+<div class="card-grid">
+  {% for job in jobs %}
+  <article class="job-card">
+    <div class="job-card-head">
+      <a class="mono" href="/jobs/{{ job.id }}">{{ job.reference }}</a>
+      {{ ui.statusPill(job.status) }}
+    </div>
+    <h2><a href="/jobs/{{ job.id }}">{{ job.title }}</a></h2>
+    <p class="muted">{{ job.customer_name }}</p>
+    <p><strong>{{ job.planned_start|datetime if job.planned_start else 'Not scheduled' }}</strong><br>
+      <span class="muted">{{ job.planned_slot|replace('_',' ')|title }}</span></p>
+    {% if job.priority == 'URGENT' %}<p class="tag tag-urgent">Urgent</p>{% endif %}
+    <a class="button button-secondary" href="/jobs/{{ job.id }}">Open job</a>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+{{ ui.empty('You have no assigned jobs right now.', null, null) }}
+{% endif %}
+{% endblock %}
