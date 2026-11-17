@@ -1,11 +1,11 @@
-# book_theme.toml - the look of the generated book page
+# jms_theme.toml - the look of generated JMS documentation pages
 #
-# build_book.py reads this file and turns every value below into a CSS custom
+# build_jms_html.py reads this file and turns every value below into a CSS custom
 # property in the page. Delete a line (or the whole file) and that value falls
 # back to the built-in default, which is the value shown here.
 #
-#   uv run --with markdown python scripts/build_book.py \
-#       --src EXPLAINER.md --out book.html --theme book_theme.toml
+#   uv run --with markdown python scripts/build_jms_html.py \
+#       --src _PLAN.md --out _PLAN.html --theme assets/jms_theme.toml
 #
 # There is also a live panel: open the page, click the "Aa" button, drag the
 # sliders, then "Copy TOML" to paste the result back over this file.
@@ -26,9 +26,12 @@ mode = "auto"
 # type
 # --------------------------------------------------------------------------
 [type]
-fs_content = 34          # book text, px          (18-90)
-lh_content = 1.62        # book line height       (1.0-2.6)
-fs_ui = 17               # sidebar / chrome text, px (10-30)
+# JMS defaults. fs_content is the reading column; fs_ui is the sidebar, filter,
+# pills and panel labels. 20.4 = upstream 17 * 1.2, i.e. the TOC and all chrome
+# are 20% larger than the make-book default while the reading column is 25px.
+fs_content = 25          # page text, px          (16-90, panel 18-64)
+lh_content = 1.62        # page line height       (1.0-2.6)
+fs_ui = 20.4             # sidebar / chrome text, px (10-30)
 lh_ui = 1.62             # chrome line height     (1.0-2.6)
 
 # Every other size is a multiplier of one of the two bases above, so changing

@@ -475,7 +475,7 @@ These are testable requirements, not aspirations.
 
 | # | Requirement |
 |---|---|
-| U1 | Body text is **18–20px** at default zoom; never below 16px for any interface text. |
+| U1 | Reading text defaults to **25px**; app interface text is never below 18px and no text is below 16px at default zoom. |
 | U2 | Primary buttons are at least **48px** tall, with a minimum 44×44px hit area everywhere. |
 | U3 | Forms are **single column**, labels above fields, no placeholder-only labels. |
 | U4 | One **primary** action per screen; secondary actions are visually quieter pills. |
@@ -507,6 +507,11 @@ headings, sans interface text, mono for references and code.
 - Typography: serif display for page and section titles; system sans for
   controls and prose; mono for job references, invoice numbers and dates in
   tables.
+- **Type defaults (docs and app shell):** reading text **25px**, sidebar,
+  contents and chrome **20.4px** — exactly 20% larger than the 17px UI base our
+  guides shipped with. Every other size is a multiplier of those two bases, so
+  the page scales coherently; the Aa panel exposes both as sliders and the
+  theme file stores them.
 - Surfaces: ivory cards on paper, 1px `--line` borders, 12–16px radii, soft
   shadows; no gradients, no heavy borders, no competing accent colours.
 - Do not fork the palette per screen. One set of CSS custom properties, scoped
@@ -617,12 +622,19 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7 → M8
 
 ### 11.2 Documentation deliverables (same system as the book)
 
-- `_PLAN.md` → plan page (this document) rendered as a two-pane guide.
-- `_TECH.md` → technical spec page, same shell and Aa panel.
+- `_PLAN.md` → plan page (this document) rendered as a two-pane guide by the
+  `make-jms-html` skill (`python skills/make-jms-html/scripts/build_jms_docs.py`,
+  which reads `docs.toml` and `jms_theme.toml` at the repo root).
+- `_TECH.md` → technical spec page, same shell, same theme, same Aa panel.
 - App help pages (per role) authored in Markdown, built into the same guide
   shell so a Customer, Engineer and Manager each get a short "how to use JMS"
   page with the same typography.
-- Optional PDF export of `_PLAN.md` / `_TECH.md` through the print stylesheet.
+- Documentation is HTML-only: Markdown is converted to HTML (or the HTML is
+  authored directly) using the same house guide system. No PDF build step is
+  required for `_PLAN.md`, `_TECH.md` or the help pages.
+
+This does not affect the product's PDF generation (job sheets and invoices, §8);
+that is an application feature, not a documentation pipeline.
 
 ---
 

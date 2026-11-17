@@ -47,8 +47,8 @@
   --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
 
   /* ---- type: the two bases every other size is derived from ---- */
-  --fs-ui: 17px;            /* sidebar + chrome */
-  --fs-content: 34px;      /* the book itself */
+  --fs-ui: 20.4px;            /* sidebar + chrome */
+  --fs-content: 25px;      /* the book itself */
   --lh-ui: 1.62;
   --lh-content: 1.62;
 
@@ -733,7 +733,7 @@ details code { font-size: .85em; }
 
 @page {
   size: A4; margin: 17mm 15mm 18mm 15mm;
-  /* folio: the page number build_pdf.py reads back to fill in the Contents table */
+  /* folio: optional page-number marker for print and future tooling */
   @bottom-center { content: counter(page); font: 8.5pt var(--sans); color: #6b675f; }
 }
 @page:first { @bottom-center { content: none; } }   /* no folio on the title page */
@@ -1881,7 +1881,7 @@ office manager in a dark room, without a second stylesheet.</p>
 <tbody>
 <tr>
 <td>U1</td>
-<td>Body text is <strong>18–20px</strong> at default zoom; never below 16px for any interface text.</td>
+<td>Reading text defaults to <strong>25px</strong>; app interface text is never below 18px and no text is below 16px at default zoom.</td>
 </tr>
 <tr>
 <td>U2</td>
@@ -1955,6 +1955,11 @@ headings, sans interface text, mono for references and code.</p>
 <li>Typography: serif display for page and section titles; system sans for
   controls and prose; mono for job references, invoice numbers and dates in
   tables.</li>
+<li><strong>Type defaults (docs and app shell):</strong> reading text <strong>25px</strong>, sidebar,
+  contents and chrome <strong>20.4px</strong> — exactly 20% larger than the 17px UI base our
+  guides shipped with. Every other size is a multiplier of those two bases, so
+  the page scales coherently; the Aa panel exposes both as sliders and the
+  theme file stores them.</li>
 <li>Surfaces: ivory cards on paper, 1px <code>--line</code> borders, 12–16px radii, soft
   shadows; no gradients, no heavy borders, no competing accent colours.</li>
 <li>Do not fork the palette per screen. One set of CSS custom properties, scoped
@@ -2215,13 +2220,19 @@ turn these into a task list with schema, routes, templates and tests.</p>
 </code></pre>
 <h3 id="112-documentation-deliverables-same-system-as-the-book">11.2 Documentation deliverables (same system as the book)</h3>
 <ul>
-<li><code>_PLAN.md</code> → plan page (this document) rendered as a two-pane guide.</li>
-<li><code>_TECH.md</code> → technical spec page, same shell and Aa panel.</li>
+<li><code>_PLAN.md</code> → plan page (this document) rendered as a two-pane guide by the
+  <code>make-jms-html</code> skill (<code>python skills/make-jms-html/scripts/build_jms_docs.py</code>,
+  which reads <code>docs.toml</code> and <code>jms_theme.toml</code> at the repo root).</li>
+<li><code>_TECH.md</code> → technical spec page, same shell, same theme, same Aa panel.</li>
 <li>App help pages (per role) authored in Markdown, built into the same guide
   shell so a Customer, Engineer and Manager each get a short "how to use JMS"
   page with the same typography.</li>
-<li>Optional PDF export of <code>_PLAN.md</code> / <code>_TECH.md</code> through the print stylesheet.</li>
+<li>Documentation is HTML-only: Markdown is converted to HTML (or the HTML is
+  authored directly) using the same house guide system. No PDF build step is
+  required for <code>_PLAN.md</code>, <code>_TECH.md</code> or the help pages.</li>
 </ul>
+<p>This does not affect the product's PDF generation (job sheets and invoices, §8);
+that is an application feature, not a documentation pipeline.</p>
 <hr />
 <div class="chnav"><a class="grow" href="#ch10">&larr; 10. Non-functional requirements</a><a class="grow" href="#ch12">12. Definition of done (v1 acceptance checklist) &rarr;</a></div><a id="ch12"></a>
 <h2 id="12-definition-of-done-v1-acceptance-checklist">12. Definition of done (v1 acceptance checklist)</h2>
@@ -2594,11 +2605,11 @@ scope until a later plan says otherwise.</p>
   // appearance panel: edits the CSS custom properties in :root
   // ============================================================
   const SPEC = [{"table": "type", "title": "Type", "items": [{"key": "fs_content", "cssVar": "--fs-content", "kind": "size", "unit": "px", "min": 18, "max": 64, "step": 0.5, "label": "Book text"}, {"key": "lh_content", "cssVar": "--lh-content", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Book line height"}, {"key": "fs_ui", "cssVar": "--fs-ui", "kind": "size", "unit": "px", "min": 11, "max": 30, "step": 0.5, "label": "Sidebar and chrome text"}, {"key": "lh_ui", "cssVar": "--lh-ui", "kind": "number", "unit": "", "min": 1.1, "max": 2.2, "step": 0.01, "label": "Chrome line height"}]}, {"table": "layout", "title": "Layout", "items": [{"key": "sidebar", "cssVar": "--sidebar", "kind": "size", "unit": "px", "min": 240, "max": 560, "step": 5, "label": "Sidebar width"}, {"key": "measure", "cssVar": "--measure", "kind": "size", "unit": "%", "min": 40, "max": 100, "step": 1, "label": "Reading column width"}]}, {"table": "fonts", "title": "Fonts", "items": [{"key": "serif", "cssVar": "--serif", "kind": "font", "label": "Headings (serif stack)"}, {"key": "sans", "cssVar": "--sans", "kind": "font", "label": "Body (sans stack)"}, {"key": "mono", "cssVar": "--mono", "kind": "font", "label": "Code (mono stack)"}]}, {"table": "colors", "title": "Colours", "colors": true, "items": [{"key": "paper", "cssVar": "--paper", "kind": "color", "label": "Page background"}, {"key": "surface", "cssVar": "--surface", "kind": "color", "label": "Sidebar background"}, {"key": "ivory", "cssVar": "--ivory", "kind": "color", "label": "Cards and inputs"}, {"key": "ink", "cssVar": "--ink", "kind": "color", "label": "Body text"}, {"key": "muted", "cssVar": "--muted", "kind": "color", "label": "Secondary text"}, {"key": "stone", "cssVar": "--stone", "kind": "color", "label": "Faint labels"}, {"key": "line", "cssVar": "--line", "kind": "color", "label": "Borders"}, {"key": "line_soft", "cssVar": "--line-soft", "kind": "color", "label": "Hairline borders"}, {"key": "terra", "cssVar": "--terra", "kind": "color", "label": "Accent"}, {"key": "terra_dark", "cssVar": "--terra-dark", "kind": "color", "label": "Links and accent text"}, {"key": "accent_strong", "cssVar": "--accent-strong", "kind": "color", "label": "Eyebrow / active label"}, {"key": "hover_bg", "cssVar": "--hover-bg", "kind": "color", "label": "Hover background"}, {"key": "active_bg", "cssVar": "--active-bg", "kind": "color", "label": "Active nav background"}, {"key": "active_fg", "cssVar": "--active-fg", "kind": "color", "label": "Active nav text"}, {"key": "focus_ring", "cssVar": "--focus-ring", "kind": "color", "label": "Focus ring"}, {"key": "code_bg", "cssVar": "--code-bg", "kind": "color", "label": "Code block background"}, {"key": "code_fg", "cssVar": "--code-fg", "kind": "color", "label": "Code block text"}, {"key": "inline_code_bg", "cssVar": "--inline-code-bg", "kind": "color", "label": "Inline code background"}, {"key": "inline_code_fg", "cssVar": "--inline-code-fg", "kind": "color", "label": "Inline code text"}, {"key": "quote_bg", "cssVar": "--quote-bg", "kind": "color", "label": "Callout background"}, {"key": "quote_border", "cssVar": "--quote-border", "kind": "color", "label": "Callout border"}, {"key": "quote_fg", "cssVar": "--quote-fg", "kind": "color", "label": "Callout text"}, {"key": "row_hover", "cssVar": "--row-hover", "kind": "color", "label": "Table row hover"}, {"key": "open_bg", "cssVar": "--open-bg", "kind": "color", "label": "Open answer background"}, {"key": "scroll_thumb", "cssVar": "--scroll-thumb", "kind": "color", "label": "Code scrollbar"}, {"key": "copy_bg", "cssVar": "--copy-bg", "kind": "color", "label": "Copy button background"}, {"key": "copy_fg", "cssVar": "--copy-fg", "kind": "color", "label": "Copy button text"}, {"key": "copy_border", "cssVar": "--copy-border", "kind": "color", "label": "Copy button border"}, {"key": "copy_hover", "cssVar": "--copy-hover", "kind": "color", "label": "Copy button hover"}]}];
-  const DEFAULTS = {"base": {"fs_ui": 17, "fs_content": 34, "lh_ui": 1.62, "lh_content": 1.62, "serif": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif", "sans": "-apple-system, \"Segoe UI\", Inter, Helvetica, Arial, sans-serif", "mono": "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, ui-monospace, monospace", "sidebar": 400, "measure": 80}, "colors": {"light": {"paper": "#f0eee6", "surface": "#fbfaf7", "ivory": "#fffdfa", "ink": "#1f1e1d", "muted": "#55524c", "stone": "#8c877c", "line": "#e2ddd2", "line_soft": "#ece8df", "terra": "#d97757", "terra_dark": "#c9633f", "accent_strong": "#a14e2f", "hover_bg": "#f4f1e9", "active_bg": "#f6ede6", "active_fg": "#8f3f27", "focus_ring": "#e3a98f", "code_bg": "#23211e", "code_fg": "#f3eee5", "inline_code_bg": "#eae7de", "inline_code_fg": "#6f3b26", "quote_bg": "#f8eee8", "quote_border": "#e7cec2", "quote_fg": "#3d3d3a", "row_hover": "#f7f4ee", "open_bg": "#fdf9f5", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}, "dark": {"paper": "#1b1a18", "surface": "#201f1c", "ivory": "#262420", "ink": "#f2ece1", "muted": "#c3bcae", "stone": "#9a9384", "line": "#34312b", "line_soft": "#2b2823", "terra": "#d97757", "terra_dark": "#d97757", "accent_strong": "#f0b49a", "hover_bg": "#262420", "active_bg": "#33261f", "active_fg": "#f0b49a", "focus_ring": "#8a5540", "code_bg": "#141312", "code_fg": "#f3eee5", "inline_code_bg": "#322e28", "inline_code_fg": "#f0b49a", "quote_bg": "#2a211d", "quote_border": "#4a332b", "quote_fg": "#e6ded2", "row_hover": "#262420", "open_bg": "#262420", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}}};
+  const DEFAULTS = {"base": {"fs_ui": 20.4, "fs_content": 25, "lh_ui": 1.62, "lh_content": 1.62, "serif": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif", "sans": "-apple-system, \"Segoe UI\", Inter, Helvetica, Arial, sans-serif", "mono": "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, ui-monospace, monospace", "sidebar": 400, "measure": 80}, "colors": {"light": {"paper": "#f0eee6", "surface": "#fbfaf7", "ivory": "#fffdfa", "ink": "#1f1e1d", "muted": "#55524c", "stone": "#8c877c", "line": "#e2ddd2", "line_soft": "#ece8df", "terra": "#d97757", "terra_dark": "#c9633f", "accent_strong": "#a14e2f", "hover_bg": "#f4f1e9", "active_bg": "#f6ede6", "active_fg": "#8f3f27", "focus_ring": "#e3a98f", "code_bg": "#23211e", "code_fg": "#f3eee5", "inline_code_bg": "#eae7de", "inline_code_fg": "#6f3b26", "quote_bg": "#f8eee8", "quote_border": "#e7cec2", "quote_fg": "#3d3d3a", "row_hover": "#f7f4ee", "open_bg": "#fdf9f5", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}, "dark": {"paper": "#1b1a18", "surface": "#201f1c", "ivory": "#262420", "ink": "#f2ece1", "muted": "#c3bcae", "stone": "#9a9384", "line": "#34312b", "line_soft": "#2b2823", "terra": "#d97757", "terra_dark": "#d97757", "accent_strong": "#f0b49a", "hover_bg": "#262420", "active_bg": "#33261f", "active_fg": "#f0b49a", "focus_ring": "#8a5540", "code_bg": "#141312", "code_fg": "#f3eee5", "inline_code_bg": "#322e28", "inline_code_fg": "#f0b49a", "quote_bg": "#2a211d", "quote_border": "#4a332b", "quote_fg": "#e6ded2", "row_hover": "#262420", "open_bg": "#262420", "scroll_thumb": "#4a463f", "copy_bg": "#2c2a26", "copy_fg": "#d8d2c6", "copy_border": "#4a463f", "copy_hover": "#3a3732"}}};
   const INIT_MODE = "auto";
   // the store key is tied to the built theme, so rebuilding with a changed
   // book_theme.toml discards stale panel tweaks instead of shadowing them
-  const STORE = 'book-theme:' + "bfe5baec4d";
+  const STORE = 'book-theme:' + "a4ed551255";
   const root = document.documentElement;
   const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 

@@ -1,0 +1,23 @@
+# docs.toml - how each JMS Markdown document becomes a page.
+#
+# Read by skills/make-jms-html/scripts/build_jms_docs.py, which builds every
+# _*.md in this directory. Per-document values override [defaults].
+
+[defaults]
+# `## 1. Section` -> sidebar pill 01
+chapter_regex = '^(\d+)\.'
+# Project copy of the skill theme - edit here to restyle these pages only.
+theme = "jms_theme.toml"
+
+[docs."_PLAN.md"]
+title = "JMS · Product Plan"
+eyebrow = "Acme Windows · Job Management System"
+subtitle = "What we are building, for whom, and how we will know it is done."
+footer = 'Plan v0.0.1 · <a href="_TECH.md">next: _TECH.md</a>'
+
+# Uncomment when the technical specification exists.
+# [docs."_TECH.md"]
+# title = "JMS · Technical Specification"
+# eyebrow = "Acme Windows · Job Management System"
+# subtitle = "Schema, routes, templates, tests and the tasks that build them."
+# footer = 'Tech spec v0.0.1 · <a href="_PLAN.md">back: _PLAN.md</a>'
