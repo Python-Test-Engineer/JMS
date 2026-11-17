@@ -122,10 +122,45 @@
     ["Kingsway Hotel", "Chloe Adams", "customer7@example.com", "0161 555 0107", "120 Kingsway", "", "Manchester", "M19 2AA"],
     ["Fernhill Surgery", "Dr A. Rahman", "customer8@example.com", "0161 555 0108", "Fernhill Surgery, 7 Fern Road", "", "Stockport", "SK2 2BB"],
     ["Regent Street Offices", "Laura Green", "customer9@example.com", "0161 555 0109", "44 Regent Street", "", "Manchester", "M1 2AB"],
-    ["Stonebridge Villa", "Peter Jones", "customer10@example.com", "0161 555 0110", "Stonebridge Villa, 3 Stonebridge Lane", "", "Cheshire", "SK8 3AA"]
+    ["Stonebridge Villa", "Peter Jones", "customer10@example.com", "0161 555 0110", "Stonebridge Villa, 3 Stonebridge Lane", "", "Cheshire", "SK8 3AA"],
+    ["Chorlton Court Residents", "Amelia Hughes", "customer11@example.com", "0161 555 0111", "Chorlton Court, 5 Beech Road", "", "Manchester", "M21 9ES"],
+    ["Deansgate Studios", "Oliver Bennett", "customer12@example.com", "0161 555 0112", "88 Deansgate", "Suite 3", "Manchester", "M3 2BW"],
+    ["Prestwich Prep School", "Sarah Whitaker", "customer13@example.com", "0161 555 0113", "Prestwich Prep, 21 Bury New Road", "", "Prestwich", "M25 1AA"],
+    ["Lakeside Apartments", "Daniel Osei", "customer14@example.com", "0161 555 0114", "Lakeside Apartments, 2 Quay Street", "", "Salford", "M50 3SQ"],
+    ["Bramley Lodge", "Rachel Turner", "customer15@example.com", "0161 555 0115", "Bramley Lodge, 9 Bramley Road", "", "Stockport", "SK4 2RT"],
+    ["Altrincham Dental Studio", "Dr Fiona Clark", "customer16@example.com", "0161 555 0116", "30 The Downs", "", "Altrincham", "WA14 2QD"],
+    ["Sale Community Centre", "Michael Grant", "customer17@example.com", "0161 555 0117", "Sale Community Centre, 4 Chapel Road", "", "Sale", "M33 2FJ"],
+    ["Wilmslow Veterinary Clinic", "Dr Emily Shaw", "customer18@example.com", "0161 555 0118", "12 Water Lane", "", "Wilmslow", "SK9 5AA"],
+    ["Chorley Business Park", "Adam Fletcher", "customer19@example.com", "0161 555 0119", "Unit 7, Chorley Business Park", "", "Chorley", "PR7 1NY"],
+    ["Heaton Moor Mews", "Sophie Andrews", "customer20@example.com", "0161 555 0120", "Heaton Moor Mews, 3 Shaw Road", "", "Stockport", "SK4 4AE"],
+    ["Trafford Park Warehouse", "Chris Doyle", "customer21@example.com", "0161 555 0121", "18 Trafford Park Road", "", "Manchester", "M17 1AA"],
+    ["Didsbury Physio Clinic", "Hannah Wright", "customer22@example.com", "0161 555 0122", "45 Wilmslow Road", "", "Didsbury", "M20 3BS"],
+    ["Cheadle Royal Offices", "James Ahmed", "customer23@example.com", "0161 555 0123", "Cheadle Royal Business Park, 6 Brooks Drive", "", "Cheadle", "SK8 3TD"],
+    ["Urmston Bakery", "Lucy Marshall", "customer24@example.com", "0161 555 0124", "9 Flixton Road", "", "Urmston", "M41 5AA"],
+    ["Bolton Hill House", "Paul Reynolds", "customer25@example.com", "0161 555 0125", "Hill House, 2 Chorley New Road", "", "Bolton", "BL1 4AA"],
+    ["Eccles Library Annexe", "Nadia Hussain", "customer26@example.com", "0161 555 0126", "Eccles Library Annexe, 5 Church Street", "", "Eccles", "M30 0DF"],
+    ["Stretford Sports Club", "Gary Simmons", "customer27@example.com", "0161 555 0127", "Stretford Sports Club, Talbot Road", "", "Stretford", "M32 0RW"],
+    ["Fallowfield Student Halls", "Zoe Carter", "customer28@example.com", "0161 555 0128", "Fallowfield Halls, 31 Wilmslow Road", "", "Manchester", "M14 6HP"],
+    ["Romiley Garden Rooms", "Edward Palmer", "customer29@example.com", "0161 555 0129", "Romiley Garden Rooms, 14 Compstall Road", "", "Romiley", "SK6 4DS"],
+    ["Wythenshawe Health Centre", "Priya Nair", "customer30@example.com", "0161 555 0130", "Wythenshawe Health Centre, 8 Simonsway", "", "Manchester", "M22 5RX"]
   ];
 
-  var JOB_COUNTS = [3, 4, 2, 1, 3, 4, 3, 2, 2, 2];
+  // Reference shape is kept for customers 1-10 (26 jobs). Customers 11-30 add
+  // 20 more jobs, so the demo has enough rows to exercise list paging.
+  var JOB_COUNTS = [3, 4, 2, 1, 3, 4, 3, 2, 2, 2,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+  var REFERENCE_JOB_COUNT = 26;
+  // 12 of the 20 new jobs land inside the next six weeks (2-41 days), so the
+  // timeline, workload and dashboard screens always show upcoming work.
+  var UPCOMING_OFFSETS = [
+    { offset: 2, slot: "AM" }, { offset: 4, slot: "PM" }, { offset: 7, slot: "AM" },
+    { offset: 10, slot: "PM" }, { offset: 13, slot: "AM" }, { offset: 16, slot: "PM" },
+    { offset: 19, slot: "AM" }, { offset: 23, slot: "PM" }, { offset: 27, slot: "AM" },
+    { offset: 31, slot: "PM" }, { offset: 36, slot: "AM" }, { offset: 41, slot: "PM" }
+  ];
+  var TRAILING_STATUSES = ["COMPLETED", "IN_PROGRESS", "PAID", "COMPLETED", "INVOICED", "COMPLETED", "ON_HOLD", "COMPLETED"];
+  var SEED_VERSION = "demo-lite-2";
   var STATUSES = ["DRAFT", "SCHEDULED", "IN_PROGRESS", "ON_HOLD", "COMPLETED", "INVOICED", "PAID", "CANCELLED"];
   var TITLES = {
     WINDOW_INSTALL: ["Replace casement windows", "Install bay window", "Fit French doors", "Replace bedroom windows", "Install sliding sash windows"],
@@ -230,8 +265,14 @@
       var count = JOB_COUNTS[ci];
       for (var n = 0; n < count; n++) {
         jobIndex++;
+        var newIndex = jobIndex - REFERENCE_JOB_COUNT;
+        var upcoming = newIndex > 0 ? UPCOMING_OFFSETS[newIndex - 1] || null : null;
         var status;
-        if (jobIndex <= 8) {
+        if (upcoming) {
+          status = "SCHEDULED";
+        } else if (newIndex > 0) {
+          status = TRAILING_STATUSES[newIndex - UPCOMING_OFFSETS.length - 1] || "COMPLETED";
+        } else if (jobIndex <= 8) {
           status = STATUSES[jobIndex - 1];
         } else {
           var r = rng();
@@ -242,7 +283,10 @@
         var priority = rng() < 0.15 ? "URGENT" : "NORMAL";
         var created = addDays(now, -Math.floor(20 + rng() * 70));
         var plannedStart = null, plannedEnd = null, slot = pick(rng, ["AM", "PM", "ALL_DAY"]);
-        if (status === "SCHEDULED" || status === "IN_PROGRESS" || status === "ON_HOLD") {
+        if (upcoming) {
+          plannedStart = withHour(addDays(now, upcoming.offset), upcoming.slot === "PM" ? 13 : 8);
+          plannedEnd = withHour(plannedStart, 17);
+        } else if (newIndex <= 0 && (status === "SCHEDULED" || status === "IN_PROGRESS" || status === "ON_HOLD")) {
           var offset = Math.floor(-7 + rng() * 28);
           plannedStart = withHour(addDays(now, offset), slot === "PM" ? 13 : 8);
           plannedEnd = addDays(plannedStart, rng() < 0.5 ? 0 : 1);
@@ -380,7 +424,7 @@
     return {
       _meta: {
         schema_version: 1,
-        seed_version: "demo-lite-1",
+        seed_version: SEED_VERSION,
         created_at: iso(now),
         updated_at: iso(now),
         sequences: { job: {}, invoice: {} }
@@ -431,6 +475,7 @@
   }
 
   window.JMS_SEED = {
+    SEED_VERSION: SEED_VERSION,
     ACTION_KEYS: ACTION_KEYS,
     DEFAULT_MATRIX: DEFAULT_MATRIX,
     ROLES: ROLES,

@@ -22,7 +22,7 @@ progress — each seeing only what their role allows.
 | What do you want to do? | Open this | Notes |
 |---|---|---|
 | **See the story — what JMS does and why it saves time** | [`demo-explainers/index.html`](demo-explainers/index.html) | 10 short animated workflow explainers for non-technical business owners. Start with W1, then follow the left-hand contents. |
-| **Try the working app** | [`src/index.html`](src/index.html) | JMS Demo Lite: static HTML/CSS/JS, seeded with 12 staff, 10 customers and 26 jobs. Sign in with any demo account using password `JMS123`, or use the one-click role buttons. |
+| **Try the working app** | [`src/index.html`](src/index.html) | JMS Demo Lite: static HTML/CSS/JS, seeded with 12 staff, 30 customers and 46 jobs (12 scheduled across the next six weeks). Sign in with any demo account using password `JMS123`, or use the one-click role buttons. |
 | **Deploy the demo** | drag the [`src/`](src/) folder onto <https://app.netlify.com/drop> | No build command, no Node, no environment variables. |
 | **Read the product plan** | [`_PLAN.html`](_PLAN.html) | The full plan rendered as a searchable guide. |
 | **Read the technical spec** | [`_TECH.html`](_TECH.html) | Schema, routes, permissions, seed data and implementation order. |
@@ -152,8 +152,11 @@ those cells that cannot be removed (for example, the last admin) are safeguarded
 - **Data:** a JSON document store with table-like collections (users, customers, jobs,
   assignments, events, invoices, documents, permissions, audit), behind repositories so a
   SQLite/Postgres adapter can replace it later.
-- **Seed:** 2 admins, 2 field-capable managers, 8 engineers, 10 customers with portal
-  logins, and 1–4 randomly assigned jobs per customer (26 jobs for the reference seed).
+- **Seed:** 2 admins, 2 field-capable managers, 8 engineers, 30 customers with portal
+  logins, and 1–4 randomly assigned jobs per customer (26 reference jobs, plus one
+  for each extra customer: 46 jobs, 12 of them scheduled in the next six weeks).
+- **Paging:** job, customer, invoice and user lists page at 10 rows by default,
+  with 20 and 50 options in the pager.
 - **PDFs:** job sheets and invoices are generated server-side with PDFKit; documentation
   pages are HTML-only.
 - **Security:** server-side sessions, CSRF, bcrypt passwords, role/action guards on every

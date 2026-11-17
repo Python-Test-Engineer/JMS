@@ -21,7 +21,15 @@
     if (db) return db;
     try {
       var raw = localStorage.getItem(DB_KEY);
-      if (raw) { db = JSON.parse(raw); return db; }
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        // Rebuild the demo dataset when the bundled seed shape changes, so
+        // existing browser storage picks up new customers, jobs and paging data.
+        if (parsed && parsed._meta && parsed._meta.seed_version === window.JMS_SEED.SEED_VERSION) {
+          db = parsed;
+          return db;
+        }
+      }
     } catch (e) { /* fall through to a fresh seed */ }
     db = window.JMS_SEED.create();
     persist();

@@ -81,6 +81,76 @@
   function textarea(label, name, value, help) {
     return '<label class="field"><span class="field-label">' + esc(label) + "</span><textarea class=\"input textarea\" name=\"" + esc(name) + '" rows="4">' + esc(value || "") + "</textarea>" + (help ? '<span class="field-help">' + esc(help) + "</span>" : "") + "</label>";
   }
+  /* ------------------------------------------------------------------ */
+  /* paging                                                              */
+  /* ------------------------------------------------------------------ */
+  var PAGE_SIZES = [10, 20, 50];
+  function currentQuery() {
+    var hash = location.hash || "";
+    var q = hash.indexOf("?") >= 0 ? hash.slice(hash.indexOf("?") + 1) : "";
+    return new URLSearchParams(q);
+  }
+  function pageSize() {
+    var n = Number(qs("per"));
+    return PAGE_SIZES.indexOf(n) >= 0 ? n : PAGE_SIZES[0];
+  }
+  function pageLink(base, overrides) {
+    var params = currentQuery();
+    params.delete("page");
+    Object.keys(overrides || {}).forEach(function (key) {
+      var value = overrides[key];
+      if (value === null || value === undefined || value === "") params.delete(key);
+      else params.set(key, String(value));
+    });
+    var q = params.toString();
+    return "#" + base + (q ? "?" + q : "");
+  }
+  function paginate(list) {
+    var per = pageSize();
+    var pages = Math.max(1, Math.ceil(list.length / per));
+    var page = Math.max(1, Math.min(pages, Number(qs("page")) || 1));
+    var start = (page - 1) * per;
+    return {
+      items: list.slice(start, start + per),
+      page: page, pages: pages, per: per, total: list.length,
+      from: list.length ? start + 1 : 0,
+      to: Math.min(list.length, start + per)
+    };
+  }
+  function pageNumbers(p) {
+    var out = [];
+    for (var n = 1; n <= p.pages; n++) {
+      if (n === 1 || n === p.pages || Math.abs(n - p.page) <= 1) out.push(n);
+      else if (out[out.length - 1] !== "…") out.push("…");
+    }
+    return out;
+  }
+  function pager(base, p) {
+    if (!p.total) return "";
+    var numbers = pageNumbers(p).map(function (n) {
+      if (n === "…") return '<span class="pager-gap" aria-hidden="true">…</span>';
+      var active = n === p.page;
+      return '<a class="pager-num' + (active ? " is-active" : "") + '" href="' + pageLink(base, { page: n }) + '"' +
+        (active ? ' aria-current="page"' : "") + ">" + n + "</a>";
+    }).join("");
+    var sizes = PAGE_SIZES.map(function (n) {
+      var active = n === p.per;
+      return '<a class="pager-per-link' + (active ? " is-active" : "") + '" href="' + pageLink(base, { per: n }) + '"' +
+        (active ? ' aria-current="true"' : "") + ">" + n + "</a>";
+    }).join("");
+    return '<div class="pager">' +
+      '<span class="pager-info">' + (p.from ? p.from + "–" + p.to + " of " + p.total : "0 of 0") + "</span>" +
+      '<nav class="pager-pages" aria-label="Pagination">' +
+        '<a class="pager-btn' + (p.page <= 1 ? " is-disabled" : "") + '" href="' + pageLink(base, { page: Math.max(1, p.page - 1) }) + '"' +
+          (p.page <= 1 ? ' aria-disabled="true" tabindex="-1"' : "") + ' rel="prev" aria-label="Previous page">‹</a>' +
+        numbers +
+        '<a class="pager-btn' + (p.page >= p.pages ? " is-disabled" : "") + '" href="' + pageLink(base, { page: Math.min(p.pages, p.page + 1) }) + '"' +
+          (p.page >= p.pages ? ' aria-disabled="true" tabindex="-1"' : "") + ' rel="next" aria-label="Next page">›</a>' +
+      "</nav>" +
+      '<span class="pager-per">Rows per page ' + sizes + "</span>" +
+    "</div>";
+  }
+
   function selectField(label, name, options, value, help) {
     return '<label class="field"><span class="field-label">' + esc(label) + '</span><select class="input" name="' + esc(name) + '">' +
       options.map(function (o) {
@@ -440,6 +510,7 @@
     if (engineer) jobs = jobs.filter(function (j) { return J.activeAssignments(j.id).some(function (a) { return a.user_id === engineer; }); });
     if (customerId) jobs = jobs.filter(function (j) { return j.customer_id === customerId; });
     jobs.sort(function (a, b) { return String(b.updated_at).localeCompare(String(a.updated_at)); });
+    var paged = paginate(jobs);
     var statuses = ["DRAFT", "SCHEDULED", "IN_PROGRESS", "ON_HOLD", "COMPLETED", "INVOICED", "PAID", "CANCELLED"].map(function (s) { return { value: s, label: J.statusLabel(s) }; });
     var engineers = J.fieldUsers().map(function (u) { return { value: u.id, label: u.display_name }; });
     var customers = J.all("customers").filter(function (c) { return c.status === "ACTIVE"; }).sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) { return { value: c.id, label: c.name }; });
@@ -451,10 +522,10 @@
       '<button class="btn btn-primary" type="submit">Apply filters</button><a class="btn btn-quiet" href="#/jobs">Clear</a></form></section>' +
       '<section class="panel"><div class="panel-head"><div><h2>' + jobs.length + " job" + (jobs.length === 1 ? "" : "s") + "</h2><p>Newest updates first. Open a job for its timeline and actions.</p></div><a class=\"btn btn-primary\" href=\"#/jobs/new\">New job</a></div>" +
       (jobs.length ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>Reference</th><th>Job</th><th>Customer</th><th>Status</th><th>Planned</th><th>Engineers</th><th>Priority</th></tr></thead><tbody>' +
-        jobs.map(function (j) {
+        paged.items.map(function (j) {
           var engineers = J.assignedUsers(j.id).map(function (u) { return u.display_name; }).join(", ") || "Unassigned";
           return '<tr><td><a class="ref" href="#/jobs/' + j.id + '">' + esc(j.reference) + "</a></td><td><strong>" + esc(j.title) + "</strong><br><span class=\"muted small\">" + esc(workLabel(j.work_type)) + "</span></td><td>" + esc(J.customerName(j.customer_id)) + "</td><td>" + statusPill(j.status) + "</td><td class=\"nowrap\">" + esc(J.fmtRange(j.planned_start, j.planned_end)) + "</td><td>" + esc(engineers) + "</td><td>" + priorityBadge(j.priority) + "</td></tr>";
-        }).join("") + "</tbody></table></div>" : emptyState("No jobs match", "Try clearing the filters, or create a new job.", '<a class="btn btn-primary" href="#/jobs/new">New job</a>')) + "</section>";
+        }).join("") + "</tbody></table></div>" + pager("/jobs", paged) : emptyState("No jobs match", "Try clearing the filters, or create a new job.", '<a class="btn btn-primary" href="#/jobs/new">New job</a>')) + "</section>";
     shell(user, { title: "Jobs", eyebrow: "Work", intro: "Every job, across every customer, with its status and planned dates.", actions: '<a class="btn btn-primary" href="#/jobs/new">New job</a>', body: body });
   }
 
@@ -634,16 +705,17 @@
     var list = J.all("customers").filter(function (c) { return status === "ALL" || c.status === status; });
     if (q) list = list.filter(function (c) { return [c.name, c.contact_name, c.email, c.phone, c.address.postcode].join(" ").toLowerCase().indexOf(q) >= 0; });
     list.sort(function (a, b) { return a.name.localeCompare(b.name); });
+    var paged = paginate(list);
     var body = '<section class="panel filters-panel"><form class="filters" data-form="customer-filters">' +
       '<label class="field compact"><span class="field-label">Search</span><input class="input" name="q" value="' + esc(qs("q")) + '" placeholder="Name, contact, postcode"></label>' +
       selectField("Status", "status", [{ value: "ACTIVE", label: "Active" }, { value: "ARCHIVED", label: "Archived" }, { value: "ALL", label: "All" }], status) +
       '<button class="btn btn-primary" type="submit">Apply</button><a class="btn btn-quiet" href="#/customers">Clear</a></form></section>' +
       '<section class="panel"><div class="panel-head"><div><h2>' + list.length + " customer" + (list.length === 1 ? "" : "s") + "</h2><p>Each customer can have a portal login and any number of jobs.</p></div><a class=\"btn btn-primary\" href=\"#/customers/new\">New customer</a></div>" +
-      (list.length ? '<div class="customer-grid">' + list.map(function (c) {
+      (list.length ? '<div class="customer-grid">' + paged.items.map(function (c) {
         var jobs = J.jobsForCustomer(c.id);
         var active = jobs.filter(function (j) { return ["SCHEDULED", "IN_PROGRESS", "ON_HOLD"].indexOf(j.status) >= 0; }).length;
         return '<a class="customer-card" href="#/customers/' + c.id + '"><div class="customer-card-head"><span class="avatar">' + initials(c.name) + "</span><span class=\"badge " + (c.status === "ARCHIVED" ? "badge-muted" : "badge-ok") + '">' + esc(c.status) + "</span></div><strong>" + esc(c.name) + "</strong><span class=\"muted\">" + esc(c.contact_name) + "</span><span class=\"small muted\">" + esc(c.address.town) + " · " + esc(c.address.postcode) + "</span><span class=\"customer-card-foot\">" + jobs.length + " job" + (jobs.length === 1 ? "" : "s") + " · " + active + " active</span></a>";
-      }).join("") + "</div>" : emptyState("No customers match", "Try a different search or create a customer.", '<a class="btn btn-primary" href="#/customers/new">New customer</a>')) + "</section>";
+      }).join("") + "</div>" + pager("/customers", paged) : emptyState("No customers match", "Try a different search or create a customer.", '<a class="btn btn-primary" href="#/customers/new">New customer</a>')) + "</section>";
     shell(user, { title: "Customers", eyebrow: "People", intro: "Customer records, contact details and the jobs attached to them.", actions: '<a class="btn btn-primary" href="#/customers/new">New customer</a>', body: body });
   }
 
@@ -712,13 +784,15 @@
     var list = invoiceRows(user, portal);
     if (status) list = list.filter(function (i) { return i.status === status; });
     var totals = list.reduce(function (t, i) { t.net += i.net; t.vat += i.vat; t.gross += i.gross; return t; }, { net: 0, vat: 0, gross: 0 });
+    var paged = paginate(list);
+    var base = portal ? "/portal/invoices" : "/invoices";
     var body = (portal ? "" : '<section class="panel filters-panel"><form class="filters" data-form="invoice-filters">' + selectField("Status", "status", [{ value: "", label: "All statuses" }, { value: "DRAFT", label: "Draft" }, { value: "ISSUED", label: "Issued" }, { value: "PAID", label: "Paid" }, { value: "VOID", label: "Void" }], status) + '<button class="btn btn-primary" type="submit">Apply</button><a class="btn btn-quiet" href="#/invoices">Clear</a></form></section>') +
       '<div class="stats-grid compact-stats"><div class="stat-card"><span class="stat-label">Net</span><strong>' + J.fmtMoney(totals.net) + '</strong><span class="stat-note">' + list.length + " invoice" + (list.length === 1 ? "" : "s") + '</span></div><div class="stat-card"><span class="stat-label">VAT</span><strong>' + J.fmtMoney(totals.vat) + '</strong><span class="stat-note">20% configured rate</span></div><div class="stat-card tone-accent"><span class="stat-label">Gross</span><strong>' + J.fmtMoney(totals.gross) + '</strong><span class="stat-note">total value</span></div></div>' +
       '<section class="panel"><div class="panel-head"><div><h2>Invoices</h2><p>' + (portal ? "Your issued and paid invoices." : "Draft, issued, paid and void invoices.") + "</p></div>" + (!portal && J.can(user, "invoice.create") ? '<a class="btn btn-primary" href="#/invoices/new">New invoice</a>' : "") + "</div>" +
-      (list.length ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>Number</th><th>Job</th><th>Customer</th><th>Status</th><th>Issued</th><th class="right">Net</th><th class="right">Gross</th></tr></thead><tbody>' + list.map(function (i) {
+      (list.length ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>Number</th><th>Job</th><th>Customer</th><th>Status</th><th>Issued</th><th class="right">Net</th><th class="right">Gross</th></tr></thead><tbody>' + paged.items.map(function (i) {
         var job = J.getJob(i.job_id);
         return '<tr><td><a class="ref" href="#' + (portal ? "/portal/invoices/" : "/invoices/") + i.id + '">' + esc(i.number) + "</a></td><td>" + (job ? '<a href="#/jobs/' + job.id + '">' + esc(job.reference) + "</a>" : "—") + "</td><td>" + esc(job ? J.customerName(job.customer_id) : "—") + "</td><td>" + statusPill(i.status) + "</td><td>" + esc(J.fmtDateShort(i.issued_at)) + '</td><td class="right mono">' + J.fmtMoney(i.net) + '</td><td class="right mono">' + J.fmtMoney(i.gross) + "</td></tr>";
-      }).join("") + "</tbody></table></div>" : emptyState(portal ? "No invoices yet" : "No invoices match", portal ? "Invoices issued to you will appear here." : "Create an invoice from a completed job.", (!portal && J.can(user, "invoice.create")) ? '<a class="btn btn-primary" href="#/invoices/new">New invoice</a>' : "")) + "</section>";
+      }).join("") + "</tbody></table></div>" + pager(base, paged) : emptyState(portal ? "No invoices yet" : "No invoices match", portal ? "Invoices issued to you will appear here." : "Create an invoice from a completed job.", (!portal && J.can(user, "invoice.create")) ? '<a class="btn btn-primary" href="#/invoices/new">New invoice</a>' : "")) + "</section>";
     shell(user, { title: portal ? "My invoices" : "Invoices", eyebrow: portal ? "Customer portal" : "Money", intro: portal ? "Invoices Acme Windows has issued to you." : "Draft, issued and paid invoices with gapless numbering.", body: body });
   }
 
@@ -803,7 +877,7 @@
     jobs.forEach(function (j) { var k = J.isoDay(j.planned_start); (groups[k] = groups[k] || []).push(j); });
     var engineers = J.fieldUsers().map(function (u) { return { value: u.id, label: u.display_name }; });
     var body = '<section class="panel filters-panel"><form class="filters" data-form="timeline-filters">' +
-      selectField("Window", "days", [{ value: "7", label: "Next 7 days" }, { value: "14", label: "Next 14 days" }, { value: "30", label: "Next 30 days" }], String(days)) +
+      selectField("Window", "days", [{ value: "7", label: "Next 7 days" }, { value: "14", label: "Next 14 days" }, { value: "30", label: "Next 30 days" }, { value: "42", label: "Next 6 weeks" }], String(days)) +
       (J.isManagerial(user) ? selectField("Engineer", "engineer", [{ value: "", label: "All engineers" }].concat(engineers), engineer) : "") +
       '<button class="btn btn-primary" type="submit">Apply</button><a class="btn btn-quiet" href="#/insights/timeline">Reset</a></form></section>' +
       '<section class="panel"><div class="panel-head"><div><h2>Timeline</h2><p>Planned jobs from ' + esc(J.fmtDate(from)) + " to " + esc(J.fmtDate(to)) + ".</p></div><span class=\"badge\">" + jobs.length + " jobs</span></div>" +
@@ -878,14 +952,15 @@
     if (q) list = list.filter(function (u) { return [u.display_name, u.email, roleLabel(u.role_key)].join(" ").toLowerCase().indexOf(q) >= 0; });
     if (role) list = list.filter(function (u) { return u.role_key === role; });
     list.sort(function (a, b) { return a.display_name.localeCompare(b.display_name); });
+    var paged = paginate(list);
     var body = '<section class="panel filters-panel"><form class="filters" data-form="user-filters"><label class="field compact"><span class="field-label">Search</span><input class="input" name="q" value="' + esc(qs("q")) + '" placeholder="Name, email, role"></label>' +
       selectField("Role", "role", [{ value: "", label: "All roles" }, { value: "ADMIN", label: "Admin" }, { value: "MANAGER", label: "Manager" }, { value: "ENGINEER", label: "Engineer" }, { value: "CUSTOMER", label: "Customer" }], role) +
       '<button class="btn btn-primary" type="submit">Apply</button></form></section>' +
       '<section class="panel"><div class="panel-head"><div><h2>' + list.length + " user" + (list.length === 1 ? "" : "s") + "</h2><p>Staff and customer portal accounts.</p></div><a class=\"btn btn-primary\" href=\"#/admin/users/new\">New user</a></div>" +
       '<div class="table-wrap"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Field</th><th>Status</th><th>Last sign-in</th></tr></thead><tbody>' +
-      list.map(function (u) {
+      paged.items.map(function (u) {
         return '<tr><td><a class="ref" href="#/admin/users/' + u.id + '">' + esc(u.display_name) + "</a></td><td>" + esc(u.email) + "</td><td>" + esc(roleLabel(u.role_key)) + "</td><td>" + (u.can_engineer ? "Yes" : "—") + "</td><td>" + esc(u.status) + "</td><td>" + esc(u.last_login_at ? J.fmtDateShort(u.last_login_at) : "Never") + "</td></tr>";
-      }).join("") + "</tbody></table></div></section>";
+      }).join("") + "</tbody></table></div>" + pager("/admin/users", paged) + "</section>";
     shell(user, { title: "Users", eyebrow: "Admin", intro: "Accounts, roles and field capability.", actions: '<a class="btn btn-primary" href="#/admin/users/new">New user</a>', body: body });
   }
 
@@ -956,7 +1031,7 @@
       '<button class="btn btn-quiet" data-action="export-demo">Export JSON</button>' +
       '<label class="btn btn-quiet file-btn">Import JSON<input type="file" accept="application/json" data-action="import-demo"></label>' +
       '<button class="btn btn-danger-quiet" data-action="reset-demo">Reset demo data</button></div>' +
-      '<p class="muted small">Reset restores the seeded 12 staff, 10 customers and 26 jobs. Any changes you made are lost.</p></section>';
+      '<p class="muted small">Reset restores the seeded 12 staff, 30 customers and 46 jobs. Any changes you made are lost.</p></section>';
     shell(user, { title: "Company settings", eyebrow: "Admin", intro: "Company identity, invoicing defaults and the theme everyone starts with.", body: body });
   }
 
@@ -1350,7 +1425,7 @@
       toast("Demo data exported.", "success"); return;
     }
     if (action === "reset-demo") {
-      if (await confirmDialog("Reset all demo data?", "Every change you made will be lost. The seeded 12 staff, 10 customers and 26 jobs will be recreated. You will be signed out.", { confirmLabel: "Reset demo", danger: true })) {
+      if (await confirmDialog("Reset all demo data?", "Every change you made will be lost. The seeded 12 staff, 30 customers and 46 jobs will be recreated. You will be signed out.", { confirmLabel: "Reset demo", danger: true })) {
         J.reset(); applyTheme(defaultTheme()); go("/signin", true);
       }
       return;
@@ -1400,6 +1475,8 @@
       if (!user) return;
       if (type === "job-filters" || type === "customer-filters" || type === "invoice-filters" || type === "user-filters") {
         var params = new URLSearchParams();
+        // Keep the chosen page size while filters reset to page 1.
+        if (qs("per")) params.set("per", qs("per"));
         new FormData(form).forEach(function (v, k) { if (v) params.set(k, v); });
         var base = type === "job-filters" ? "/jobs" : type === "customer-filters" ? "/customers" : type === "invoice-filters" ? "/invoices" : "/admin/users";
         go(base + (params.toString() ? "?" + params.toString() : ""));

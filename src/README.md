@@ -47,13 +47,19 @@ one-click role buttons.
 ## Seeded dataset
 
 - Acme Windows company record and house theme.
-- 2 admins, 2 field-capable managers, 8 engineers, 10 customer logins.
-- 10 customers with 26 jobs between them (the reference `[3,4,2,1,3,4,3,2,2,2]`
-  distribution from `_TECH.md` §15.4).
+- 2 admins, 2 field-capable managers, 8 engineers, 30 customer logins.
+- 30 customers with 46 jobs between them: the reference
+  `[3,4,2,1,3,4,3,2,2,2]` distribution from `_TECH.md` §15.4 for customers 1–10
+  (26 jobs), plus one job each for the 20 extra customers.
+- 12 of the extra jobs are `SCHEDULED` across the next six weeks (2–41 days
+  from first load), so the timeline, workload and dashboard always show
+  upcoming work.
 - All eight job statuses represented, plus assignments, timeline events,
   invoices and audit rows.
 - Dates are generated relative to the first load so “today”, “this week” and
   “needs invoicing” are populated.
+- List paging on jobs, customers, invoices and users: 10 rows per page by
+  default, with 20 and 50 options selectable from the pager.
 
 ## What works
 
