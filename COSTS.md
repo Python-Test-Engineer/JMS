@@ -18,3 +18,4 @@ Based on _TECH.md and _PLAN.md build the app, create a NON-NODE demo version of 
 
 $0.75 (total so far)
 
+
