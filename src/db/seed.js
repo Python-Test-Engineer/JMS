@@ -53,18 +53,18 @@ const CUSTOMERS = [
 ];
 
 const STAFF = [
-  ["Alex Morgan", "admin@acme.example", "ADMIN", false, "07700 900001"],
-  ["Priya Shah", "admin2@acme.example", "ADMIN", false, "07700 900002"],
-  ["Morgan Lee", "manager@acme.example", "MANAGER", true, "07700 900003"],
-  ["Rita Patel", "manager2@acme.example", "MANAGER", true, "07700 900004"],
-  ["Dan Walker", "engineer1@acme.example", "ENGINEER", true, "07700 900005"],
-  ["Sam Okafor", "engineer2@acme.example", "ENGINEER", true, "07700 900006"],
-  ["Luis García", "engineer3@acme.example", "ENGINEER", true, "07700 900007"],
-  ["Hannah Brooks", "engineer4@acme.example", "ENGINEER", true, "07700 900008"],
-  ["Tomasz Nowak", "engineer5@acme.example", "ENGINEER", true, "07700 900009"],
-  ["Aisha Khan", "engineer6@acme.example", "ENGINEER", true, "07700 900010"],
-  ["Ben Carter", "engineer7@acme.example", "ENGINEER", true, "07700 900011"],
-  ["Grace Miller", "engineer8@acme.example", "ENGINEER", true, "07700 900012"],
+  ["Alex Morgan", "admin@example.com", "ADMIN", false, "07700 900001"],
+  ["Priya Shah", "admin2@example.com", "ADMIN", false, "07700 900002"],
+  ["Morgan Lee", "manager@example.com", "MANAGER", true, "07700 900003"],
+  ["Rita Patel", "manager2@example.com", "MANAGER", true, "07700 900004"],
+  ["Dan Walker", "engineer1@example.com", "ENGINEER", true, "07700 900005"],
+  ["Sam Okafor", "engineer2@example.com", "ENGINEER", true, "07700 900006"],
+  ["Luis García", "engineer3@example.com", "ENGINEER", true, "07700 900007"],
+  ["Hannah Brooks", "engineer4@example.com", "ENGINEER", true, "07700 900008"],
+  ["Tomasz Nowak", "engineer5@example.com", "ENGINEER", true, "07700 900009"],
+  ["Aisha Khan", "engineer6@example.com", "ENGINEER", true, "07700 900010"],
+  ["Ben Carter", "engineer7@example.com", "ENGINEER", true, "07700 900011"],
+  ["Grace Miller", "engineer8@example.com", "ENGINEER", true, "07700 900012"],
 ];
 
 const TITLES = {
@@ -148,7 +148,7 @@ export function seedDatabase(db, { seed = 20260316, force = false } = {}) {
   db.exec("BEGIN");
   try {
     insertCompany.run(
-      companyId, "Acme Windows", null, "hello@acme.example", "0161 555 0000",
+      companyId, "Acme Windows", null, "hello@example.com", "0161 555 0000",
       JSON.stringify(companyAddress), "GB123456789", null, "GBP", "Europe/London",
       JSON.stringify({ mode: "system" }), 14,
       "Acme Windows · thank you for your business", now,

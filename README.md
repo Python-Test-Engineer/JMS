@@ -18,7 +18,7 @@
 > data from scratch, run `npm run reset`. For live-reload during development, use
 > `npm run dev`.
 >
-> Sign in with `admin@acme.example` and password `JMS123` (every seeded account uses the
+> Sign in with `admin@example.com` and password `JMS123` (every seeded account uses the
 > same temporary password and must change it on first sign-in). See
 > [Sample accounts](#sample-accounts) for the other roles.
 >
@@ -63,11 +63,11 @@ on first sign-in.
 
 | Role | Email |
 |---|---|
-| Admin | `admin@acme.example` |
-| Admin | `admin2@acme.example` |
-| Manager (field-capable) | `manager@acme.example` |
-| Manager (field-capable) | `manager2@acme.example` |
-| Engineer | `engineer1@acme.example` … `engineer8@acme.example` |
+| Admin | `admin@example.com` |
+| Admin | `admin2@example.com` |
+| Manager (field-capable) | `manager@example.com` |
+| Manager (field-capable) | `manager2@example.com` |
+| Engineer | `engineer1@example.com` … `engineer8@example.com` |
 | Customer | `customer1@example.com` … `customer10@example.com` |
 
 The sample data matches the reference seed in `_TECH.md` §15:
