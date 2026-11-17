@@ -248,21 +248,6 @@
   /* ------------------------------------------------------------------ */
   /* shell                                                               */
   /* ------------------------------------------------------------------ */
-  function topLinks(user) {
-    var links = [];
-    if (J.can(user, "insight.operational")) links.push(["Dashboard", "#/dashboard"]);
-    if (J.can(user, "job.view.all")) links.push(["Jobs", "#/jobs"]);
-    if (J.can(user, "customer.view.all")) links.push(["Customers", "#/customers"]);
-    if (user.role_key === "CUSTOMER") {
-      links.push(["My jobs", "#/my-jobs"]);
-      links.push(["My invoices", "#/portal/invoices"]);
-    } else {
-      if (J.can(user, "invoice.view.all")) links.push(["Invoices", "#/invoices"]);
-      if (J.can(user, "insight.timeline") || J.can(user, "insight.workload") || J.can(user, "insight.financial")) links.push(["Insights", "#/insights/timeline"]);
-      if (J.hasAnyAdmin(user)) links.push(["Admin", "#/admin/users"]);
-    }
-    return links;
-  }
   function navGroups(user) {
     var groups = [];
     if (J.can(user, "insight.operational")) {
@@ -304,7 +289,6 @@
   }
 
   function shell(user, page) {
-    var top = topLinks(user);
     var groups = navGroups(user);
     var path = "#/" + routeParts().join("/");
     var sidebar = groups.map(function (g) {
@@ -319,7 +303,6 @@
       '<button class="menu-btn" data-action="toggle-menu" aria-label="Open navigation" aria-expanded="false">☰</button>' +
       '<a class="brand" href="#' + landing(user) + '"><span class="brand-mark small">J</span><span class="brand-text">JMS<em>Acme Windows</em></span></a>' +
       '<form class="global-search" data-form="search" role="search"><input class="input" name="q" type="search" placeholder="Search jobs, customers, invoices…" value="' + esc(qs("q")) + '" aria-label="Search JMS"><button class="btn btn-quiet search-btn" type="submit">Search</button></form>' +
-      '<nav class="topnav" aria-label="Main">' + top.map(function (l) { return '<a href="' + l[1] + '">' + esc(l[0]) + "</a>"; }).join("") + "</nav>" +
       '<div class="top-actions">' +
       '<button class="aa-btn" data-action="aa-open" aria-label="Appearance settings" title="Appearance">Aa</button>' +
       '<div class="user-chip" title="' + esc(user.display_name) + ' · ' + esc(roleLabel(user.role_key)) + '"><span class="avatar">' + esc(initials(user.display_name)) + "</span><span class=\"user-name\">" + esc(user.display_name) + "<em>" + esc(roleLabel(user.role_key)) + "</em></span></div>" +
