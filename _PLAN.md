@@ -6,10 +6,10 @@
 > *what* the screens do, and *how* we will know each stage is finished.
 >
 > **What happens next.** `_TECH.md` turns this into a technical specification —
-> browser app, HTMX UI, Node service, a JSON document store first and SQLite/
-> Postgres later. Every
-> requirement here is written so `_TECH.md` can answer it with a schema, a route,
-> a template, or a test.
+> a TypeScript Node service, HTMX UI, a SQLite database with typed repositories
+> and migrations, and cron-driven verified backups. Every requirement here is
+> written so `_TECH.md` can answer it with a schema, a route, a template, or a
+> test.
 >
 > **What "done" mimics.** The web edition of this plan, and the app's own
 > documentation pages, reuse the house explainer system already used by the
@@ -186,58 +186,61 @@ stated in business language first, with the attributes v1 needs.
 `address`, `vat_number`, `logo_path`, `currency` (GBP), `timezone`
 (Europe/London), `default_theme`.
 
-**User** — `id`, `company_id`, `email` (unique, login name), `password_hash`,
-`display_name`, `role_id`, `customer_id` (nullable; set only for CUSTOMER),
-`can_engineer` (field capability; true for ENGINEER, optional for MANAGER),
-`phone`, `status` (INVITED / ACTIVE / SUSPENDED / ARCHIVED),
-`must_change_password`, `theme_prefs` (JSON: mode, type, fonts, colours),
-`last_login_at`, `created_at`.
+**User** — `id`, `company_id`, `email` (unique, login name), `password_hash`
+(Argon2id), `display_name`, `role_key`, `customer_id` (nullable; set only for
+CUSTOMER), `can_engineer` (field capability; true for ENGINEER, optional for
+MANAGER), `phone`, `status` (INVITED / ACTIVE / SUSPENDED / ARCHIVED),
+`must_change_password`, `theme_prefs` (validated JSON: mode, type, fonts,
+colours), `last_login_at`, `created_at`.
 
-**Role** — `id`, `key` (ADMIN, MANAGER, ENGINEER, CUSTOMER), `label`,
+**Role** — `key` (primary key: ADMIN, MANAGER, ENGINEER, CUSTOMER), `label`,
 `description`, `is_system` (system roles cannot be deleted, only re-permissioned).
 
-**Permission** — `role_id`, `action_key`, `allowed`. Composite primary key.
+**Permission** — `role_key`, `action_key`, `allowed`. Composite primary key.
 
 **Customer** — `id`, `company_id`, `name`, `contact_name`, `email` (unique per
-company), `phone`, `address_line1/2`, `town`, `postcode`, `notes`,
-`status` (ACTIVE / ARCHIVED), `created_at`, `created_by`.
+company), `phone`, address columns (`line1`, `line2`, `town`, `postcode`,
+`country`), `notes`, `status` (ACTIVE / ARCHIVED), `created_at`, `created_by`.
 A Customer is both a *record* and, optionally, a *login* (one User with the
 CUSTOMER role pointing at it).
 
 **Job** — `id`, `company_id`, `reference` (human-readable, e.g. `JOB-2026-0042`,
 unique), `customer_id`, `title`, `description`, `work_type`
 (e.g. WINDOW_INSTALL, REPAIR, SURVEY), `status` (see §3.3),
-`priority` (NORMAL / URGENT), `site_address` (defaults to the customer's),
-`planned_start`, `planned_end`, `actual_start`, `actual_end`,
-`price_net`, `vat_rate`, `price_gross` (Manager-only; hidden from Engineer and
-Customer), `internal_notes`, `customer_notes`, `created_by`, `created_at`,
-`updated_at`, `archived_at`.
+`priority` (NORMAL / URGENT), site address columns (default to the customer's),
+`planned_start`, `planned_end`, `planned_slot` (AM / PM / ALL_DAY),
+`actual_start`, `actual_end`, `price_net`, `vat_rate_bp`,
+`price_gross` (integer pence; Manager-only, hidden from Engineer and Customer),
+`internal_notes`, `customer_notes`, `created_by`, `created_at`, `updated_at`,
+`archived_at`, `version` (optimistic concurrency).
 
 **JobAssignment** — `job_id`, `user_id` (field-capable: ENGINEER, or MANAGER
 with `can_engineer`), `is_lead`,
 `assigned_at`, `assigned_by`, `removed_at` (soft removal keeps history).
 
 **JobEvent** — `id`, `job_id`, `actor_user_id`, `type`
-(STATUS_CHANGE / ASSIGNMENT / SCHEDULE_CHANGE / NOTE / DOCUMENT / PRICE_CHANGE),
-`from_value`, `to_value`, `message`, `visibility` (INTERNAL / CUSTOMER), `at`.
-This single log powers the job timeline, the customer-visible history and the
-audit trail.
+(STATUS_CHANGE / ASSIGNMENT / SCHEDULE_CHANGE / NOTE / DOCUMENT / PRICE_CHANGE /
+CREATED / ARCHIVED), `from_value`, `to_value`, `message`, `visibility`
+(INTERNAL / CUSTOMER), `at`. This single log powers the job timeline, the
+customer-visible history and the audit trail.
 
 **Invoice** — `id`, `company_id`, `number` (`INV-2026-0007`, gapless per year),
 `job_id`, `status` (DRAFT / ISSUED / PAID / VOID), `issued_at`, `due_at`,
-`paid_at`, `net`, `vat_rate`, `vat`, `gross`, `notes`, `created_by`.
-One job has at most one live invoice in v1 (re-issue = void + new).
+`paid_at`, `net`, `vat_rate_bp`, `vat`, `gross`, `notes`, `created_by`, plus
+invoice **lines** (`description`, quantity in thousandths, unit pence, amount
+pence). One job has at most one live invoice in v1 (re-issue = void + new).
 
 **Document** — `id`, `type` (JOB_SHEET / INVOICE), `entity_type`, `entity_id`,
-`version`, `generated_at`, `generated_by`, `file_path`, `checksum`.
-Documents are regenerable; the row records that a PDF was produced and from
-which version of the data.
+`version`, `generated_at`, `generated_by`, `file_path`, `checksum`, `size`,
+`mime`. Documents are regenerable; the row records that a PDF was produced and
+from which version of the data.
 
-**Setting** — `key`, `value` (company defaults: VAT rate, invoice due days,
-default password policy flags, theme defaults, PDF footer text).
+**Setting** — `key`, validated JSON `value` (company defaults: VAT rate, invoice
+due days, default password policy flags, theme defaults, PDF footer text).
 
-**Session / AuthToken** — server-side session record (`_TECH.md` decides cookie
-vs token), with expiry, user agent, and revocation for password resets.
+**Session** — server-side SQLite row with a hashed session token, idle and
+absolute expiry, CSRF token, user agent, and revocation for password resets,
+role changes and deactivation.
 
 ### 3.2 Relationships at a glance
 
@@ -457,6 +460,7 @@ office manager in a dark room, without a second stylesheet.
 | Appearance (Aa panel) | type, layout, fonts, colours | Save / Copy theme | all |
 | Audit log | filterable event list | Filter by job/user | ADMIN |
 | Archived customers/jobs | restore | Restore | ADMIN |
+| Backups | latest verified snapshot, age, retention, offsite status | Run backup | ADMIN |
 
 ### 5.3 Empty, error and edge states (must be designed, not left blank)
 
@@ -568,14 +572,14 @@ generation is server-side and recorded in `Document`.
 
 | # | Requirement |
 |---|---|
-| S1 | Passwords hashed with a modern adaptive algorithm; default `JMS123` is only a starting value and must be changed at first sign-in. |
+| S1 | Passwords hashed with Argon2id; default `JMS123` is only a starting value and must be changed at first sign-in. |
 | S2 | Sessions expire after inactivity (default 60 minutes) and are revoked on password change, role change or deactivation. |
 | S3 | Authorisation is checked server-side on every request and every partial; object scoping per §2.4 is tested, not assumed. |
 | S4 | CSRF protection on all state-changing requests; the app never trusts hidden form fields for role or ownership. |
 | S5 | Login rate-limited; repeated failures logged with IP and user agent. |
 | S6 | Every job status change, assignment change, price change, permission change, invoice action and user change writes an audit record (actor, when, before, after). |
 | S7 | Customer-visible notes and internal notes are different fields with different visibility; the UI states which is which. |
-| S8 | Backups: daily database backup with a documented restore drill; restore is verified before go-live. |
+| S8 | Backups: a cron job takes a verified online SQLite snapshot daily (optional 15-minute snapshots), keeps 30 daily / 12 weekly / 12 monthly copies, copies them offsite encrypted, and alerts on failure. A documented restore drill is required before go-live and monthly thereafter. |
 | S9 | Archiving replaces deletion for jobs and customers; invoices are never deleted, only voided. |
 | S10 | Personal data is limited to what the job needs; a customer can view their own contact details and ask the office to correct them (v1: no self-service edit). |
 | S11 | No secrets in the repository; configuration comes from environment variables (`.env` locally, host config in production). |
@@ -587,11 +591,11 @@ generation is server-side and recorded in `Document`.
 | # | Area | Requirement |
 |---|---|---|
 | N1 | Performance | Server-rendered pages respond in < 300ms at p95 with the seeded dataset (see N6); lists paginate at 25 rows. |
-| N2 | Availability | Single-host deployment is acceptable for v1; a restart must not lose committed data. |
-| N3 | Portability | JSON document store first (table-like collections, single writer), then SQLite/Postgres through the same repository boundary; migrations are versioned and reversible. |
+| N2 | Availability | Single-host deployment is acceptable for v1; SQLite runs in WAL mode with `synchronous=FULL`, and a restart must not lose committed data. |
+| N3 | Portability | SQLite through typed repositories and Kysely; no SQL in routes or services. Migrations are numbered, checksummed and forward-only; restoring a verified backup is the rollback path. |
 | N4 | Accessibility | WCAG 2.2 AA target verified with keyboard-only walkthroughs and automated checks. |
 | N5 | Browser support | Current Chrome, Edge, Firefox, Safari; iOS Safari and Android Chrome for field use. |
-| N6 | Seed data | A reproducible demo dataset: Acme Windows, 2 admins, 2 field-capable managers, 8 engineers, 10 customers, 1–4 jobs per customer (26 jobs for the reference seed), with invoices for invoiced/paid jobs. |
+| N6 | Seed data | A reproducible demo dataset: Acme Windows, 2 admins, 2 field-capable managers, 8 engineers, 10 customers, and 20 jobs (2 per customer) scheduled across the next six weeks from the seed anchor date, with invoices for invoiced/paid jobs. |
 | N7 | Testability | Every workflow in §4 has an automated test at the HTTP level, including negative permission tests. |
 | N8 | Observability | Structured request logs, an error log, and an audit view in-app; no personal data or secrets in logs. |
 | N9 | Maintainability | One styling system, no per-page CSS forks; components documented in `_TECH.md`. |
@@ -615,7 +619,7 @@ turn these into a task list with schema, routes, templates and tests.
 | **M5** | Customer portal | My jobs, job detail, documents list, scoped queries | W6 works; a customer cannot reach another customer's job even by guessing the URL |
 | **M6** | Money & paper | Invoices, numbering, issue/void/paid, job sheet + invoice PDFs, print styles | W5 + W7 work; PDFs match the spec in §8; numbers are gapless |
 | **M7** | Insight | Global search, operations/engineer dashboards, timeline, workload, financials | W10 works; every dashboard respects role scoping and date ranges |
-| **M8** | Hardening | Full audit view, backups and restore drill, accessibility pass, performance pass, seed dataset, documentation pages built from Markdown | §12 checklist passes; restore drill recorded; a11y walkthrough clean |
+| **M8** | Hardening | Full audit view, cron-driven verified backups with GFS retention and offsite copy, restore drill, accessibility pass, performance pass, seed dataset, documentation pages built from Markdown | §12 checklist passes; a scheduled backup is verified and a restore drill is recorded; a11y walkthrough clean |
 
 ### 11.1 Sequence and dependencies
 
@@ -657,8 +661,10 @@ that is an application feature, not a documentation pipeline.
 - ☐ Light, dark and system modes work; user preferences persist and follow the user; admin default applies.
 - ☐ All §6 UX rules verified: type sizes, hit areas, contrast, keyboard, 360px layout.
 - ☐ All §9 security rules tested, including cross-customer and cross-engineer access attempts.
-- ☐ Seed dataset loads from scratch; the JSON store passes the full test suite, and the repository boundary is ready for a SQL adapter.
-- ☐ Backup taken and restored successfully on a clean machine.
+- ☐ Seed dataset loads from scratch and matches §10 N6: 20 jobs over the next six weeks, 2 per customer, all eight statuses represented.
+- ☐ SQLite migrations, typed repositories and optimistic concurrency pass the full test suite; a tampered migration refuses startup.
+- ☐ A cron backup runs, is integrity-verified, retained by GFS and copied offsite; a restore succeeds on a clean machine and requires a fresh sign-in.
+- ☐ TypeScript strict checks, lint and coverage gates pass in CI.
 - ☐ Plan, tech spec and help pages published in the house guide style.
 
 ---
@@ -677,10 +683,12 @@ that is an application feature, not a documentation pipeline.
 | D8 | Photo attachments from site | Deferred; storage approach chosen now to avoid schema churn | Future migration |
 | D9 | Permission granularity beyond §2.3 | Start with §2.3 exactly; add keys only when a real need appears | Matrix size, UI |
 | D10 | HTMX partial vs full-page rendering strategy | Progressive enhancement: full-page forms, HTMX for filters, lists, status control | Templating split |
-| D11 | Session strategy (cookie + server session vs signed token) | Server-side session with an HTTP-only cookie | Auth implementation |
+| D11 | Session strategy (cookie + server session vs signed token) | Server-side session rows in SQLite with an HTTP-only signed cookie | Auth implementation |
 | D12 | Audit retention | Keep indefinitely in v1; revisit at scale | Storage, export |
-| D13 | Initial data store | JSON file with table-like collections; repository boundary for SQL later | Data layer |
+| D13 | Data store | SQLite with typed repositories, checksummed forward-only migrations and WAL | Data layer |
 | D14 | Managers as field engineers | Allow `can_engineer` on MANAGER accounts | Assignments, My jobs |
+| D15 | Implementation language | TypeScript with strict compiler flags, compiled to `dist/` for production | Build, tests, dependencies |
+| D16 | Backup policy | Cron-driven verified online snapshots, GFS retention, encrypted offsite copy, monthly restore drill | Operations, monitoring |
 
 ---
 
@@ -704,7 +712,7 @@ that is an application feature, not a documentation pipeline.
 | Few horizontal nav items + left TOC pills by user level | §5.1 |
 | Editable table of access level → action visibility | §2.2–2.3, W8 |
 | Simple UX, larger fonts and buttons, easy steps | §6 |
-| Browser app, HTMX, Node, JSON store then SQL | §10 N3, D10, D11, D13 |
+| Browser app, HTMX, Node, TypeScript, SQLite | §10 N3, D10, D11, D13, D15 |
 
 ---
 

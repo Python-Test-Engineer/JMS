@@ -1,211 +1,279 @@
 # JMS — Job Management System
 
-> ## Branch: `node`
->
-> This branch contains the **Node.js + SQLite edition** of JMS. The application lives in
-> [`src/`](src/), data is stored in [`jms.db`](jms.db), and server-rendered views are in
-> [`src/views/`](src/views/).
->
-> **Run it from the repository root:**
->
-> ```bash
-> npm install
-> npm start
-> # open http://localhost:3000
-> ```
->
-> The database is created and seeded automatically on first boot. To recreate the sample
-> data from scratch, run `npm run reset`. For live-reload during development, use
-> `npm run dev`.
->
-> Sign in with `admin@example.com` and password `JMS123` (every seeded account uses the
-> same temporary password and must change it on first sign-in). See
-> [Sample accounts](#sample-accounts) for the other roles.
->
-> Requirements: Node.js 22.11+ (tested on Node 24). No build step is required.
+A TypeScript, mobile-first job management app for **Acme Windows** (a fictional
+window-installation company). Managers create customers and jobs, assign
+field-capable staff, engineers update work on site, customers track their own
+jobs, and invoices/job sheets are generated as PDFs.
 
-A Node.js web application for **Acme Windows**, a fictional window-installation company.
-It is built from [`_TECH.md`](_TECH.md): customers, jobs, scheduling, assignments, field
-status updates, invoices, generated PDFs, a customer portal, insights, an editable
-role × action permission matrix and an append-only audit log.
+This is the implementation of [`_PLAN.md`](_PLAN.md) and [`_TECH.md`](_TECH.md).
 
-**Database:** SQLite in a single file, [`jms.db`](jms.db), created and seeded on first boot.
-The original static browser demo (`src/index.html`, `src/js`, `src/css`) has been removed;
-this is the server-rendered Node edition.
+## Stack
+
+| Layer | Choice |
+|---|---|
+| Runtime | Node.js 22+ (tested on Node 24), ES modules |
+| Language | TypeScript 5.9, strict compiler settings |
+| HTTP | Express 5 |
+| Templates | Nunjucks, server-rendered HTML |
+| Interactivity | HTMX 2 (vendored; every form works without JS) |
+| Database | SQLite via `better-sqlite3`, WAL, foreign keys on |
+| Passwords | Argon2id via `@node-rs/argon2` |
+| Validation | Zod at configuration and HTTP boundaries |
+| Dates / money | Luxon; integer pence and integer thousandths |
+| PDFs | PDFKit |
+| Logs | Pino structured JSON |
+| Tests | Node test runner + `tsx` |
+
+The UI is **mobile first**: base styles target a 360px phone, the navigation is
+a slide-over, form controls are 48px high, and tables become stacked cards below
+720px. Wider layouts add the sticky contents pane, multi-column forms and real
+tables progressively.
 
 ## Quick start
 
-From the repository root:
-
 ```bash
 npm install
+cp .env.example .env          # Windows: copy .env.example .env
+npm run build
+npm run reset                 # creates data/jms.sqlite and loads demo data
 npm start
-# http://localhost:3000
+# open http://localhost:3000
 ```
 
-The first boot creates `jms.db` and loads the sample dataset. To manage the database
-separately:
+For live reload during development:
 
 ```bash
-npm run seed        # create the database if it does not exist
-npm run seed:force  # replace existing sample data
-npm run reset       # delete jms.db, clear generated PDFs and re-seed
-npm run dev         # start with node --watch
+npm run dev
 ```
 
-Requirements: Node.js 22.11+ (tested on Node 24). SQLite uses the built-in `node:sqlite`
-module, so there is no native build step.
+`npm run dev` uses `tsx` and seeds an empty database automatically in
+development. `npm start` runs compiled JavaScript from `dist/`, so run
+`npm run build` after pulling changes.
 
-## Sample accounts
+### Sample accounts
 
-Every seeded account starts with the password **`JMS123`** and must choose a new password
-on first sign-in.
+Every seeded account starts with password **`JMS123`** and is forced to choose a
+new password on first sign-in.
 
 | Role | Email |
 |---|---|
-| Admin | `admin@example.com` |
-| Admin | `admin2@example.com` |
-| Manager (field-capable) | `manager@example.com` |
-| Manager (field-capable) | `manager2@example.com` |
-| Engineer | `engineer1@example.com` … `engineer8@example.com` |
+| Admin | `admin@acme.example` |
+| Admin | `admin2@acme.example` |
+| Manager (field-capable) | `manager@acme.example` |
+| Manager (field-capable) | `manager2@acme.example` |
+| Engineer | `engineer1@acme.example` … `engineer8@acme.example` |
 | Customer | `customer1@example.com` … `customer10@example.com` |
 
-## Google sign-in
+The seed creates **2 admins, 2 field-capable managers, 8 engineers, 10 customers
+and 20 jobs — 2 per customer — spread across the next six calendar weeks** from
+the seed anchor date. The anchor defaults to today (UTC) and can be pinned with
+`SEED_DATE=YYYY-MM-DD` for reproducible tests.
 
-The sign-in page includes a **Use Google** option. To enable it:
+## Commands
 
-1. Create an **OAuth 2.0 Client ID** of type **Web application** in
-   [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
-2. Add this authorised redirect URI (replace the host for production):
-   `http://localhost:3000/auth/google/callback`
-3. Put the credentials in `.env`:
+| Command | What it does |
+|---|---|
+| `npm run build` | Compile TypeScript to `dist/` and copy views, assets and migrations |
+| `npm start` | Run the compiled server |
+| `npm run dev` | Watch TypeScript directly with `tsx` |
+| `npm run typecheck` | Strict type check without emitting |
+| `npm test` | Domain tests with the Node test runner |
+| `npm run check` | Typecheck + tests |
+| `npm run db:migrate` | Apply pending SQL migrations |
+| `npm run db:check` | Integrity, foreign-key and migration checks |
+| `npm run seed` | Load demo data if the database is empty |
+| `npm run seed:force` | Replace demo data (takes a backup first) |
+| `npm run reset` | Delete the database and re-seed from scratch |
+| `npm run backup` | Create and verify a manual snapshot |
+| `npm run backup:verify` | Verify the newest snapshot |
+| `npm run backup:prune` | Apply GFS retention |
+| `npm run restore -- --from <name> --force` | Restore a verified snapshot |
+
+Operational commands run `dist/cli/jms.js`; build first.
+
+## Backups and restore
+
+The database is a single SQLite file, so backups are a first-class feature.
 
 ```bash
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
-GOOGLE_ADMIN_EMAILS=iwswordpress@gmail.com
+npm run backup
+npm run backup:verify
+npm run backup:prune
 ```
 
-On first Google sign-in, an email listed in `GOOGLE_ADMIN_EMAILS` is created as an
-active **ADMIN** account. Existing users sign in with their existing role, provided their
-Google email matches their JMS email. Other unknown Google accounts are denied.
+A backup:
 
-Google OAuth uses the authorisation-code flow with a short-lived, HttpOnly `state`
-cookie. It does not require any extra npm package.
+1. Takes an **online SQLite snapshot** while the app keeps running.
+2. Runs `integrity_check` and `foreign_key_check` against the snapshot.
+3. Writes a checksum (`.sha256`) and a JSON manifest with row counts.
+4. Can copy the snapshot offsite with `BACKUP_OFFSITE_CMD`.
 
-The sample data matches the reference seed in `_TECH.md` §15:
+Snapshots live in `backups/` as:
 
-- 2 admins, 2 field-capable managers, 8 engineers and 10 customer portal logins;
-- 10 customers with 26 jobs in the reference distribution `[3,4,2,1,3,4,3,2,2,2]`;
-- all eight job statuses represented;
-- active assignments on every job, timeline events and sequential invoices;
-- 7 seeded invoices across `INVOICED` and `PAID` states;
-- 12 upcoming `SCHEDULED` jobs, two per week for the next six weeks, so the
-  **Insights → Timeline** screen always has future work to display.
+```
+jms-20261118T021500Z-nightly.db
+jms-20261118T021500Z-nightly.db.sha256
+jms-20261118T021500Z-nightly.json
+```
 
-## What works
+Retention keeps the newest snapshot plus 30 daily, 12 weekly and 12 monthly
+copies. Broken or unverified manifests are never pruned automatically.
 
-- **Authentication and sessions** — bcrypt cost 12, hashed session IDs in SQLite,
-  HttpOnly cookies, CSRF tokens, forced first-sign-in password change, idle expiry and
-  sign-out revocation.
-- **Data-driven permissions** — 39 action keys × 4 roles, editable in
-  **Admin → Roles & permissions**, enforced on every route and reflected in navigation.
-  Safeguards protect the last active admin and block `admin.audit.view` for Customer and
-  Engineer roles.
-- **Jobs** — list with filters, create/edit, reference allocation (`JOB-YYYY-NNNN`),
-  assignment with one lead, scheduling with advisory conflict warnings, controlled status
-  transitions, internal/customer-visible notes and a timeline.
-- **Customers** — create/edit, optional portal login, invite/reset and archive.
-- **Invoices** — draft → issue → paid, void with a reason, gapless numbering
-  (`INV-YYYY-NNNN`), one live invoice per job, PDF download.
-- **PDFs** — job sheets and invoices generated on demand with PDFKit, versioned document
-  rows with SHA-256 checksums. Customer/engineer job sheets omit prices and internal notes.
-- **Customer portal** — only the customer's own jobs and non-draft invoices; guessed URLs
-  return 404.
-- **Insights** — operations dashboard, timeline, workload, financials and needs-invoicing.
-- **Admin** — users, roles/permissions, company settings, audit log and archive/restore.
-- **Appearance** — per-user light/dark/system mode, text size and line height.
+### Cron
 
-## Scripts
+Install as `/etc/cron.d/jms-backup` (run as the unprivileged service user):
 
-| Command | Purpose |
-|---|---|
-| `npm start` | Start the app on `PORT` (default 3000). |
-| `npm run dev` | Start with `node --watch`. |
-| `npm run seed` | Create data if the database is empty. |
-| `npm run seed:force` | Replace the sample data (keeps the same schema). |
-| `npm run reset` | Delete `jms.db`, clear generated PDFs and re-seed. |
-| `npm test` | Domain and seed acceptance tests with the Node test runner. |
+```cron
+SHELL=/bin/sh
+PATH=/usr/local/bin:/usr/bin:/bin
+TZ=UTC
+
+# Nightly snapshot at 02:15. flock prevents overlap with restore/migrate.
+15 2 * * * jms cd /srv/jms && /usr/bin/flock -n /srv/jms/data/jms.ops.lock \
+  /usr/bin/node dist/cli/jms.js backup --tag nightly >> /var/log/jms/backup.log 2>&1
+
+# Verify the newest snapshot at 03:15.
+15 3 * * * jms cd /srv/jms && /usr/bin/node dist/cli/jms.js verify --latest \
+  >> /var/log/jms/backup.log 2>&1
+
+# Prune at 03:45.
+45 3 * * * jms cd /srv/jms && /usr/bin/node dist/cli/jms.js prune --apply \
+  >> /var/log/jms/backup.log 2>&1
+```
+
+A systemd timer works equally well. A non-zero exit is the alert signal; point
+cron mail or a dead-man's-switch monitor at the job. `/healthz` reports the age
+and verification state of the newest backup.
+
+### Restore
+
+Stop the app, then:
+
+```bash
+npm run backup                         # safety copy of current data
+npm run restore -- --from jms-20261118T021500Z-nightly --force
+npm start
+```
+
+Restore refuses an unverified snapshot, keeps a pre-restore copy, removes stale
+WAL sidecars, and revokes every session by default (`--keep-sessions` overrides).
+After a restore, sign in again, open one job, one invoice and the audit log.
 
 ## Configuration
 
-Copy `.env.example` to `.env` and adjust if needed. The app works with defaults in
-development.
+Copy `.env.example` to `.env`. Important variables:
 
-| Variable | Default | Notes |
+| Variable | Default | Purpose |
 |---|---|---|
+| `NODE_ENV` | `development` | `development`, `test`, `production` |
 | `PORT` | `3000` | HTTP port |
-| `DATABASE_FILE` | `jms.db` | SQLite file path |
-| `PDF_DIR` | `storage/documents` | Generated PDFs |
-| `SESSION_SECRET` | dev fallback | Required and 32+ characters in production |
-| `SESSION_IDLE_MINUTES` | `60` | Idle expiry |
-| `COOKIE_SECURE` | `false` | Must be `true` in production |
-| `DEFAULT_PASSWORD` | `JMS123` | Temporary password for seed/invites |
-| `GOOGLE_CLIENT_ID` | empty | Google OAuth web client ID; enables **Use Google** |
-| `GOOGLE_CLIENT_SECRET` | empty | Google OAuth client secret |
-| `GOOGLE_REDIRECT_URI` | `APP_URL/auth/google/callback` | OAuth callback URL |
-| `GOOGLE_ADMIN_EMAILS` | empty | Comma-separated emails allowed to bootstrap as ADMIN |
-| `COMPANY_TIMEZONE` | `Europe/London` | Display timezone; dates stored UTC |
-| `VAT_RATE_BP` | `2000` | Default VAT in basis points |
-| `SEED` | `20260316` | Deterministic seed value |
+| `SESSION_SECRET` | dev fallback | Required in production; 32+ random characters |
+| `DATABASE_FILE` | `data/jms.sqlite` | SQLite database path |
+| `DOCUMENTS_DIR` | `storage/documents` | Generated PDFs |
+| `BACKUP_DIR` | `backups` | Snapshots and manifests |
+| `BACKUP_KEEP_DAILY/WEEKLY/MONTHLY` | `30/12/12` | GFS retention |
+| `BACKUP_MAX_AGE_HOURS` | `36` | `/healthz` degrades above this |
+| `BACKUP_OFFSITE_CMD` | — | Command run after a verified local backup |
+| `SESSION_IDLE_MINUTES` | `60` | Idle session expiry |
+| `SESSION_ABSOLUTE_HOURS` | `12` | Absolute session lifetime |
+| `COOKIE_SECURE` | production | Secure cookie flag |
+| `AUTO_SEED` | `false` | Seed an empty database on boot |
+| `SEED_DATE` | today (UTC) | Pin the six-week seed horizon |
+| `SQLITE_SYNCHRONOUS` | `FULL` in production | SQLite durability |
 
-Production validation refuses to start if `SESSION_SECRET` is weak, `COOKIE_SECURE` is
-false, or `NODE_ENV` is not `production`.
+Configuration is parsed once with Zod in `src/config.ts`. No other module reads
+`process.env`.
 
-## Project layout
+## Architecture
 
 ```
-jms.db                      SQLite database (generated, ignored by git)
-scripts/seed.js             seed / seed:force
-scripts/reset.js            reset and re-seed
 src/
-  app.js                    Express app factory
-  server.js                 listen and graceful shutdown
-  config.js                 environment parsing with Zod
+  server.ts              HTTP listener + graceful shutdown
+  app.ts                 Express app factory
+  config.ts              Zod-parsed, frozen configuration
   db/
-    schema.js               SQLite schema
-    seed.js                 deterministic sample data and acceptance checks
-    index.js                connection, helpers, transactions, audit
-    upcoming.js             two scheduled demo jobs per week for six weeks
-  domain/                   permissions, status machine, money, dates
-  auth/                     passwords, sessions, rate limiting, Google OAuth
-  middleware/               auth, CSRF, permissions, errors, request IDs
-  routes/                   auth, dashboards, jobs, customers, invoices, portal,
-                            insights, admin, search
-  services/                 access/scoping, jobs, invoices, documents
-  views/                    Nunjucks layouts, pages, partials and macros
-  public/                   CSS and progressive-enhancement JavaScript
-tests/                      domain and seed tests
+    migrations/          numbered, checksummed SQL
+    connection.ts        SQLite pragmas and factory
+    migrator.ts          forward-only migrations
+    seed.ts              deterministic 20-job demo dataset
+    rows.ts              row -> domain decoding
+  domain/                permissions, status machine, money, dates
+  auth/                  Argon2id, sessions, rate limits
+  middleware/            request id, cookies, auth, CSRF, errors
+  services/              jobs, invoices, customers, documents, admin
+  routes/                thin controllers
+  views/                 Nunjucks layouts/pages/partials
+  public/                mobile-first CSS, progressive JS, HTMX
+  backup/                snapshot, verify, retention, restore, status
+  cli/jms.ts             migrate/seed/backup/verify/prune/restore/check
 ```
 
-## Notes and deliberate limits
+Rules that matter:
 
-- **One process, one SQLite file.** Do not run multiple app instances against the same
-  database file without moving to a client/server database.
-- SQLite uses WAL mode and foreign keys. Money is stored as integer pence and VAT as
-  integer basis points; timestamps are UTC ISO 8601.
-- PDFs are generated on demand from live data; every download creates a new document
-  version and audit row.
-- The UI defaults to full-page forms and works without JavaScript. A small script adds a
-  busy state and focuses the first invalid field.
-- HTMX is not vendored in this build; the server still exposes a timeline fragment route
-  and branches on `HX-Request` for small errors, so adding HTMX later is straightforward.
-- Email/SMS delivery, online payments, uploads and multi-company tenancy remain out of
-  scope for v1, matching `_PLAN.md`.
+- Every write goes through a service and a SQLite transaction; the audit row is
+  written in the same transaction.
+- Routes never query the database directly and templates never mutate data.
+- Object scoping is enforced server-side: cross-customer and cross-engineer
+  requests return 404, not a hidden button.
+- Mutable records use a `version` column; stale edits fail with a conflict instead
+  of overwriting a colleague.
+- Status changes use an exhaustive transition table; `INVOICED`/`PAID` are driven
+  by the invoice service, not a free-form status button.
+- Every write is validated with Zod or explicit service validation; SQL is always
+  parameterised.
 
-## Documentation
+## Security notes
 
-- [`_PLAN.md`](_PLAN.md) / [`_PLAN.html`](_PLAN.html) — product plan.
-- [`_TECH.md`](_TECH.md) / [`_TECH.html`](_TECH.html) — technical specification.
-- [`demo-explainers/index.html`](demo-explainers/index.html) — animated workflow explainers.
+- Argon2id password hashing with OWASP-baseline parameters.
+- Session tokens are random, HMAC-signed in the cookie, and stored only as
+  SHA-256 hashes. Idle and absolute expiry are independent.
+- CSRF tokens are checked on every unsafe request; session rotation happens on
+  password change and sign-in.
+- Login attempts are rate-limited in SQLite, so a restart does not reset the
+  budget.
+- Helmet CSP allows only local scripts/styles; HTMX is vendored.
+- Audit log is append-only; password hashes, tokens and full request bodies are
+  never recorded.
+- Backups contain personal data: keep `backups/` mode `0700` and encrypt offsite
+  copies (restic/rclone).
+
+## Testing
+
+```bash
+npm run check
+```
+
+The suite covers the permission matrix defaults, the status machine, money and
+quantity arithmetic. Add HTTP/workflow tests under `tests/` as the app grows;
+the app factory in `src/app.ts` is designed for Supertest-style tests.
+
+## Deployment sketch
+
+```ini
+[Service]
+Type=simple
+User=jms
+WorkingDirectory=/srv/jms
+EnvironmentFile=/srv/jms/.env
+ExecStart=/usr/bin/node dist/server.js
+Restart=on-failure
+TimeoutStopSec=15
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/srv/jms/data /srv/jms/backups /srv/jms/storage
+```
+
+- Keep `data/`, `storage/` and `backups/` on persistent storage.
+- Run `npm ci --omit=dev`, `npm run build`, `npm run db:migrate` (app stopped),
+  then start the service.
+- Health check: `GET /healthz`.
+- Graceful shutdown drains requests, checkpoints WAL, optimises and closes the
+  database.
+
+## Notes
+
+- Google sign-in is not part of v2; the app uses email/password only.
+- Demo data is intentionally synthetic. `npm run reset -- --force` deletes the
+  database and generated PDFs before re-seeding.
+- Documentation pages (`_PLAN.html`, `_TECH.html`) are built separately with the
+  `make-jms-html` skill.

@@ -891,7 +891,7 @@ details code { font-size: .85em; }
 </li>
 </ol></div>
   <div class="sidebar-foot">
-    Plan v0.0.1 · <a href="_TECH.md">next: _TECH.md</a>
+    Plan v0.1.0 · <a href="_TECH.md">next: _TECH.md</a>
   </div>
 </nav>
 
@@ -905,10 +905,10 @@ details code { font-size: .85em; }
 written <strong>without code</strong>: it says <em>what</em> the business needs, <em>who</em> may do it,
 <em>what</em> the screens do, and <em>how</em> we will know each stage is finished.</p>
 <p><strong>What happens next.</strong> <code>_TECH.md</code> turns this into a technical specification —
-browser app, HTMX UI, Node service, a JSON document store first and SQLite/
-Postgres later. Every
-requirement here is written so <code>_TECH.md</code> can answer it with a schema, a route,
-a template, or a test.</p>
+a TypeScript Node service, HTMX UI, a SQLite database with typed repositories
+and migrations, and cron-driven verified backups. Every requirement here is
+written so <code>_TECH.md</code> can answer it with a schema, a route, a template, or a
+test.</p>
 <p><strong>What "done" mimics.</strong> The web edition of this plan, and the app's own
 documentation pages, reuse the house explainer system already used by the
 mini-js-coder site and book: one self-contained HTML file, two-pane sticky
@@ -1417,48 +1417,51 @@ stated in business language first, with the attributes v1 needs.</p>
 <p><strong>Company</strong> — <code>id</code>, <code>name</code> ("Acme Windows"), <code>trading_name</code>, <code>email</code>, <code>phone</code>,
 <code>address</code>, <code>vat_number</code>, <code>logo_path</code>, <code>currency</code> (GBP), <code>timezone</code>
 (Europe/London), <code>default_theme</code>.</p>
-<p><strong>User</strong> — <code>id</code>, <code>company_id</code>, <code>email</code> (unique, login name), <code>password_hash</code>,
-<code>display_name</code>, <code>role_id</code>, <code>customer_id</code> (nullable; set only for CUSTOMER),
-<code>can_engineer</code> (field capability; true for ENGINEER, optional for MANAGER),
-<code>phone</code>, <code>status</code> (INVITED / ACTIVE / SUSPENDED / ARCHIVED),
-<code>must_change_password</code>, <code>theme_prefs</code> (JSON: mode, type, fonts, colours),
-<code>last_login_at</code>, <code>created_at</code>.</p>
-<p><strong>Role</strong> — <code>id</code>, <code>key</code> (ADMIN, MANAGER, ENGINEER, CUSTOMER), <code>label</code>,
+<p><strong>User</strong> — <code>id</code>, <code>company_id</code>, <code>email</code> (unique, login name), <code>password_hash</code>
+(Argon2id), <code>display_name</code>, <code>role_key</code>, <code>customer_id</code> (nullable; set only for
+CUSTOMER), <code>can_engineer</code> (field capability; true for ENGINEER, optional for
+MANAGER), <code>phone</code>, <code>status</code> (INVITED / ACTIVE / SUSPENDED / ARCHIVED),
+<code>must_change_password</code>, <code>theme_prefs</code> (validated JSON: mode, type, fonts,
+colours), <code>last_login_at</code>, <code>created_at</code>.</p>
+<p><strong>Role</strong> — <code>key</code> (primary key: ADMIN, MANAGER, ENGINEER, CUSTOMER), <code>label</code>,
 <code>description</code>, <code>is_system</code> (system roles cannot be deleted, only re-permissioned).</p>
-<p><strong>Permission</strong> — <code>role_id</code>, <code>action_key</code>, <code>allowed</code>. Composite primary key.</p>
+<p><strong>Permission</strong> — <code>role_key</code>, <code>action_key</code>, <code>allowed</code>. Composite primary key.</p>
 <p><strong>Customer</strong> — <code>id</code>, <code>company_id</code>, <code>name</code>, <code>contact_name</code>, <code>email</code> (unique per
-company), <code>phone</code>, <code>address_line1/2</code>, <code>town</code>, <code>postcode</code>, <code>notes</code>,
-<code>status</code> (ACTIVE / ARCHIVED), <code>created_at</code>, <code>created_by</code>.
+company), <code>phone</code>, address columns (<code>line1</code>, <code>line2</code>, <code>town</code>, <code>postcode</code>,
+<code>country</code>), <code>notes</code>, <code>status</code> (ACTIVE / ARCHIVED), <code>created_at</code>, <code>created_by</code>.
 A Customer is both a <em>record</em> and, optionally, a <em>login</em> (one User with the
 CUSTOMER role pointing at it).</p>
 <p><strong>Job</strong> — <code>id</code>, <code>company_id</code>, <code>reference</code> (human-readable, e.g. <code>JOB-2026-0042</code>,
 unique), <code>customer_id</code>, <code>title</code>, <code>description</code>, <code>work_type</code>
 (e.g. WINDOW_INSTALL, REPAIR, SURVEY), <code>status</code> (see §3.3),
-<code>priority</code> (NORMAL / URGENT), <code>site_address</code> (defaults to the customer's),
-<code>planned_start</code>, <code>planned_end</code>, <code>actual_start</code>, <code>actual_end</code>,
-<code>price_net</code>, <code>vat_rate</code>, <code>price_gross</code> (Manager-only; hidden from Engineer and
-Customer), <code>internal_notes</code>, <code>customer_notes</code>, <code>created_by</code>, <code>created_at</code>,
-<code>updated_at</code>, <code>archived_at</code>.</p>
+<code>priority</code> (NORMAL / URGENT), site address columns (default to the customer's),
+<code>planned_start</code>, <code>planned_end</code>, <code>planned_slot</code> (AM / PM / ALL_DAY),
+<code>actual_start</code>, <code>actual_end</code>, <code>price_net</code>, <code>vat_rate_bp</code>,
+<code>price_gross</code> (integer pence; Manager-only, hidden from Engineer and Customer),
+<code>internal_notes</code>, <code>customer_notes</code>, <code>created_by</code>, <code>created_at</code>, <code>updated_at</code>,
+<code>archived_at</code>, <code>version</code> (optimistic concurrency).</p>
 <p><strong>JobAssignment</strong> — <code>job_id</code>, <code>user_id</code> (field-capable: ENGINEER, or MANAGER
 with <code>can_engineer</code>), <code>is_lead</code>,
 <code>assigned_at</code>, <code>assigned_by</code>, <code>removed_at</code> (soft removal keeps history).</p>
 <p><strong>JobEvent</strong> — <code>id</code>, <code>job_id</code>, <code>actor_user_id</code>, <code>type</code>
-(STATUS_CHANGE / ASSIGNMENT / SCHEDULE_CHANGE / NOTE / DOCUMENT / PRICE_CHANGE),
-<code>from_value</code>, <code>to_value</code>, <code>message</code>, <code>visibility</code> (INTERNAL / CUSTOMER), <code>at</code>.
-This single log powers the job timeline, the customer-visible history and the
-audit trail.</p>
+(STATUS_CHANGE / ASSIGNMENT / SCHEDULE_CHANGE / NOTE / DOCUMENT / PRICE_CHANGE /
+CREATED / ARCHIVED), <code>from_value</code>, <code>to_value</code>, <code>message</code>, <code>visibility</code>
+(INTERNAL / CUSTOMER), <code>at</code>. This single log powers the job timeline, the
+customer-visible history and the audit trail.</p>
 <p><strong>Invoice</strong> — <code>id</code>, <code>company_id</code>, <code>number</code> (<code>INV-2026-0007</code>, gapless per year),
 <code>job_id</code>, <code>status</code> (DRAFT / ISSUED / PAID / VOID), <code>issued_at</code>, <code>due_at</code>,
-<code>paid_at</code>, <code>net</code>, <code>vat_rate</code>, <code>vat</code>, <code>gross</code>, <code>notes</code>, <code>created_by</code>.
-One job has at most one live invoice in v1 (re-issue = void + new).</p>
+<code>paid_at</code>, <code>net</code>, <code>vat_rate_bp</code>, <code>vat</code>, <code>gross</code>, <code>notes</code>, <code>created_by</code>, plus
+invoice <strong>lines</strong> (<code>description</code>, quantity in thousandths, unit pence, amount
+pence). One job has at most one live invoice in v1 (re-issue = void + new).</p>
 <p><strong>Document</strong> — <code>id</code>, <code>type</code> (JOB_SHEET / INVOICE), <code>entity_type</code>, <code>entity_id</code>,
-<code>version</code>, <code>generated_at</code>, <code>generated_by</code>, <code>file_path</code>, <code>checksum</code>.
-Documents are regenerable; the row records that a PDF was produced and from
-which version of the data.</p>
-<p><strong>Setting</strong> — <code>key</code>, <code>value</code> (company defaults: VAT rate, invoice due days,
-default password policy flags, theme defaults, PDF footer text).</p>
-<p><strong>Session / AuthToken</strong> — server-side session record (<code>_TECH.md</code> decides cookie
-vs token), with expiry, user agent, and revocation for password resets.</p>
+<code>version</code>, <code>generated_at</code>, <code>generated_by</code>, <code>file_path</code>, <code>checksum</code>, <code>size</code>,
+<code>mime</code>. Documents are regenerable; the row records that a PDF was produced and
+from which version of the data.</p>
+<p><strong>Setting</strong> — <code>key</code>, validated JSON <code>value</code> (company defaults: VAT rate, invoice
+due days, default password policy flags, theme defaults, PDF footer text).</p>
+<p><strong>Session</strong> — server-side SQLite row with a hashed session token, idle and
+absolute expiry, CSRF token, user agent, and revocation for password resets,
+role changes and deactivation.</p>
 <h3 id="32-relationships-at-a-glance">3.2 Relationships at a glance</h3>
 <pre><code>Company 1─n User          Company 1─n Customer 1─n Job n─n User (assignments)
 Company 1─n Job           Job 1─n JobEvent        Job 1─0..1 Invoice
@@ -1861,6 +1864,12 @@ office manager in a dark room, without a second stylesheet.</p>
 <td>Restore</td>
 <td>ADMIN</td>
 </tr>
+<tr>
+<td>Backups</td>
+<td>latest verified snapshot, age, retention, offsite status</td>
+<td>Run backup</td>
+<td>ADMIN</td>
+</tr>
 </tbody>
 </table>
 <h3 id="53-empty-error-and-edge-states-must-be-designed-not-left-blank">5.3 Empty, error and edge states (must be designed, not left blank)</h3>
@@ -2039,7 +2048,7 @@ generation is server-side and recorded in <code>Document</code>.</p>
 <tbody>
 <tr>
 <td>S1</td>
-<td>Passwords hashed with a modern adaptive algorithm; default <code>JMS123</code> is only a starting value and must be changed at first sign-in.</td>
+<td>Passwords hashed with Argon2id; default <code>JMS123</code> is only a starting value and must be changed at first sign-in.</td>
 </tr>
 <tr>
 <td>S2</td>
@@ -2067,7 +2076,7 @@ generation is server-side and recorded in <code>Document</code>.</p>
 </tr>
 <tr>
 <td>S8</td>
-<td>Backups: daily database backup with a documented restore drill; restore is verified before go-live.</td>
+<td>Backups: a cron job takes a verified online SQLite snapshot daily (optional 15-minute snapshots), keeps 30 daily / 12 weekly / 12 monthly copies, copies them offsite encrypted, and alerts on failure. A documented restore drill is required before go-live and monthly thereafter.</td>
 </tr>
 <tr>
 <td>S9</td>
@@ -2103,12 +2112,12 @@ generation is server-side and recorded in <code>Document</code>.</p>
 <tr>
 <td>N2</td>
 <td>Availability</td>
-<td>Single-host deployment is acceptable for v1; a restart must not lose committed data.</td>
+<td>Single-host deployment is acceptable for v1; SQLite runs in WAL mode with <code>synchronous=FULL</code>, and a restart must not lose committed data.</td>
 </tr>
 <tr>
 <td>N3</td>
 <td>Portability</td>
-<td>JSON document store first (table-like collections, single writer), then SQLite/Postgres through the same repository boundary; migrations are versioned and reversible.</td>
+<td>SQLite through typed repositories and Kysely; no SQL in routes or services. Migrations are numbered, checksummed and forward-only; restoring a verified backup is the rollback path.</td>
 </tr>
 <tr>
 <td>N4</td>
@@ -2123,7 +2132,7 @@ generation is server-side and recorded in <code>Document</code>.</p>
 <tr>
 <td>N6</td>
 <td>Seed data</td>
-<td>A reproducible demo dataset: Acme Windows, 2 admins, 2 field-capable managers, 8 engineers, 10 customers, 1–4 jobs per customer (26 jobs for the reference seed), with invoices for invoiced/paid jobs.</td>
+<td>A reproducible demo dataset: Acme Windows, 2 admins, 2 field-capable managers, 8 engineers, 10 customers, and 20 jobs (2 per customer) scheduled across the next six weeks from the seed anchor date, with invoices for invoiced/paid jobs.</td>
 </tr>
 <tr>
 <td>N7</td>
@@ -2218,8 +2227,8 @@ turn these into a task list with schema, routes, templates and tests.</p>
 <tr>
 <td><strong>M8</strong></td>
 <td>Hardening</td>
-<td>Full audit view, backups and restore drill, accessibility pass, performance pass, seed dataset, documentation pages built from Markdown</td>
-<td>§12 checklist passes; restore drill recorded; a11y walkthrough clean</td>
+<td>Full audit view, cron-driven verified backups with GFS retention and offsite copy, restore drill, accessibility pass, performance pass, seed dataset, documentation pages built from Markdown</td>
+<td>§12 checklist passes; a scheduled backup is verified and a restore drill is recorded; a11y walkthrough clean</td>
 </tr>
 </tbody>
 </table>
@@ -2259,8 +2268,10 @@ that is an application feature, not a documentation pipeline.</p>
 <li>☐ Light, dark and system modes work; user preferences persist and follow the user; admin default applies.</li>
 <li>☐ All §6 UX rules verified: type sizes, hit areas, contrast, keyboard, 360px layout.</li>
 <li>☐ All §9 security rules tested, including cross-customer and cross-engineer access attempts.</li>
-<li>☐ Seed dataset loads from scratch; the JSON store passes the full test suite, and the repository boundary is ready for a SQL adapter.</li>
-<li>☐ Backup taken and restored successfully on a clean machine.</li>
+<li>☐ Seed dataset loads from scratch and matches §10 N6: 20 jobs over the next six weeks, 2 per customer, all eight statuses represented.</li>
+<li>☐ SQLite migrations, typed repositories and optimistic concurrency pass the full test suite; a tampered migration refuses startup.</li>
+<li>☐ A cron backup runs, is integrity-verified, retained by GFS and copied offsite; a restore succeeds on a clean machine and requires a fresh sign-in.</li>
+<li>☐ TypeScript strict checks, lint and coverage gates pass in CI.</li>
 <li>☐ Plan, tech spec and help pages published in the house guide style.</li>
 </ul>
 <hr />
@@ -2339,7 +2350,7 @@ that is an application feature, not a documentation pipeline.</p>
 <tr>
 <td>D11</td>
 <td>Session strategy (cookie + server session vs signed token)</td>
-<td>Server-side session with an HTTP-only cookie</td>
+<td>Server-side session rows in SQLite with an HTTP-only signed cookie</td>
 <td>Auth implementation</td>
 </tr>
 <tr>
@@ -2350,8 +2361,8 @@ that is an application feature, not a documentation pipeline.</p>
 </tr>
 <tr>
 <td>D13</td>
-<td>Initial data store</td>
-<td>JSON file with table-like collections; repository boundary for SQL later</td>
+<td>Data store</td>
+<td>SQLite with typed repositories, checksummed forward-only migrations and WAL</td>
 <td>Data layer</td>
 </tr>
 <tr>
@@ -2359,6 +2370,18 @@ that is an application feature, not a documentation pipeline.</p>
 <td>Managers as field engineers</td>
 <td>Allow <code>can_engineer</code> on MANAGER accounts</td>
 <td>Assignments, My jobs</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>Implementation language</td>
+<td>TypeScript with strict compiler flags, compiled to <code>dist/</code> for production</td>
+<td>Build, tests, dependencies</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>Backup policy</td>
+<td>Cron-driven verified online snapshots, GFS retention, encrypted offsite copy, monthly restore drill</td>
+<td>Operations, monitoring</td>
 </tr>
 </tbody>
 </table>
@@ -2438,8 +2461,8 @@ that is an application feature, not a documentation pipeline.</p>
 <td>§6</td>
 </tr>
 <tr>
-<td>Browser app, HTMX, Node, JSON store then SQL</td>
-<td>§10 N3, D10, D11, D13</td>
+<td>Browser app, HTMX, Node, TypeScript, SQLite</td>
+<td>§10 N3, D10, D11, D13, D15</td>
 </tr>
 </tbody>
 </table>

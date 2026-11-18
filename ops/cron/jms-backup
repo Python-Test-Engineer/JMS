@@ -1,0 +1,9 @@
+# Install as /etc/cron.d/jms-backup (root-owned, mode 0644).
+# Run as the unprivileged service user; flock prevents overlap with restore/migrate.
+SHELL=/bin/sh
+PATH=/usr/local/bin:/usr/bin:/bin
+TZ=UTC
+
+15 2 * * * jms cd /srv/jms && /usr/bin/flock -n /srv/jms/data/jms.ops.lock /usr/bin/node dist/cli/jms.js backup --tag nightly >> /var/log/jms/backup.log 2>&1
+15 3 * * * jms cd /srv/jms && /usr/bin/node dist/cli/jms.js verify --latest >> /var/log/jms/backup.log 2>&1
+45 3 * * * jms cd /srv/jms && /usr/bin/node dist/cli/jms.js prune --apply >> /var/log/jms/backup.log 2>&1

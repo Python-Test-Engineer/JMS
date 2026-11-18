@@ -1,0 +1,9 @@
+[Unit]
+Description=JMS verified database backup
+
+[Service]
+Type=oneshot
+User=jms
+WorkingDirectory=/srv/jms
+EnvironmentFile=/srv/jms/.env
+ExecStart=/usr/bin/flock -n /srv/jms/data/jms.ops.lock /usr/bin/node dist/cli/jms.js backup --tag nightly

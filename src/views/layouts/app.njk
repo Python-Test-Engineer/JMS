@@ -1,8 +1,9 @@
 <!doctype html>
-<html lang="en-GB" data-theme="{{ theme.mode or 'system' }}">
+<html lang="en-GB" data-theme="{{ theme.mode or 'system' }}" data-text="{{ theme.text or 'normal' }}" data-leading="{{ theme.leading or 'normal' }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrfToken }}">
   <title>{{ title or 'JMS' }} · JMS</title>
   <link rel="stylesheet" href="/assets/css/tokens.css">
   <link rel="stylesheet" href="/assets/css/app.css">
@@ -30,7 +31,7 @@
   <div class="user-menu">
     <a class="button button-quiet site-settings-link" href="/account/appearance" title="Site settings">
       <span class="site-settings-glyph" aria-hidden="true">Aa</span>
-      <span>Site settings</span>
+      <span class="site-settings-label">Site settings</span>
     </a>
     <span class="avatar" aria-hidden="true">{{ user.display_name|initials }}</span>
     <span class="user-meta"><strong>{{ user.display_name }}</strong><small>{{ user.role_key|roleLabel }}</small></span>
@@ -44,8 +45,8 @@
 
 <div class="shell">
   {% if user %}
-  <aside class="sidebar" id="sidebar">
-    <nav aria-label="Main navigation">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <nav>
       {% for group in navGroups %}
       <div class="nav-group">
         <p class="nav-group-label">{{ group.label }}</p>
@@ -59,6 +60,7 @@
       {% endfor %}
     </nav>
   </aside>
+  <div class="nav-scrim" hidden></div>
   {% endif %}
 
   <main id="main" class="content" tabindex="-1">
@@ -77,14 +79,11 @@
 </div>
 
 <footer class="footer">
-  <span>JMS v1 · SQLite database · display timezone {{ company.timezone or 'Europe/London' }}</span>
-  <span class="mono" title="OpenRouter API key in use">OpenRouter key {{ openRouterKeyMasked }}</span>
+  <span>JMS v2 · SQLite · {{ company.timezone or 'Europe/London' }}</span>
   {% if requestId %}<span class="mono">Request {{ requestId }}</span>{% endif %}
 </footer>
-<a class="back-to-top" href="#top" aria-label="Back to top">
-  <span aria-hidden="true">&uarr;</span>
-  <span class="sr-only">Back to top</span>
-</a>
+<a class="back-to-top" href="#top" aria-label="Back to top"><span aria-hidden="true">&uarr;</span></a>
+<script src="/assets/vendor/htmx.min.js" defer></script>
 <script src="/assets/js/app.js" defer></script>
 {% block scripts %}{% endblock %}
 </body>

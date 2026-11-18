@@ -74,3 +74,9 @@ jms.db-wal
 jms.db-shm
 storage/documents/
 backups/
+
+# JMS runtime data
+data/
+backups/
+storage/documents/
+dist/

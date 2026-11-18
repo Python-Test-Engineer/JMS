@@ -13,10 +13,10 @@ theme = "jms_theme.toml"
 title = "JMS · Product Plan"
 eyebrow = "Acme Windows · Job Management System"
 subtitle = "What we are building, for whom, and how we will know it is done."
-footer = 'Plan v0.0.1 · <a href="_TECH.md">next: _TECH.md</a>'
+footer = 'Plan v0.1.0 · <a href="_TECH.md">next: _TECH.md</a>'
 
 [docs."_TECH.md"]
 title = "JMS · Technical Specification"
 eyebrow = "Acme Windows · Job Management System"
 subtitle = "Schema, routes, templates, tests and the tasks that build them."
-footer = 'Tech spec v0.1.0 · <a href="_PLAN.md">back: _PLAN.md</a>'
+footer = 'Tech spec v0.2.0 · <a href="_PLAN.md">back: _PLAN.md</a>'

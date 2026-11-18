@@ -73,7 +73,7 @@
       <p><a class="button button-secondary button-block" href="/invoices/{{ invoice.id }}">Open invoice {{ invoice.number or 'draft' }}</a></p>
       {% endif %}
       {% if can('job.archive') %}
-      <form method="post" action="/jobs/{{ job.id }}/archive" onsubmit="return confirm('Archive {{ job.reference }}? It will disappear from normal lists.')">
+      <form method="post" action="/jobs/{{ job.id }}/archive">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <button class="button button-danger button-block" type="submit">Archive job</button>
       </form>
